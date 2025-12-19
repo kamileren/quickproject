@@ -600,9 +600,11 @@ export function LinearRegression({ onBack }) {
             </section>
 
             <section className="my-24 p-8 border-2 border-stone-900 rounded-sm">
-              <div className="mb-8">
-                <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 2.1</h4>
-                <p className="text-xs text-stone-500 italic">Numerical Optimization</p>
+              <div className="mb-8 flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 1.1</h4>
+                  <p className="text-xs text-stone-500 italic">Numerical Optimization</p>
+                </div>
               </div>
               <LinearRegressionVisualizer />
               <p className="mt-6 text-[11px] leading-relaxed text-stone-500 border-t border-stone-100 pt-4">
@@ -676,10 +678,9 @@ export function LinearRegression({ onBack }) {
             <section className="my-24 p-8 border-2 border-stone-900 rounded-sm">
               <div className="mb-8 flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 2.2</h4>
+                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 1.2</h4>
                   <p className="text-xs text-stone-500 italic">Gradient Descent Convergence</p>
                 </div>
-                <div className="bg-stone-900 text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">Interactive Lab</div>
               </div>
               <GradientDescentVisualizer />
               <p className="mt-6 text-[11px] leading-relaxed text-stone-500 border-t border-stone-100 pt-4">
@@ -735,10 +736,9 @@ export function LinearRegression({ onBack }) {
             <section className="my-24 p-8 border-2 border-stone-900 rounded-sm">
               <div className="mb-8 flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 2.3</h4>
+                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 1.3</h4>
                   <p className="text-xs text-stone-500 italic">Residual Analysis</p>
                 </div>
-                <div className="bg-stone-900 text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">Interactive Lab</div>
               </div>
               <ResidualsVisualizer />
               <p className="mt-6 text-[11px] leading-relaxed text-stone-500 border-t border-stone-100 pt-4">
@@ -785,10 +785,9 @@ export function LinearRegression({ onBack }) {
             <section className="my-24 p-8 border-2 border-stone-900 rounded-sm">
               <div className="mb-8 flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 2.4</h4>
+                  <h4 className="text-sm font-bold uppercase tracking-widest mb-1">Figure 1.4</h4>
                   <p className="text-xs text-stone-500 italic">Regularization Effects</p>
                 </div>
-                <div className="bg-stone-900 text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">Interactive Lab</div>
               </div>
               <RegularizationVisualizer />
               <p className="mt-6 text-[11px] leading-relaxed text-stone-500 border-t border-stone-100 pt-4">

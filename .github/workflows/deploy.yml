@@ -2,7 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -36,7 +38,10 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /
+
+      - name: Add CNAME for custom domain
+        run: echo "thebookofml.com" > dist/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
