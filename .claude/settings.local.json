@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install --save-dev vite-plugin-prerender)",
+      "Bash(npm install --save-dev react-snap)",
+      "Bash(npm uninstall react-snap react-router-dom)",
+      "Bash(npm uninstall vite-ssg @vue/server-renderer)",
+      "Bash(npm run build)"
+    ]
+  }
+}
