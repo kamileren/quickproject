@@ -25,7 +25,7 @@ interface SliderProps {
 export function Slider({ label, value, min, max, step, onChange, format = String, disabled, ariaLabel }: SliderProps) {
   const id = useId();
   return (
-    <div className="flex min-w-0 flex-[1_1_15rem] items-center gap-3">
+    <div className="flex min-w-0 flex-[1_1_15rem] flex-wrap items-center gap-x-3 gap-y-1">
       <label htmlFor={id} className="shrink-0 font-mono text-[11px] text-stone-500">
         {label}
       </label>

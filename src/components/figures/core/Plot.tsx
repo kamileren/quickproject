@@ -487,3 +487,31 @@ export function Band({ from, to, fill = COLORS.accent, opacity = 0.08 }: BandPro
   if (b <= a) return null;
   return <rect x={sx(a)} y={sy(yDomain[1])} width={sx(b) - sx(a)} height={sy(yDomain[0]) - sy(yDomain[1])} fill={fill} opacity={opacity} />;
 }
+
+interface BarsProps {
+  /** One bar per entry, centred on `x`, rising or falling from zero to `y`. */
+  bars: Point[];
+  /** Bar width in x-axis units. */
+  width?: number;
+  fill?: string;
+  title?: (bar: Point) => string;
+}
+
+/** Bars anchored to the zero line. Values beyond the plot are clipped at its edge. */
+export function Bars({ bars, width = 0.6, fill = COLORS.ink, title }: BarsProps) {
+  const { sx, sy, yDomain, clipId } = usePlot();
+  const zero = sy(0);
+  return (
+    <g clipPath={`url(#${clipId})`}>
+      {bars.map((bar) => {
+        const top = sy(Math.max(yDomain[0], Math.min(yDomain[1], bar.y)));
+        const w = Math.max(2, sx(bar.x + width / 2) - sx(bar.x - width / 2) - 2);
+        return (
+          <rect key={bar.x} x={sx(bar.x) - w / 2} y={Math.min(top, zero)} width={w} height={Math.max(Math.abs(top - zero), 0)} rx={2} fill={fill}>
+            {title && <title>{title(bar)}</title>}
+          </rect>
+        );
+      })}
+    </g>
+  );
+}

@@ -100,3 +100,51 @@
 - id: convex
   term: Convex
   definition: Shaped like a single bowl. A convex loss has one lowest point and no other dips to get stuck in.
+- id: underfitting
+  term: Underfitting
+  definition: When a model is too simple to follow the real pattern. It does badly on the data it was fitted to and on new data alike.
+- id: overfitting
+  term: Overfitting
+  definition: When a model follows the accidents of its training data instead of the real pattern. It looks excellent on that data and does badly on new data.
+- id: noise
+  term: Noise
+  definition: The part of the data that no model could predict, such as luck on the day. It differs from one sample to the next.
+- id: training-set
+  term: Training set
+  definition: The examples used to fit the parameters of a model.
+- id: validation-set
+  term: Validation set
+  definition: Examples held back from fitting and used to choose between models or settings. Not the same as the test set.
+- id: hyperparameter
+  term: Hyperparameter
+  definition: A setting you choose before training, such as the degree of a curve or the learning rate. The model does not learn it from the data.
+- id: leakage
+  term: Data leakage
+  definition: When information from the validation or test examples slips into training. It makes results look better than they will be in real use.
+- id: cross-validation
+  term: Cross-validation
+  definition: Splitting the data into several parts and taking turns to hold each part out, so every example is used for both fitting and checking.
+- id: model-bias
+  term: Bias (of a model)
+  definition: Error from the model being too rigid to match the real pattern, however much data it sees. Not the same thing as the bias term b of a line.
+- id: variance
+  term: Variance (of a model)
+  definition: How much the fitted model changes when it is trained on a different sample of data. Flexible models have more of it.
+- id: regularization
+  term: Regularization
+  definition: Any change to training that discourages a model from fitting noise, usually a penalty on large weights.
+- id: ridge
+  term: Ridge regression
+  definition: Least squares with a penalty on the sum of squared weights. It shrinks every weight toward zero but rarely to exactly zero.
+- id: lasso
+  term: Lasso
+  definition: Least squares with a penalty on the sum of absolute weights. It pushes some weights to exactly zero, which removes those features.
+- id: feature-selection
+  term: Feature selection
+  definition: Deciding which features a model should use and which it should ignore.
+- id: sparse
+  term: Sparse
+  definition: Having most entries equal to zero. A sparse model uses only a few of its features.
+- id: standardize
+  term: Standardize
+  definition: Rescale a feature so that its average is 0 and its typical spread is 1. It puts features on a common footing.

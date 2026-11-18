@@ -4,5 +4,199 @@ number: "4"
 part: learning
 order: 6
 summary: "Why a model that fits its training data can still fail on new data."
-status: draft
+question: "If one model fits the data better than another, is it the better model?"
+dataset: sleep-scores
+minutes: 20
+status: ready
+prerequisites: [linear-regression]
 ---
+
+import DegreeFit from '@/components/figures/ch04/DegreeFit';
+import ErrorCurves from '@/components/figures/ch04/ErrorCurves';
+import Folds from '@/components/figures/ch04/Folds';
+
+So far "better" has meant "lower error on the data we have". This chapter shows why that is the wrong target, and what to aim for instead. It contains the most practically useful idea in the book: how to tell whether a model has really learned something or has only memorised its examples.
+
+## A model that memorises
+
+Imagine a model that is nothing but a lookup table. It stores every training example. Asked about a student it has seen, it returns that student's exact score. Its training error is zero. No model can beat it.
+
+Now ask it about a student it has not seen. It has nothing to say. A perfect score on the training data told us nothing about whether it could do the job.
+
+This extreme case is a warning about every model. Training error measures how well a model matches examples it was *shown*. What we care about is how it does on examples it was *not* shown. The gap between the two is what this chapter is about.
+
+## Too simple, too flexible
+
+A new dataset makes the problem visible. Twelve students recorded how long they slept the night before an exam, and their score. Too little sleep hurts. So, it turns out, does too much.
+
+A straight line cannot follow a pattern that rises and then falls. So we let the model bend: instead of a line, fit a curve. The *degree* of the curve sets how many bends it is allowed. Degree 1 is a straight line, degree 2 has one bend, and degree 9 can wiggle through almost anything.
+
+<Figure
+  title="How flexible should the curve be?"
+  caption="The dark dots are the twelve students used for fitting."
+  try="raise the degree one step at a time and watch the error on the fitted students. At degree 9, press the button to show twenty new students."
+>
+  <DegreeFit client:visible />
+</Figure>
+
+Three things happen as you raise the degree.
+
+At **degree 1** the line misses the shape entirely. This is <Term id="underfitting">underfitting</Term>: the model is too simple for the pattern, and it is wrong about fitted and new students alike.
+
+At **degree 2** the curve follows the rise and fall. It does not pass through every dot, and it should not, because the dots include luck. That unpredictable part is called <Term id="noise">noise</Term>.
+
+At **degree 9** the curve bends to pass close to every fitted student. Its error on them is tiny. But it gets there by swinging wildly between the dots, and the new students land nowhere near it. This is <Term id="overfitting">overfitting</Term>: the model has learned the noise in these twelve students as if it were the pattern.
+
+## Training error always falls
+
+Collect the two errors for every degree and plot them against each other.
+
+<Figure
+  title="Two errors, two stories"
+  caption="The dark line is the error on the twelve fitted students. The orange line is the error on twenty new ones."
+  try="move the slider from 1 to 9 and read the verdict at each step. Find where the two lines are closest."
+>
+  <ErrorCurves client:visible />
+</Figure>
+
+The error on the fitted students only ever goes down: from 66 at degree 1, to 12 at degree 2, to 5 at degree 9. A more flexible model can always match its own data at least as well.
+
+The error on new students tells the truth. It drops from 102 to 29 as the model becomes able to follow the pattern, stays roughly level for a while, then climbs steeply to 192 at degree 9.
+
+The best model is at the bottom of the orange curve, not the dark one. Choosing by training error would pick degree 9, the worst model on the page.
+
+<MarginNote>
+The noise in this data has a spread of about 5 points, so no model could have an error on new students much below 25. Degree 2 reaches 29. It is nearly as good as any model can be.
+</MarginNote>
+
+<Checkpoint
+  question="You train two models. Model A has training error 4 and error 60 on new data. Model B has training error 15 and error 18 on new data. Which do you ship?"
+  options={[
+    { text: 'Model A, because its training error is lower', why: 'Low training error with high error on new data is the signature of overfitting.' },
+    { text: 'Model B', correct: true, why: 'Error on new data is what users will experience. B is slightly worse on its own training data and far better where it counts.' },
+    { text: 'Neither can be judged without more training data', why: 'The error on new data already tells you which generalizes better.' },
+  ]}
+/>
+
+## Three piles of data
+
+To choose a degree we looked at the new students. That is a problem. Once we have used them to make a decision, they are no longer "new", and their error is no longer an honest estimate of real-world performance.
+
+The fix is to split the data into three piles before doing anything else.
+
+| Pile | Used for | Typical share |
+|---|---|---|
+| Training set | Fitting the weights | 60 to 80% |
+| Validation set | Choosing between models and settings | 10 to 20% |
+| Test set | One final, honest measurement | 10 to 20% |
+
+The <Term id="validation-set">validation set</Term> is the one you are allowed to look at repeatedly. The test set is opened once, at the very end.
+
+A setting like the degree, which you choose rather than learn, is called a <Term id="hyperparameter">hyperparameter</Term>. The learning rate from the last chapter is another. Hyperparameters are tuned on the validation set.
+
+One rule protects all of this. Nothing about the validation or test examples may influence training: not their labels, and not even their averages if you rescale features. When it does, the result is called <Term id="leakage">data leakage</Term>, and the model will look better on paper than it is.
+
+## Cross-validation
+
+Three piles are expensive when data is scarce. With twelve students, setting four aside leaves only eight to learn from, and a validation set of two or three students is mostly luck.
+
+<Term id="cross-validation">Cross-validation</Term> gets more out of the same data. Split the students into five groups. Hide the first group, fit on the other four, and score the fit on the hidden group. Then hide the second group instead, and so on. Every student is used for checking exactly once and for fitting four times. The average of the five scores is the model's cross-validation score.
+
+<Figure
+  title="Five rounds, five different hold-outs"
+  caption="In each round the blue students are hidden while the curve is fitted, then used to score it."
+  try="click through the five rounds at degree 2. Then switch to degree 1 and degree 6 and compare the average."
+>
+  <Folds client:visible />
+</Figure>
+
+The averages come out at 85 for degree 1, 14 for degree 2, and 28 for degree 4, climbing fast after that. Cross-validation picks degree 2, the same answer the twenty new students gave, without ever touching them. They remain a true test set.
+
+## Bias and variance
+
+There is a tidy way to describe the two ways of going wrong.
+
+Suppose we could repeat the whole study with a different class of twelve students, again and again, fitting the same kind of model each time.
+
+- A rigid model would give nearly the same answer every time, and every time it would miss the real shape. That consistent miss is called <Term id="model-bias">bias</Term>.
+- A very flexible model would give a wildly different curve for each class, because it chases each class's noise. That instability is called <Term id="variance">variance</Term>.
+
+<Figure
+  title="The same model, different classes"
+  caption="Each press draws twelve new students and refits. Earlier fits stay on screen, faded. The dashed line is the true pattern used to generate the data."
+  try="at degree 1, draw six or seven new classes. Reset, set the degree to 8, and do the same."
+>
+  <DegreeFit client:visible resample initialDegree={1} />
+</Figure>
+
+At degree 1 the lines barely move, and all of them are wrong in the same way: high bias, low variance. At degree 8 the curves fly all over the plot: low bias, very high variance. Degree 2 or 3 gets both small at once.
+
+Making a model more flexible lowers bias and raises variance. The skill is in finding the point between them, and more data helps too: the more students each class has, the less any flexible model can be fooled by their noise.
+
+<Checkpoint
+  question="A model has high error on its training data and almost the same high error on new data. What is the likeliest problem?"
+  options={[
+    { text: 'High variance: it is overfitting', why: 'Overfitting shows up as a big gap, with low training error and high error on new data.' },
+    { text: 'High bias: it is underfitting', correct: true, why: 'When even the training data is fitted badly, the model is too simple. Make it more flexible or give it better features.' },
+    { text: 'Data leakage', why: 'Leakage makes results look too good, not uniformly bad.' },
+  ]}
+/>
+
+## In code
+
+scikit-learn does the splitting and the cross-validation. Here the degree is chosen by cross-validation on the training data, and the test set is used once at the end.
+
+```python
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+
+# X: hours slept, one column. y: exam scores.
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+def model(degree):
+    # The pipeline learns its scaling from the training folds only: no leakage.
+    return make_pipeline(PolynomialFeatures(degree), StandardScaler(), LinearRegression())
+
+scores = {}
+for degree in range(1, 10):
+    cv = cross_val_score(model(degree), X_train, y_train, cv=5,
+                         scoring="neg_mean_squared_error")
+    scores[degree] = -cv.mean()                 # average error over the five rounds
+
+best = min(scores, key=scores.get)              # lowest cross-validation error
+final = model(best).fit(X_train, y_train)
+print(best, np.mean((final.predict(X_test) - y_test) ** 2))   # the one honest number
+```
+
+<KeyTakeaways>
+
+- Training error always improves with a more flexible model. It cannot tell you when to stop.
+- **Underfitting** is being too simple for the pattern. **Overfitting** is fitting the noise.
+- Judge models on data they have not seen: tune on a **validation set**, report on a **test set** used once.
+- **Cross-validation** rotates the hold-out so that small datasets are used fully.
+- Flexibility trades **bias** for **variance**. The best model keeps both small.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Splitting data that has structure
+
+A random split assumes examples are independent. If the data is ordered in time, split by time, training on the past and testing on the future. If several rows belong to the same person, keep each person entirely in one pile. Otherwise the model is tested on something it has effectively already seen.
+
+### When more flexibility helps again
+
+Very large neural networks behave in a way this chapter does not predict: past the point where they can memorise the training data, error on new data often starts falling again. This is called double descent. The classical picture here is still the right guide for the models in the first three parts of this book.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, chapters 2 and 5. Free at [statlearning.com](https://www.statlearning.com).
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 11 to 13, [nnfs.io](https://nnfs.io).
+- MLU-Explain, [The Bias Variance Tradeoff](https://mlu-explain.github.io/bias-variance/) and [Cross-Validation](https://mlu-explain.github.io/cross-validation/).
+
+</References>
