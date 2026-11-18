@@ -1,0 +1,102 @@
+# One entry per term, for the whole book. `id` is what chapters write in <Term id="...">.
+# Keep definitions to one or two plain sentences.
+
+- id: feature
+  term: Feature
+  definition: One measured property of an example that the model is allowed to look at, such as hours studied.
+- id: label
+  term: Label
+  definition: The known correct answer for an example, such as the exam score. Also called the target.
+- id: model
+  term: Model
+  definition: A rule with adjustable numbers that turns an input into a prediction. Learning means choosing those numbers.
+- id: parameter
+  term: Parameter
+  definition: One of the adjustable numbers inside a model. A line has two, its slope and its bias.
+- id: slope
+  term: Slope
+  definition: How much the prediction changes when the input grows by one unit. Also called the weight.
+- id: bias
+  term: Bias
+  definition: The prediction when the input is zero, where the line crosses the vertical axis. Also called the intercept.
+- id: residual
+  term: Residual
+  definition: The true value minus the prediction for one example. It is how far, and in which direction, the model missed.
+- id: loss
+  term: Loss
+  definition: A single number that says how wrong a model is on a set of examples. Lower is better, and zero is perfect.
+- id: mse
+  term: Mean squared error
+  definition: The average of the squared residuals. Squaring makes every miss positive and makes big misses count much more.
+- id: least-squares
+  term: Least squares
+  definition: Choosing the model that makes the mean squared error as small as possible.
+- id: closed-form
+  term: Closed-form solution
+  definition: An answer you can compute directly with a formula, with no trial and error.
+- id: rmse
+  term: Root mean squared error
+  definition: The square root of the mean squared error. It is in the same units as the thing being predicted.
+- id: r-squared
+  term: R squared
+  definition: The share of the variation in the target that the model explains. 1 is perfect, 0 is no better than always guessing the average.
+- id: extrapolation
+  term: Extrapolation
+  definition: Predicting for inputs outside the range the model was fitted on. The model has no evidence there, so it can be badly wrong.
+- id: outlier
+  term: Outlier
+  definition: An example that sits far from the pattern the rest of the data follows.
+- id: example
+  term: Example
+  definition: One row of data, such as one student. Also called a sample or a data point.
+- id: dataset
+  term: Dataset
+  definition: A collection of examples, usually arranged as a table with one row per example.
+- id: supervised
+  term: Supervised learning
+  definition: Learning from examples that come with the right answer attached, so the model can be corrected.
+- id: unsupervised
+  term: Unsupervised learning
+  definition: Learning from examples with no answers attached. The goal is to find structure, such as groups.
+- id: regression
+  term: Regression
+  definition: Predicting a number, such as a score or a price.
+- id: classification
+  term: Classification
+  definition: Predicting a category, such as pass or fail.
+- id: training
+  term: Training
+  definition: The process of adjusting the parameters of a model so that its predictions match the examples.
+- id: generalize
+  term: Generalize
+  definition: To predict well on new examples that were not used to fit the model. This is the real goal of learning.
+- id: test-set
+  term: Test set
+  definition: Examples held back and never used for fitting, so they can show how the model does on data it has not seen.
+- id: gradient
+  term: Gradient
+  definition: The list of slopes of the loss, one per parameter. It points in the direction in which the loss grows fastest.
+- id: learning-rate
+  term: Learning rate
+  definition: The number that sets how far each step of gradient descent moves. Too small is slow, too large overshoots.
+- id: gradient-descent
+  term: Gradient descent
+  definition: Repeatedly nudging the parameters a small step against the gradient, so the loss goes down.
+- id: converge
+  term: Converge
+  definition: To settle down. A run has converged when further steps no longer change the parameters or the loss noticeably.
+- id: diverge
+  term: Diverge
+  definition: To blow up. Each step makes the loss larger than the last, usually because the learning rate is too big.
+- id: epoch
+  term: Epoch
+  definition: One full pass through the training data.
+- id: mini-batch
+  term: Mini-batch
+  definition: A small random handful of examples used to estimate the gradient cheaply for one step.
+- id: sgd
+  term: Stochastic gradient descent
+  definition: Gradient descent where each step uses a random mini-batch instead of the whole dataset. Noisier, but far cheaper per step.
+- id: convex
+  term: Convex
+  definition: Shaped like a single bowl. A convex loss has one lowest point and no other dips to get stuck in.

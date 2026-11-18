@@ -1,0 +1,12 @@
+---
+/** Steps most readers can skip. Collapsed by default. */
+interface Props {
+  title?: string;
+}
+const { title = 'Show the steps' } = Astro.props;
+---
+
+<details class="fold my-8 border-l-2 border-stone-200 pl-5">
+  <summary class="micro-label text-stone-500">{title}</summary>
+  <div class="mt-4 text-base leading-relaxed text-stone-700 [&>p]:mb-4"><slot /></div>
+</details>

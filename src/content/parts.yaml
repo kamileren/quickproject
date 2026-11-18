@@ -1,0 +1,28 @@
+- id: toolkit
+  label: Part 0
+  title: Toolkit
+  order: 0
+- id: learning
+  label: Part I
+  title: Learning from Data
+  order: 1
+- id: classification
+  label: Part II
+  title: Classification
+  order: 2
+- id: trees
+  label: Part III
+  title: Trees and Ensembles
+  order: 3
+- id: networks
+  label: Part IV
+  title: Neural Networks
+  order: 4
+- id: structure
+  label: Part V
+  title: Finding Structure
+  order: 5
+- id: practice
+  label: Part VI
+  title: Doing It for Real
+  order: 6

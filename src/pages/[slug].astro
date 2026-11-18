@@ -1,0 +1,37 @@
+---
+import { getEntry, render } from 'astro:content';
+import LectureLayout from '@/layouts/LectureLayout.astro';
+import { mdxComponents } from '@/components/mdx';
+import { getLectures, getReadyLectures, type Lecture } from '@/lib/book';
+
+export async function getStaticPaths() {
+  const ready = await getReadyLectures();
+  return ready.map((lecture, i) => ({
+    params: { slug: lecture.id },
+    props: { lecture, prev: ready[i - 1], next: ready[i + 1] },
+  }));
+}
+
+interface Props {
+  lecture: Lecture;
+  prev?: Lecture;
+  next?: Lecture;
+}
+
+const { lecture, prev, next } = Astro.props;
+const part = await getEntry('parts', lecture.data.part);
+if (!part) throw new Error(`${lecture.id}: unknown part "${lecture.data.part}"`);
+
+const all = await getLectures();
+const prerequisites = lecture.data.prerequisites.map((id) => {
+  const found = all.find((l) => l.id === id);
+  if (!found) throw new Error(`${lecture.id}: unknown prerequisite "${id}"`);
+  return found;
+}).filter((l) => l.data.status === 'ready');
+
+const { Content, headings } = await render(lecture);
+---
+
+<LectureLayout {lecture} {part} {headings} {prev} {next} {prerequisites}>
+  <Content components={mdxComponents} />
+</LectureLayout>

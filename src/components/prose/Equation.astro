@@ -1,0 +1,13 @@
+---
+/** A displayed equation that matters. Put `$$ ... $$` inside, and an optional plain-words reading. */
+interface Props {
+  /** The equation said in words, shown underneath. */
+  reads?: string;
+}
+const { reads } = Astro.props;
+---
+
+<div class="my-8 rounded border-l-4 border-orange-600 bg-stone-50 px-6 py-4 text-center">
+  <slot />
+  {reads && <p class="mt-1 mb-2 text-sm text-stone-500 italic">{reads}</p>}
+</div>

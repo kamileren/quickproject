@@ -1,0 +1,70 @@
+---
+/** Every building block of a chapter on one page. Not linked, not indexed. */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Definition from '@/components/prose/Definition.astro';
+import Equation from '@/components/prose/Equation.astro';
+import Example from '@/components/prose/Example.astro';
+import Figure from '@/components/prose/Figure.astro';
+import MarginNote from '@/components/prose/MarginNote.astro';
+import KeyTakeaways from '@/components/prose/KeyTakeaways.astro';
+import GoingFurther from '@/components/prose/GoingFurther.astro';
+import References from '@/components/prose/References.astro';
+import Term from '@/components/popins/Term.astro';
+import Symbol from '@/components/popins/Symbol.astro';
+import Checkpoint from '@/components/popins/Checkpoint.astro';
+import Derivation from '@/components/popins/Derivation.astro';
+import DragLine from '@/components/figures/ch02/DragLine';
+---
+
+<BaseLayout title="Component kit" description="Every building block of a chapter." noindex>
+  <main class="px-6 pt-16 pb-32">
+    <div class="relative mx-auto max-w-3xl">
+      <div class="micro-label mb-4 text-orange-600">Internal // Component kit</div>
+      <h1 class="display mb-12 text-5xl">The kit.</h1>
+
+      <article class="book-prose" style="--chapter: 'K'">
+        <p>
+          Body text is set in Georgia. A <Term id="residual">term</Term> explains itself on hover, focus or tap, and so
+          does a symbol such as <Symbol id="yhat" />. Use each term once, on first mention.
+        </p>
+        <MarginNote>A margin note sits beside the text on wide screens and inline on small ones.</MarginNote>
+
+        <h2>Section heading</h2>
+        <p>Sections, figures and definitions number themselves.</p>
+
+        <Definition title="Residual"><p>The true value minus the prediction for one example.</p></Definition>
+
+        <Equation reads="said in plain words underneath">
+          <p class="text-xl italic">ŷ = w·x + b</p>
+        </Equation>
+
+        <Example title="A worked example"><p>Concrete numbers come before the general rule.</p></Example>
+
+        <Figure title="A figure with something to do" caption="What the reader is looking at." try="drag a handle.">
+          <DragLine client:visible />
+        </Figure>
+
+        <Checkpoint
+          question="Which option is correct?"
+          options={[
+            { text: 'This one', correct: true, why: 'Each option explains itself in one line.' },
+            { text: 'Not this one', why: 'A wrong answer says why it is wrong.' },
+          ]}
+        />
+
+        <Derivation><p>Steps most readers can skip live here.</p></Derivation>
+
+        <KeyTakeaways>
+          <ul>
+            <li>Five lines at most.</li>
+            <li>Each one a <strong>single idea</strong>.</li>
+          </ul>
+        </KeyTakeaways>
+
+        <GoingFurther><p>Correct, but not needed on a first read.</p></GoingFurther>
+
+        <References><ul><li>Sources for the chapter.</li></ul></References>
+      </article>
+    </div>
+  </main>
+</BaseLayout>

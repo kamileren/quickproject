@@ -1,0 +1,15 @@
+---
+/** One quick question with instant feedback. At most one per section. */
+import CheckpointIsland, { type CheckpointOption } from './CheckpointIsland';
+
+interface Props {
+  question: string;
+  options: CheckpointOption[];
+}
+const { question, options } = Astro.props;
+if (options.filter((o) => o.correct).length !== 1) {
+  throw new Error(`<Checkpoint question="${question}"> needs exactly one correct option`);
+}
+---
+
+<CheckpointIsland client:visible question={question} options={options} />

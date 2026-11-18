@@ -1,0 +1,14 @@
+---
+/** Jargon with a pop-in definition from the glossary. Use on first mention only. */
+import { getEntry } from 'astro:content';
+import Pop from './Pop';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const entry = await getEntry('glossary', id);
+if (!entry) throw new Error(`<Term id="${id}">: no such entry in src/content/glossary.yaml`);
+---
+
+<Pop client:idle heading={entry.data.term} body={entry.data.definition}><slot /></Pop>

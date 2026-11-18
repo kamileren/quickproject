@@ -1,0 +1,335 @@
+---
+title: "Linear Regression"
+number: "2"
+part: learning
+order: 4
+summary: "Fitting a straight line to data, and measuring how well it fits."
+question: "If a student studies for four and a half hours, what score should we expect?"
+dataset: exam-scores
+minutes: 18
+status: ready
+prerequisites: [what-is-learning]
+---
+
+import DragLine from '@/components/figures/ch02/DragLine';
+import ReadPrediction from '@/components/figures/ch02/ReadPrediction';
+import OutlierPull from '@/components/figures/ch02/OutlierPull';
+
+Twelve students sat the same exam. Before it, each one wrote down how many hours they had studied. We have both numbers for all twelve, and a thirteenth student who studied for four and a half hours and wants to know what to expect.
+
+By the end of this chapter you will be able to answer that with a number, say how far off the answer is likely to be, and explain exactly where the number came from.
+
+## Twelve students
+
+Here are four of the twelve rows. The full table has the same two columns.
+
+| Student | Hours studied | Exam score |
+|---|---|---|
+| A | 1 | 48 |
+| B | 4 | 66 |
+| C | 6 | 71 |
+| D | 9 | 91 |
+
+Hours studied is the <Term id="feature">feature</Term>, the thing we know in advance. The score is the <Term id="label">label</Term>, the thing we want to predict. A table of numbers is hard to read, so plot it: one dot per student, hours across, score up.
+
+The dots drift upward from left to right. More hours, higher score, roughly in a straight band. That suggests a simple plan: draw a straight line through the band, and read predictions off the line.
+
+<Figure
+  title="Fit the line by eye"
+  caption="Each dot is one student."
+  try="drag the two orange handles until the line runs through the middle of the dots. Then read off its height above 4.5 hours."
+>
+  <DragLine client:visible showError={false} />
+</Figure>
+
+You probably landed on something sensible within a few seconds. The rest of this chapter turns what your eye just did into a procedure a computer can follow.
+
+## The model is a line
+
+A straight line is fixed by two numbers. Call them $w$ and $b$:
+
+<Equation reads="predicted score = w × hours + b">
+
+$$
+\hat{y} = w\,x + b
+$$
+
+</Equation>
+
+Here <Symbol id="x" /> is the input (hours), and <Symbol id="yhat" /> is the prediction. The hat is there to keep it apart from <Symbol id="y" />, the score the student really got.
+
+- $w$ is the <Term id="slope">slope</Term>: how many points one extra hour is worth.
+- $b$ is the <Term id="bias">bias</Term>: the score the line gives for zero hours.
+
+This rule, with its two adjustable numbers, is our <Term id="model">model</Term>. Different values of $w$ and $b$ give different lines, and so different predictions.
+
+<Example title="Reading a prediction">
+
+Suppose someone hands us the line $w = 5$, $b = 45$. For a student who studied 4 hours:
+
+$$
+\hat{y} = 5 \times 4 + 45 = 65
+$$
+
+Student B studied 4 hours and scored 66, so this line is off by one point for that student.
+
+</Example>
+
+<Figure
+  title="A line turns hours into a score"
+  caption="The line here is w = 5, b = 45. The faint dots are the real students."
+  try="slide to 4.5 hours and read the prediction. Then slide to 0 and see what the bias means."
+>
+  <ReadPrediction client:visible />
+</Figure>
+
+<Checkpoint
+  question="With w = 5 and b = 45, a student studies two more hours than a classmate. How much higher is their predicted score?"
+  options={[
+    { text: '2 points', why: 'That is the extra hours, not the extra score. Each hour is worth w points.' },
+    { text: '10 points', correct: true, why: 'Each extra hour adds w = 5 points, so two hours add 10. The bias does not matter for a difference.' },
+    { text: '55 points', why: 'That is the prediction for 2 hours in total. The question asks for the difference between two students.' },
+  ]}
+/>
+
+## Measuring the miss
+
+Many lines look reasonable. To pick one we need a way to score a line, so that "better" means something exact.
+
+Start with one student. The <Term id="residual">residual</Term> is how far the line missed:
+
+$$
+\text{residual} = y - \hat{y}
+$$
+
+A positive residual means the student did better than the line said. A negative one means worse.
+
+To score the whole line we need to combine twelve residuals into one number. Simply adding them fails, because a miss of $+10$ and a miss of $-10$ would cancel to zero and a terrible line could look perfect. So we square each residual first, then take the average. The result is the <Term id="mse">mean squared error</Term>:
+
+<Equation reads="average, over all n students, of the squared miss">
+
+$$
+\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2
+$$
+
+</Equation>
+
+<MarginNote>
+The symbol Σ just means "add these up". The little i counts through the students, from the first to the n-th.
+</MarginNote>
+
+<Example title="Scoring a line on three students">
+
+Take the line $w = 5$, $b = 45$ and students A, B and D from the table.
+
+| Student | Hours | Score $y$ | Prediction $\hat{y}$ | Residual | Squared |
+|---|---|---|---|---|---|
+| A | 1 | 48 | 50 | −2 | 4 |
+| B | 4 | 66 | 65 | +1 | 1 |
+| D | 9 | 91 | 90 | +1 | 1 |
+
+The mean of the squared column is $(4 + 1 + 1) / 3 = 2$. On these three students, this line has an MSE of 2.
+
+</Example>
+
+A number like this, which says how wrong a model is, is called a <Term id="loss">loss</Term>. Lower is better. Squaring has one more effect worth noticing: a miss of 10 costs 100, while a miss of 1 costs 1. Big misses dominate.
+
+<Figure
+  title="Every miss, and their average"
+  caption="The red dashed lines are the residuals. The error is the mean of their squares over all twelve students."
+  try="get your error below 7. Then reveal the best line and see how close you came."
+>
+  <DragLine client:visible />
+</Figure>
+
+<Checkpoint
+  question="A line predicts 70 for a student who scored 64. What does this student add to the sum of squared residuals?"
+  options={[
+    { text: '−6', why: 'That is the residual itself, 64 − 70. It still has to be squared.' },
+    { text: '6', why: 'That is the size of the miss. Squaring it gives the contribution.' },
+    { text: '36', correct: true, why: 'The residual is 64 − 70 = −6, and (−6)² = 36. Squaring removes the sign.' },
+  ]}
+/>
+
+## The best line, exactly
+
+In the last figure you searched for the lowest error by hand. For a straight line and squared error there is no need to search. There is a <Term id="closed-form">closed-form solution</Term>: two formulas that give the best $w$ and $b$ directly. Choosing the line this way is called <Term id="least-squares">least squares</Term>.
+
+Write $\bar{x}$ for the average of the hours and $\bar{y}$ for the average of the scores. Then:
+
+<Equation reads="slope = how x and y vary together, divided by how much x varies on its own">
+
+$$
+w = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}
+\qquad\qquad
+b = \bar{y} - w\,\bar{x}
+$$
+
+</Equation>
+
+The second formula says something useful in plain words: the best line always passes through the point of averages, $(\bar{x}, \bar{y})$.
+
+<Example title="Three points, by hand">
+
+Take the tiny dataset $(1, 1)$, $(2, 2)$, $(3, 2)$.
+
+1. Averages: $\bar{x} = 2$ and $\bar{y} = 5/3$.
+2. Top of the fraction: $(-1)(-\tfrac{2}{3}) + (0)(\tfrac{1}{3}) + (1)(\tfrac{1}{3}) = 1$.
+3. Bottom of the fraction: $(-1)^2 + 0^2 + 1^2 = 2$.
+4. Slope: $w = 1/2$. Bias: $b = 5/3 - \tfrac{1}{2}\times 2 = 2/3$.
+
+The best line is $\hat{y} = 0.5\,x + 0.67$.
+
+</Example>
+
+For the twelve students the same steps give $\bar{x} = 4.625$, $\bar{y} = 67$, a top of $388$ and a bottom of $73.06$:
+
+$$
+w = \frac{388}{73.06} \approx 5.31
+\qquad
+b = 67 - 5.31 \times 4.625 \approx 42.44
+$$
+
+So each extra hour of study is worth about 5.3 points, and we can finally answer the opening question:
+
+$$
+\hat{y} = 5.31 \times 4.5 + 42.44 \approx 66.3
+$$
+
+<Derivation title="Where the formulas come from">
+
+The MSE is a function of $w$ and $b$. Picture it as a surface: every choice of $(w, b)$ has a height, the error of that line. For squared error this surface is a smooth bowl, so its lowest point is where it is flat in both directions.
+
+Flat in the $b$ direction means the derivative with respect to $b$ is zero:
+
+$$
+\frac{\partial\,\text{MSE}}{\partial b} = -\frac{2}{n}\sum_i (y_i - w x_i - b) = 0
+\;\;\Longrightarrow\;\; b = \bar{y} - w\,\bar{x}
+$$
+
+Put that $b$ back into the MSE and ask for flatness in the $w$ direction:
+
+$$
+\frac{\partial\,\text{MSE}}{\partial w} = -\frac{2}{n}\sum_i (x_i - \bar{x})\big((y_i - \bar{y}) - w (x_i - \bar{x})\big) = 0
+$$
+
+Solving that for $w$ gives the fraction above. If derivatives are new to you, the toolkit chapter on them covers everything used here.
+
+</Derivation>
+
+## How good is the fit?
+
+The best line is still not a perfect line. Three numbers describe how well it does, each answering a slightly different question.
+
+| Measure | Value here | What it tells you |
+|---|---|---|
+| MSE | 6.13 | The quantity we minimised. Its units are points squared, which is awkward to interpret. |
+| RMSE | 2.48 | The square root of the MSE. A typical miss is about two and a half points. |
+| R² | 0.966 | The line explains about 97% of the differences between students' scores. |
+
+<Term id="rmse">Root mean squared error</Term> is the one to quote to a person, because it is in the same units as the score. Our answer to the thirteenth student is "about 66, give or take two or three points".
+
+<Term id="r-squared">R squared</Term> compares the line with the laziest possible model: ignore the hours and predict the average score, 67, for everyone. That lazy model has an MSE of 177.8. Ours has 6.13.
+
+$$
+R^2 = 1 - \frac{6.13}{177.8} \approx 0.966
+$$
+
+An R² of 1 means a perfect fit and 0 means no better than the average. It can even be negative, when a model does worse than the average.
+
+<MarginNote>
+A high R² does not mean the model is right. It only means the line follows these particular dots closely.
+</MarginNote>
+
+One warning before trusting the line too far. Our students studied between 1 and 9 hours. For 12 hours the line predicts $5.31 \times 12 + 42.44 \approx 106$, on an exam marked out of 100. Predicting outside the range of the data is called <Term id="extrapolation">extrapolation</Term>, and the line has no evidence to stand on there.
+
+<Checkpoint
+  question="A different model for the same exam has an RMSE of 9 points. What does that mean?"
+  options={[
+    { text: 'It gets 9% of predictions wrong', why: 'RMSE is not a percentage. It is measured in the units of the target, here exam points.' },
+    { text: 'Its predictions are typically off by about 9 points', correct: true, why: 'RMSE is in the units of the score, so it reads as a typical size of miss. That is far worse than our 2.5.' },
+    { text: 'It explains 9% of the variation in scores', why: 'That would be an R² of 0.09. RMSE and R² measure different things.' },
+  ]}
+/>
+
+## One wild point
+
+Squaring makes big misses count much more than small ones. That has a cost. A single student far from the pattern, an <Term id="outlier">outlier</Term>, can pull the whole line toward themselves.
+
+Imagine the student who studied 9 hours fell ill on the day and scored 35. Least squares will tilt the line a long way to reduce that one enormous squared miss, and every other prediction gets worse to pay for it.
+
+One alternative is to average the *absolute* misses instead of the squared ones. A miss of 10 then costs 10, not 100, so no single student can dominate.
+
+<Figure
+  title="Squared error chases outliers"
+  caption="Both lines are refitted every time the point moves. The solid line minimises squared error; the dashed line minimises absolute error."
+  try="drag the dark dot to the bottom right corner and watch which line follows it."
+>
+  <OutlierPull client:visible />
+</Figure>
+
+Neither choice is always right. Squared error is smooth and has an exact formula, which is why it is the default. Absolute error is sturdier when the data contains mistakes or freak results. The first thing to do with a surprising fit is to plot the data and look for a point like this.
+
+## In code
+
+In practice nobody computes the two formulas by hand. Here is the whole chapter in a few lines of Python, using the scikit-learn library.
+
+```python
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+hours = np.array([1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9])
+score = np.array([48, 53, 50, 60, 57, 66, 68, 75, 71, 82, 83, 91])
+
+X = hours.reshape(-1, 1)             # one row per student, one column per feature
+model = LinearRegression().fit(X, score)
+
+print(model.coef_[0], model.intercept_)       # 5.31  42.44
+pred = model.predict(X)
+print(mean_squared_error(score, pred))        # 6.13
+print(r2_score(score, pred))                  # 0.966
+print(model.predict([[4.5]]))                 # [66.34]
+```
+
+The numbers match the ones we worked out, because `fit` is doing exactly the calculation from this chapter.
+
+<KeyTakeaways>
+
+- A linear model predicts with a straight line, $\hat{y} = w x + b$. Learning means choosing $w$ and $b$.
+- A **residual** is one miss. The **mean squared error** combines all the misses into a single loss.
+- For a line and squared error, the best $w$ and $b$ come from a formula. No searching is needed.
+- Report **RMSE** for a typical miss in real units, and **R²** for how much better the line is than guessing the average.
+- Squared error is sensitive to outliers, and no line should be trusted outside the range of its data.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### More than one feature
+
+Real problems have several features: hours studied, hours slept, previous grade. The model gets one weight per feature, $\hat{y} = w_1 x_1 + w_2 x_2 + \dots + w_d x_d + b$, and the "line" becomes a flat sheet in more dimensions. Stack the examples into a table $X$ with one row per student, and the best weights still have a closed form, called the normal equation:
+
+$$
+w = (X^\top X)^{-1} X^\top y
+$$
+
+It is the same idea as the two formulas above, written for any number of features.
+
+### Why squares, really?
+
+Squaring is convenient, but there is a deeper reason. If the scores are a straight line plus random bell-shaped noise, then the least-squares line is also the most probable line given the data. The probability toolkit chapter has the background.
+
+### What the line assumes
+
+A straight line is the right tool when the relationship really is straight, when the scatter around it is about the same everywhere, and when the examples do not influence each other. Plotting the residuals against the input is the quickest check: they should look like a shapeless cloud around zero.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, chapter 3. Free at [statlearning.com](https://www.statlearning.com).
+- T. Ma and A. Ng, *CS229 Lecture Notes*, part I, [cs229.stanford.edu](https://cs229.stanford.edu/main_notes.pdf).
+- MLU-Explain, [Linear Regression](https://mlu-explain.github.io/linear-regression/), an interactive article.
+
+</References>

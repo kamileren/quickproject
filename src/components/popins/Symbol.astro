@@ -1,0 +1,14 @@
+---
+/** A symbol with a pop-in reminder of what it means, from the notation file. */
+import { getEntry } from 'astro:content';
+import Pop from './Pop';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const entry = await getEntry('notation', id);
+if (!entry) throw new Error(`<Symbol id="${id}">: no such entry in src/content/notation.yaml`);
+---
+
+<Pop client:idle heading={entry.data.symbol} body={entry.data.meaning} symbol>{entry.data.symbol}</Pop>

@@ -1,0 +1,373 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Book style tokens. Everything visual in the book reads from these.
+   --------------------------------------------------------------------------- */
+@theme {
+  --font-serif: Georgia, 'Times New Roman', Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+:root {
+  --ink: #1c1917; /* stone-900 */
+  --body: #292524; /* stone-800 */
+  --muted: #78716c; /* stone-500 */
+  --faint: #a8a29e; /* stone-400 */
+  --rule: #e7e5e4; /* stone-200 */
+  --rule-soft: #f5f5f4; /* stone-100 */
+  --wash: #fafaf9; /* stone-50 */
+  --accent: #ea580c; /* orange-600 */
+  --accent-dark: #c2410c; /* orange-700 */
+  --accent-soft: #ffedd5; /* orange-100 */
+  --error: #dc2626; /* red-600 */
+  --cool: #2563eb; /* blue-600, second series in figures */
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
+}
+
+body {
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: #7c2d12;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  /* Small uppercase mono label used all over the book. */
+  .micro-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .display {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.25rem;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-dark);
+  }
+  .btn-secondary {
+    background: var(--rule-soft);
+    color: var(--body);
+    border: 1px solid var(--rule);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--rule);
+  }
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 10px;
+  }
+
+  /* -------------------------------------------------------------------------
+     Chapter body. Section, figure and definition numbers are CSS counters,
+     so nobody ever types a number by hand. --chapter is set by the layout.
+     ------------------------------------------------------------------------- */
+  .book-prose {
+    counter-reset: section figure definition;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--body);
+  }
+
+  .book-prose > p,
+  .book-prose > ul,
+  .book-prose > ol {
+    margin-bottom: 1.75rem;
+  }
+
+  .book-prose h2 {
+    counter-increment: section;
+    margin: 5rem 0 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--rule-soft);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .book-prose h2::before {
+    content: var(--chapter) '.' counter(section) '\00a0\00a0';
+  }
+  .book-prose h2.plain {
+    counter-increment: none;
+  }
+  .book-prose h2.plain::before {
+    content: none;
+  }
+
+  .book-prose h3 {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .book-prose ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+  }
+  .book-prose ol {
+    list-style: decimal;
+    padding-left: 1.5rem;
+  }
+  .book-prose li {
+    margin-bottom: 0.5rem;
+  }
+  .book-prose li::marker {
+    color: var(--faint);
+  }
+
+  .book-prose strong {
+    color: var(--ink);
+  }
+
+  .book-prose a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: #fdba74;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+  .book-prose a:hover {
+    color: var(--accent);
+  }
+
+  .book-prose :not(pre) > code {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--rule);
+    border-radius: 0.25rem;
+    background: var(--wash);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+
+  .book-prose pre {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 0.25rem;
+    background: var(--wash) !important;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+
+  .book-prose table {
+    width: 100%;
+    margin: 2rem 0;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .book-prose th {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  .book-prose td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* On a phone a wide table scrolls sideways inside itself instead of widening the page. */
+  @media (max-width: 640px) {
+    .book-prose table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .book-prose {
+      font-size: 1.0625rem;
+    }
+  }
+
+  /* Display math. Long equations scroll sideways instead of breaking layout. */
+  .book-prose .katex-display {
+    margin: 1.5rem 0;
+    padding: 0.25rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .book-prose .katex {
+    font-size: 1.05em;
+  }
+  /* KaTeX keeps a hidden copy of each formula for screen readers; stop it widening the page. */
+  .book-prose .katex-display > .katex {
+    position: relative;
+    max-width: 100%;
+  }
+
+  /* Numbered blocks. */
+  .figure-number::after {
+    content: ' ' var(--chapter) '.' counter(figure);
+  }
+  .definition-number::after {
+    content: ' ' var(--chapter) '.' counter(definition) '.';
+  }
+
+  /* Dark takeaways block: arrows instead of bullets. */
+  .takeaways ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .takeaways li {
+    position: relative;
+    margin-bottom: 0.75rem;
+    padding-left: 1.75rem;
+  }
+  .takeaways li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #f97316;
+  }
+  .takeaways strong {
+    color: #fff;
+  }
+
+  /* Collapsible blocks (derivations, going further). */
+  .fold > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .fold > summary::-webkit-details-marker {
+    display: none;
+  }
+  .fold > summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .fold[open] > summary::before {
+    content: '–';
+  }
+
+  /* Word with a pop-in definition. */
+  .pop-trigger {
+    display: inline;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px dotted var(--accent);
+    background: none;
+    font: inherit;
+    font-style: italic;
+    color: inherit;
+    cursor: help;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .pop-trigger:hover,
+  .pop-trigger[data-state='open'] {
+    border-bottom-style: solid;
+    color: var(--accent-dark);
+  }
+  .pop-trigger.is-symbol {
+    font-family: 'KaTeX_Math', 'Times New Roman', serif;
+    font-size: 1.1em;
+  }
+}
+
+/* Range inputs used by figure sliders. */
+input[type='range'].book-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range'].book-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--faint);
+}
+input[type='range'].book-range::-moz-range-track {
+  height: 2px;
+  background: var(--faint);
+}
+input[type='range'].book-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+input[type='range'].book-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+input[type='range'].book-range:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

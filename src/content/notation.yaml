@@ -1,0 +1,30 @@
+- id: x
+  symbol: x
+  meaning: An input, the thing we know. With several features it is a list of numbers.
+- id: y
+  symbol: y
+  meaning: The target, the true answer we want to predict.
+- id: yhat
+  symbol: ŷ
+  meaning: The model's prediction for y. The hat means "estimated".
+- id: w
+  symbol: w
+  meaning: A weight, a number the model learns. It says how strongly an input affects the prediction.
+- id: b
+  symbol: b
+  meaning: The bias, a learned number added to the prediction whatever the input is.
+- id: n
+  symbol: n
+  meaning: The number of examples in the dataset.
+- id: d
+  symbol: d
+  meaning: The number of features each example has.
+- id: eta
+  symbol: η
+  meaning: The learning rate, how big a step gradient descent takes.
+- id: lambda
+  symbol: λ
+  meaning: The penalty strength in regularization. Larger values give simpler models.
+- id: L
+  symbol: L
+  meaning: The loss, one number saying how wrong the model is. Lower is better.

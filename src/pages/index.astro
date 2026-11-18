@@ -1,0 +1,133 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { chapterUrl, getLectures, getParts, SITE_NAME } from '@/lib/book';
+
+const lectures = await getLectures();
+const parts = await getParts();
+const firstReady = lectures.find((l) => l.data.status === 'ready' && l.data.part !== 'toolkit')
+  ?? lectures.find((l) => l.data.status === 'ready');
+
+const description =
+  'A free, interactive online textbook that teaches machine learning from first principles: regression, classification, trees, neural networks and more, one idea at a time.';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: SITE_NAME,
+  description,
+  inLanguage: 'en',
+  genre: 'Educational',
+  url: Astro.site?.href,
+  isAccessibleForFree: true,
+  bookEdition: 'First Edition, Volume I',
+  about: ['Machine Learning', 'Statistics', 'Neural Networks'].map((name) => ({ '@type': 'Thing', name })),
+};
+---
+
+<BaseLayout title={`${SITE_NAME} — A Free Interactive ML Textbook`} description={description} jsonLd={jsonLd}>
+  <main class="px-6 pt-20 pb-32">
+    <div class="mx-auto max-w-4xl">
+      <header class="mb-24 text-center">
+        <div class="micro-label mb-6 tracking-[0.5em] text-orange-600">Volume I // First Edition</div>
+        <h1 class="display mb-10 text-6xl leading-[0.9] sm:text-7xl md:text-8xl">
+          The Book of <br />
+          <span class="italic">Machine Learning.</span>
+        </h1>
+        <div class="mx-auto max-w-xl">
+          <p class="mb-10 text-xl leading-relaxed font-light text-stone-500 italic">
+            Machine learning from first principles, one idea at a time. Every chapter starts with a question, works
+            through a real example, and gives you something to try.
+          </p>
+          {
+            firstReady && (
+              <div class="flex justify-center gap-4">
+                <a class="btn btn-primary" href={chapterUrl(firstReady)}>
+                  Start Reading <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            )
+          }
+        </div>
+      </header>
+
+      <div class="grid gap-16 md:grid-cols-12">
+        <div class="md:col-span-4">
+          <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
+            Preface
+          </h2>
+          <p class="text-sm leading-7 text-stone-500 italic">
+            This book assumes you can read a little code and remember some school algebra. Nothing more. Each chapter
+            teaches one idea, uses the same handful of small datasets, and puts the mathematics after the example
+            rather than before it. Words with a dotted underline explain themselves when you point at them.
+          </p>
+        </div>
+
+        <nav class="md:col-span-8" aria-label="Table of contents">
+          <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
+            Table of Contents
+          </h2>
+          <div class="space-y-10">
+            {
+              parts.map((part) => (
+                <section>
+                  <h3 class="micro-label mb-4 tracking-widest text-orange-600">
+                    {part.data.label}: {part.data.title}
+                  </h3>
+                  <ol>
+                    {lectures
+                      .filter((l) => l.data.part === part.id)
+                      .map((l) => {
+                        const ready = l.data.status === 'ready';
+                        const number = l.data.number.includes('.') ? l.data.number : l.data.number.padStart(2, '0');
+                        const row = (
+                          <>
+                            <span class="flex items-baseline gap-6">
+                              <span class="w-6 shrink-0 font-mono text-xs font-bold">{number}</span>
+                              <span class:list={['display text-lg tracking-tight', !ready && 'text-stone-400']}>
+                                <span class:list={[ready && 'toc-title']}>{l.data.title}</span>
+                              </span>
+                            </span>
+                            <span class="flex items-center gap-3">
+                              <span class="text-[9px] font-bold tracking-widest uppercase">
+                                {ready ? 'Read' : 'Soon'}
+                              </span>
+                              <span aria-hidden="true" class={ready ? 'text-orange-600' : 'text-stone-200'}>
+                                ›
+                              </span>
+                            </span>
+                          </>
+                        );
+                        return (
+                          <li class="border-b border-stone-100">
+                            {ready ? (
+                              <a
+                                href={chapterUrl(l)}
+                                class="toc-row flex items-center justify-between py-2 text-stone-900 transition-colors hover:text-orange-700"
+                              >
+                                {row}
+                              </a>
+                            ) : (
+                              <span class="flex items-center justify-between py-2 text-stone-300">{row}</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                  </ol>
+                </section>
+              ))
+            }
+          </div>
+        </nav>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .toc-row .toc-title {
+    text-decoration: underline;
+    text-decoration-color: #fdba74;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+</style>

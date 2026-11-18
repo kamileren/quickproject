@@ -1,0 +1,30 @@
+---
+/** Framed, auto-numbered interactive. The caption should tell the reader what to try. */
+interface Props {
+  title: string;
+  caption?: string;
+  /** A concrete thing for the reader to do. */
+  try?: string;
+}
+const { title, caption, try: tryIt } = Astro.props;
+---
+
+<figure class="my-16 rounded-sm border-2 border-stone-900 p-5 sm:p-8" style="counter-increment: figure">
+  <header class="mb-6">
+    <div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div>
+    <p class="text-xs text-stone-500 italic">{title}</p>
+  </header>
+  <div class="not-prose text-base"><slot /></div>
+  {
+    (caption || tryIt) && (
+      <figcaption class="mt-6 border-t border-stone-100 pt-4 text-[12px] leading-relaxed text-stone-500">
+        {caption && <span>{caption} </span>}
+        {tryIt && (
+          <span>
+            <span class="font-bold text-orange-700">Try it:</span> {tryIt}
+          </span>
+        )}
+      </figcaption>
+    )
+  }
+</figure>

@@ -1,0 +1,15 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE_NAME } from '@/lib/book';
+---
+
+<BaseLayout title={`Page not found — ${SITE_NAME}`} description="This page does not exist." noindex>
+  <main class="flex min-h-screen items-center justify-center px-6">
+    <div class="max-w-md text-center">
+      <div class="micro-label mb-6 tracking-[0.5em] text-orange-600">Error // 404</div>
+      <h1 class="display mb-6 text-6xl leading-none">This page is <span class="italic">missing.</span></h1>
+      <p class="mb-10 text-lg text-stone-500 italic">The chapter you are looking for has moved or is not written yet.</p>
+      <a class="btn btn-primary" href="/">Back to contents <span aria-hidden="true">→</span></a>
+    </div>
+  </main>
+</BaseLayout>
