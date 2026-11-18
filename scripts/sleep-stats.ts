@@ -58,3 +58,20 @@ it('prints stats', () => {
     }
   }
 });
+
+it('prints the penalty chosen by cross-validation', () => {
+  const folds = kFolds(sleepTrain, 5, mulberry32(1));
+  for (const penalty of ['ridge', 'lasso'] as const) {
+    const rows = Array.from({ length: 46 }, (_, i) => {
+      const e = +(-3 + i * 0.1).toFixed(1);
+      const lambda = 10 ** e;
+      const fit = (t: Point[]) => fitPolynomial(t, 9, { domain, penalty, lambda }).predict;
+      return { e, lambda, cv: avg(crossValidate(folds, fit)), test: pointsMse(sleepTest, fit(sleepTrain)), train: pointsMse(sleepTrain, fit(sleepTrain)) };
+    });
+    const byCv = rows.reduce((a, b) => (b.cv < a.cv ? b : a));
+    const byTest = rows.reduce((a, b) => (b.test < a.test ? b : a));
+    console.log(`${penalty} chosen by CV: λ=${byCv.lambda.toFixed(4)} cv=${byCv.cv.toFixed(1)} test=${byCv.test.toFixed(1)} train=${byCv.train.toFixed(1)}`);
+    console.log(`${penalty} best for test: λ=${byTest.lambda.toFixed(4)} cv=${byTest.cv.toFixed(1)} test=${byTest.test.toFixed(1)}`);
+    console.log(`${penalty} ends: λ=0.001 cv=${rows[0].cv.toFixed(1)} test=${rows[0].test.toFixed(1)}; λ=31.6 cv=${rows[45].cv.toFixed(1)} test=${rows[45].test.toFixed(1)}`);
+  }
+});

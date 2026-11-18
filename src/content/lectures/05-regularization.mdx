@@ -4,5 +4,195 @@ number: "5"
 part: learning
 order: 7
 summary: "Keeping models simple with ridge and lasso penalties."
-status: draft
+question: "Can a flexible model be stopped from overfitting without making it less flexible?"
+dataset: sleep-scores
+minutes: 17
+status: ready
+prerequisites: [generalization]
 ---
+
+import PenaltyFit from '@/components/figures/ch05/PenaltyFit';
+import WeightBars from '@/components/figures/ch05/WeightBars';
+import LambdaCurve from '@/components/figures/ch05/LambdaCurve';
+
+The last chapter ended with a choice: pick a model simple enough not to overfit. That works when "simple" is a dial you can turn, like the degree of a curve. Often it is not. A model with a hundred features has a hundred weights, and you cannot know in advance which ones to remove.
+
+This chapter takes a different route. Keep the flexible model, and change what it is rewarded for.
+
+## What overfitting looks like inside
+
+Go back to the degree-9 curve that swung wildly between the students. Here are a few of its weights, next to those of the well-behaved degree-2 curve.
+
+| Model | Largest weight | Error on fitted students | Error on new students |
+|---|---|---|---|
+| Degree 2 | 7.4 | 11.9 | 28.8 |
+| Degree 9 | 442 | 5.2 | 192 |
+
+The overfitted model has enormous weights. That is not a coincidence. To bend sharply enough to pass near every dot, the curve needs huge positive weights and huge negative ones that almost cancel each other. Small changes in the input then cause huge changes in the output.
+
+<MarginNote>
+The features here have been put on a common scale first, so the sizes of the weights can be compared fairly. More on that at the end of the chapter.
+</MarginNote>
+
+So large weights are a symptom of overfitting. The idea of <Term id="regularization">regularization</Term> is to treat the symptom directly: make large weights cost something.
+
+## A price on large weights
+
+Until now training has minimised one thing, the mean squared error. Add a second term that grows with the size of the weights:
+
+<Equation reads="what we minimise = how badly it fits + λ × how large the weights are">
+
+$$
+\text{loss} = \text{MSE} + \lambda \sum_{j} w_j^{\,2}
+$$
+
+</Equation>
+
+The model now has two aims that pull against each other. It still wants to fit the data, but every bit of weight has to earn its place by reducing the error more than it adds to the penalty. The number <Symbol id="lambda" /> sets the exchange rate between the two.
+
+- With $\lambda = 0$ there is no penalty, and we are back to plain least squares.
+- With a huge $\lambda$ the penalty is all that matters. Every weight is driven to zero and the model predicts the average score for everyone.
+
+Least squares with this squared penalty is called <Term id="ridge">ridge regression</Term>. The bias $b$ is left out of the sum: it only moves the curve up and down, which is not the kind of flexibility we are trying to limit.
+
+<Figure
+  title="Taming the degree-9 curve"
+  caption="The same nine-bend model as before, on the same twelve students. Hollow blue dots are the new students."
+  try="add the penalty, then drag λ from the far left to the far right. Watch the largest weight, and find where the error on new students is lowest."
+>
+  <PenaltyFit client:visible />
+</Figure>
+
+With no penalty the largest weight is 442 and the error on new students is 192. A penalty of only $\lambda = 0.003$ brings that error down to about 36, close to what the degree-2 model achieved, and the curve stops lurching. Push $\lambda$ too far and the curve flattens toward a horizontal line: the model is now underfitting.
+
+<Checkpoint
+  question="You increase λ in ridge regression. What happens to the error on the training data?"
+  options={[
+    { text: 'It goes down', why: 'The penalty stops the model fitting the training data as closely as it could, so training error cannot improve.' },
+    { text: 'It goes up or stays the same', correct: true, why: 'The model gives up some fit on the training data in exchange for smaller weights. The hope is that error on new data falls.' },
+    { text: 'It is unaffected', why: 'The weights change with λ, so the fit to the training data changes too.' },
+  ]}
+/>
+
+## A different penalty: lasso
+
+Ridge penalises the *squares* of the weights. Another choice is to penalise their *absolute values*:
+
+$$
+\text{loss} = \text{MSE} + \lambda \sum_{j} \lvert w_j \rvert
+$$
+
+This is called the <Term id="lasso">lasso</Term>. The change looks minor and has a striking effect.
+
+Squaring a small number makes it much smaller: $0.1^2 = 0.01$. So under ridge, a weight that is already small costs almost nothing, and there is no pressure to remove it entirely. Ridge shrinks every weight and almost never makes one exactly zero.
+
+The absolute value does not have that property. A weight of $0.1$ costs $0.1$. Each weight is pushed toward zero with the same force however small it gets, and many of them arrive there. A weight of exactly zero means the model ignores that feature completely.
+
+<Figure
+  title="Shrinking against switching off"
+  caption="Each bar is one weight of the degree-9 model. Feature 1 is x, feature 2 is x squared, and so on."
+  try="with Ridge selected, drag λ upward and watch all the bars shrink together. Switch to Lasso and do the same, counting the orange rings."
+>
+  <WeightBars client:visible />
+</Figure>
+
+A model in which most weights are zero is called <Term id="sparse">sparse</Term>. The lasso has in effect chosen which features to keep, a job known as <Term id="feature-selection">feature selection</Term>. At $\lambda = 1$ it keeps four of the nine features and its error on new students is about 40, far below the 192 it started from.
+
+| | Ridge | Lasso |
+|---|---|---|
+| Penalty on each weight | its square | its absolute value |
+| Effect | shrinks all weights | sets some weights to exactly zero |
+| Good when | most features matter a little | only a few features matter |
+| Result | every feature still used | a shorter, more readable model |
+
+## Choosing the strength
+
+The penalty strength $\lambda$ is a hyperparameter, like the degree in the last chapter, and it is chosen the same way. Try a range of values, score each by cross-validation on the training data, and keep the best. Because useful values span several powers of ten, the values tried are spaced by multiplication: 0.001, 0.01, 0.1, 1, 10.
+
+<Figure
+  title="Finding λ without the test set"
+  caption="The orange curve is the cross-validation error, computed from the twelve fitted students only. The blue curve is the error on the twenty new students, shown for comparison. The λ axis goes up in powers of ten."
+  try="drag λ to the lowest point of the orange curve and read the error on new students. Then switch between ridge and lasso."
+>
+  <LambdaCurve client:visible />
+</Figure>
+
+The orange curve is the same U shape as before. Too little penalty overfits. Too much underfits. The lowest point of the curve is the value to use.
+
+How good is that choice? Switch between the two penalties and compare with the blue curve.
+
+| Penalty | λ chosen by cross-validation | Error on new students there | Best possible on new students |
+|---|---|---|---|
+| Lasso | 0.063 | 37.4 | 36.1 |
+| Ridge | 0.25 | 55.5 | 35.9 |
+
+For the lasso, cross-validation lands almost exactly on the best value. For ridge it asks for more penalty than the new students would have wanted. Both are far better than the 192 of the unpenalised model, but the ridge result is a reminder that cross-validation is an estimate. With only twelve students each round holds out two or three, and a score built from so few is noisy. With more data the two curves agree much more closely.
+
+<Checkpoint
+  question="A lasso model trained on 200 features ends up with 12 non-zero weights. What has happened?"
+  options={[
+    { text: 'Training failed for the other 188', why: 'Nothing failed. Weights of exactly zero are what the lasso penalty is designed to produce.' },
+    { text: 'The model decided 188 features were not worth their cost', correct: true, why: 'Each non-zero weight has to reduce the error by more than it adds to the penalty. Only 12 did.' },
+    { text: 'λ was set to zero', why: 'With λ = 0 there is no penalty and nearly all 200 weights would be non-zero.' },
+  ]}
+/>
+
+## In code
+
+In scikit-learn the penalty strength is called `alpha`. The `RidgeCV` and `LassoCV` classes run the cross-validation for you.
+
+```python
+import numpy as np
+from sklearn.linear_model import LassoCV, RidgeCV
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+
+alphas = np.logspace(-3, 1.5, 30)              # 30 values from 0.001 to about 32
+
+def penalised(final_step):
+    # Scaling comes before the penalty, so every feature is charged fairly.
+    return make_pipeline(PolynomialFeatures(9, include_bias=False), StandardScaler(), final_step)
+
+ridge = penalised(RidgeCV(alphas=alphas, cv=5)).fit(X_train, y_train)
+lasso = penalised(LassoCV(alphas=alphas, cv=5, max_iter=100_000)).fit(X_train, y_train)
+
+print(ridge[-1].alpha_, lasso[-1].alpha_)      # the strengths chosen by cross-validation
+print(np.sum(lasso[-1].coef_ == 0))            # how many features the lasso switched off
+print(ridge.score(X_test, y_test), lasso.score(X_test, y_test))   # R² on the test set
+```
+
+Libraries scale the penalty slightly differently from one another, so the best `alpha` here will not equal the best $\lambda$ in the figures. The behaviour is the same.
+
+<KeyTakeaways>
+
+- Overfitted models have **very large weights**. Regularization makes large weights cost something.
+- The new loss is the error **plus λ times the size of the weights**. λ sets how much simplicity is worth.
+- **Ridge** (squared weights) shrinks all weights smoothly. **Lasso** (absolute weights) sets some to exactly zero.
+- Too little penalty overfits, too much underfits. **Choose λ by cross-validation.**
+- Put features on a **common scale** before penalising, or the penalty treats them unfairly.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Why scaling comes first
+
+A weight's size depends on its feature's units. Measure sleep in minutes instead of hours and the same model needs a weight sixty times smaller. A penalty on weight size would then punish the two versions differently, though they make identical predictions. To <Term id="standardize">standardize</Term> each feature first, giving it an average of 0 and a spread of 1, removes the problem. The scaling must be learned from the training data only.
+
+### Both at once
+
+The elastic net uses both penalties together, with a second setting for the mix between them. It keeps the lasso's ability to switch features off while behaving better when several features carry nearly the same information.
+
+### Other ways to regularize
+
+A penalty on weights is one form of regularization among many. Stopping gradient descent early, before it has fully fitted the training data, has a similar effect. Neural networks add their own methods, such as dropout, which have a chapter later in the book.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, chapter 6. Free at [statlearning.com](https://www.statlearning.com).
+- T. Hastie, R. Tibshirani and J. Friedman, *The Elements of Statistical Learning*, chapter 3, [hastie.su.domains/ElemStatLearn](https://hastie.su.domains/ElemStatLearn/).
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 14, [nnfs.io](https://nnfs.io).
+
+</References>

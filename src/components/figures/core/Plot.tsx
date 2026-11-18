@@ -66,8 +66,10 @@ interface PlotProps {
   maxHeight?: number;
   xTicks?: number;
   yTicks?: number;
-  /** Format tick values. */
+  /** Format tick values on both axes. */
   tickFormat?: (v: number) => string;
+  /** Format x-axis ticks only, e.g. for a logarithmic scale. Falls back to tickFormat. */
+  xTickFormat?: (v: number) => string;
   children?: ReactNode;
 }
 
@@ -89,6 +91,7 @@ export function Plot({
   xTicks = 6,
   yTicks = 5,
   tickFormat = (v) => String(+v.toFixed(4)),
+  xTickFormat,
   children,
 }: PlotProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -153,7 +156,7 @@ export function Plot({
           <g fontFamily="ui-monospace, Menlo, Consolas, monospace" fontSize={10} fill={COLORS.muted}>
             {xs.map((t) => (
               <text key={`tx${t}`} x={sx(t)} y={bottom + 14} textAnchor="middle">
-                {tickFormat(t)}
+                {(xTickFormat ?? tickFormat)(t)}
               </text>
             ))}
             {ys.map((t) => (

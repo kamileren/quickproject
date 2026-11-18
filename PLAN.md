@@ -197,7 +197,7 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 - [x] 12. Chapter 2; delete `legacy/`. (Merge to `master` waits for the owner.)
 - [x] 13. Chapter 3.
 - [x] 14. Chapter 4.
-- [ ] 15. Chapter 5. Owner reviews Part I.
+- [x] 15. Chapter 5. Owner reviews Part I.
 
 ### Wave 2: Part II and the toolkit
 
