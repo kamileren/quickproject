@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { examPoints } from '@/data/exam-scores';
+import { examCentered, examPoints } from '@/data/exam-scores';
 import {
   fitLeastSquares,
   fitLine,
@@ -11,7 +11,7 @@ import {
   solve,
 } from './linear';
 import { mae, mse, r2, rmse } from './metrics';
-import { descend, gradientStep, lineGradient, maxStableLearningRate } from './optimize';
+import { descend, gradientStep, lineGradient, lossContour, maxStableLearningRate } from './optimize';
 
 describe('fitLine', () => {
   it('recovers an exact line', () => {
@@ -186,6 +186,28 @@ describe('gradient descent', () => {
     const best = fitLine(examPoints);
     expect(end.w).toBeCloseTo(best.w, 3);
     expect(end.b).toBeCloseTo(best.b, 2);
+  });
+
+  it('draws contours that really sit at the requested loss', () => {
+    for (const pts of [examPoints, examCentered]) {
+      const ring = lossContour(pts, 100);
+      expect(ring.length).toBeGreaterThan(10);
+      for (const line of ring) expect(lineMse(pts, line)).toBeCloseTo(100, 6);
+      expect(lossContour(pts, 1)).toEqual([]);
+    }
+  });
+
+  it('agrees with the hand-worked first step in the gradient descent chapter', () => {
+    const start = { w: 0, b: 50 };
+    const g = lineGradient(examCentered, start);
+    expect(g.w).toBeCloseTo(-64.667, 2);
+    expect(g.b).toBeCloseTo(-34, 6);
+    const next = gradientStep(examCentered, start, 0.1);
+    expect(next.w).toBeCloseTo(6.467, 2);
+    expect(next.b).toBeCloseTo(53.4, 6);
+    expect(lineMse(examCentered, start)).toBeCloseTo(466.83, 1);
+    expect(lineMse(examCentered, next)).toBeCloseTo(199.2, 0);
+    expect(maxStableLearningRate(examCentered)).toBeCloseTo(0.164, 2);
   });
 
   it('diverges just above the stable learning rate and not just below', () => {

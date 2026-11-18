@@ -35,3 +35,10 @@ export function r2(yTrue: readonly number[], yPred: readonly number[]): number {
   if (ssTot === 0) return ssRes === 0 ? 1 : 0;
   return 1 - ssRes / ssTot;
 }
+
+/** Share of predictions that match the true class, from 0 to 1. */
+export function accuracy<T>(yTrue: readonly T[], yPred: readonly T[]): number {
+  if (yTrue.length !== yPred.length) throw new Error('metrics: arrays differ in length');
+  if (yTrue.length === 0) throw new Error('metrics: empty input');
+  return yTrue.filter((y, i) => y === yPred[i]).length / yTrue.length;
+}

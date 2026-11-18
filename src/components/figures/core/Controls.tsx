@@ -25,7 +25,7 @@ interface SliderProps {
 export function Slider({ label, value, min, max, step, onChange, format = String, disabled, ariaLabel }: SliderProps) {
   const id = useId();
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3">
+    <div className="flex min-w-0 flex-[1_1_15rem] items-center gap-3">
       <label htmlFor={id} className="shrink-0 font-mono text-[11px] text-stone-500">
         {label}
       </label>
@@ -95,13 +95,13 @@ interface ReadoutItem {
 export function Readout({ items }: { items: ReadoutItem[] }) {
   return (
     <dl
-      className="grid gap-3 rounded border border-stone-200 bg-white p-3"
-      style={{ gridTemplateColumns: `repeat(${Math.min(items.length, 4)}, minmax(0, 1fr))` }}
+      className="grid grid-cols-2 gap-3 rounded border border-stone-200 bg-white p-3 sm:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
+      style={{ ["--cols" as string]: Math.min(items.length, 4) }}
     >
       {items.map((item) => (
         <div key={item.label} className="min-w-0 text-center">
-          <dt className="mb-1 truncate font-sans text-[9px] tracking-wider text-stone-500 uppercase">{item.label}</dt>
-          <dd className={`font-mono text-sm font-bold tabular-nums ${item.key ? 'text-orange-700' : 'text-stone-900'}`}>
+          <dt className="mb-1 font-sans text-[9px] leading-tight tracking-wider text-stone-500 uppercase">{item.label}</dt>
+          <dd className={`font-mono text-sm font-bold tabular-nums ${item.key ? "text-orange-700" : "text-stone-900"}`}>
             {item.value}
           </dd>
         </div>

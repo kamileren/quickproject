@@ -431,3 +431,59 @@ export function DragHandle({ x, y, onChange, label, fill = COLORS.accent, constr
     </g>
   );
 }
+
+interface RuleProps {
+  /** Position on the x axis (vertical rule) or y axis (horizontal rule). */
+  at: number;
+  stroke?: string;
+  dashed?: boolean;
+  strokeWidth?: number;
+}
+
+/** A vertical line across the whole plot, e.g. a decision threshold. */
+export function VRule({ at, stroke = COLORS.ink, dashed = false, strokeWidth = 1.5 }: RuleProps) {
+  const { sx, sy, yDomain } = usePlot();
+  return (
+    <line
+      x1={sx(at)}
+      x2={sx(at)}
+      y1={sy(yDomain[0])}
+      y2={sy(yDomain[1])}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeDasharray={dashed ? '5 4' : undefined}
+    />
+  );
+}
+
+/** A horizontal line across the whole plot. */
+export function HRule({ at, stroke = COLORS.ink, dashed = false, strokeWidth = 1.5 }: RuleProps) {
+  const { sx, sy, xDomain } = usePlot();
+  return (
+    <line
+      x1={sx(xDomain[0])}
+      x2={sx(xDomain[1])}
+      y1={sy(at)}
+      y2={sy(at)}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeDasharray={dashed ? '5 4' : undefined}
+    />
+  );
+}
+
+interface BandProps {
+  from: number;
+  to: number;
+  fill?: string;
+  opacity?: number;
+}
+
+/** A shaded vertical band between two x values, e.g. "predict pass here". */
+export function Band({ from, to, fill = COLORS.accent, opacity = 0.08 }: BandProps) {
+  const { sx, sy, xDomain, yDomain } = usePlot();
+  const a = Math.max(xDomain[0], Math.min(from, to));
+  const b = Math.min(xDomain[1], Math.max(from, to));
+  if (b <= a) return null;
+  return <rect x={sx(a)} y={sy(yDomain[1])} width={sx(b) - sx(a)} height={sy(yDomain[0]) - sy(yDomain[1])} fill={fill} opacity={opacity} />;
+}

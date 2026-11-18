@@ -4,5 +4,174 @@ number: "1"
 part: learning
 order: 3
 summary: "Features, labels, and what it means for a program to learn from examples."
-status: draft
+question: "How can a program get better at a task without anyone telling it the rules?"
+dataset: exam-scores
+minutes: 12
+status: ready
 ---
+
+import RuleFromExamples from '@/components/figures/ch01/RuleFromExamples';
+
+Most programs are a list of rules that a person wrote down. To work out a customer's bill, add up the prices and apply the tax. Someone knew the rule, so someone could type it in.
+
+Some tasks are not like that. Nobody can write down the rule for recognising a friend's face, or for telling a real email from spam. We do these things easily and cannot say how. Machine learning is what we use for tasks like these: instead of writing the rule, we show the computer examples and let it find the rule itself.
+
+This chapter introduces the handful of ideas that every later chapter depends on. There is very little mathematics in it.
+
+## Rules you cannot write down
+
+Try to write a rule for this question: *will this student pass the exam?*
+
+A first attempt might be "they pass if they studied a lot". That is not something a computer can run. How much is a lot? Four hours? Six? Does it depend on the exam? To make the rule precise you need a number, and you do not know the number.
+
+But suppose you have records from last year: how long each student studied, and whether they passed. Now the number can be *found*. Look through the records, and pick the cut-off that agrees with what really happened.
+
+That is the whole idea. A learning program needs three things:
+
+1. **Examples** of the task, with the right answers.
+2. **A rule with a gap in it**: a number, or many numbers, left blank.
+3. **A way to fill the gap** so that the rule agrees with the examples.
+
+## Examples, features and labels
+
+Here is the data used throughout the first part of this book. Twelve students each recorded how long they studied and what they scored. The pass mark was 65.
+
+| Student | Hours studied | Exam score | Passed? |
+|---|---|---|---|
+| A | 1 | 48 | no |
+| B | 4 | 66 | yes |
+| C | 6 | 71 | yes |
+| D | 9 | 91 | yes |
+| … | … | … | … |
+
+The whole table is a <Term id="dataset">dataset</Term>. Each row, one student, is an <Term id="example">example</Term>.
+
+The columns play two different roles. *Hours studied* is something we know in advance and want to predict *from*. That is a <Term id="feature">feature</Term>. *Passed?* is the answer we want to predict. That is the label, and a dataset that includes the answers is called labelled.
+
+<MarginNote>
+Real datasets have many features. A house has a size, an age, a location and a number of rooms. One feature is enough to see every idea in this chapter.
+</MarginNote>
+
+<Checkpoint
+  question="A bank wants to predict whether a loan will be repaid, using each applicant's income and age. What is the label?"
+  options={[
+    { text: 'The income', why: 'Income is known in advance and used to make the prediction, so it is a feature.' },
+    { text: 'Whether the loan was repaid', correct: true, why: 'The label is the answer you want to predict. Income and age are the features used to predict it.' },
+    { text: 'The applicant', why: 'One applicant is one example, a whole row. The label is a single column of that row.' },
+  ]}
+/>
+
+## Learning a rule from examples
+
+Now fill the gap. Our rule is:
+
+> Predict **pass** if hours studied is at least $t$.
+
+The number $t$ is blank. A rule with adjustable numbers in it is called a <Term id="model">model</Term>, and each adjustable number is a <Term id="parameter">parameter</Term>. This model has one. Choosing its value so that the rule fits the examples is called <Term id="training">training</Term>.
+
+In the figure, you are the training procedure.
+
+<Figure
+  title="Find the cut-off"
+  caption="Filled dots passed, hollow dots failed. The orange line is your rule: everyone to its right is predicted to pass."
+  try="slide the threshold until the rule is right about all twelve students. Leave the test button alone for now."
+>
+  <RuleFromExamples client:visible />
+</Figure>
+
+Somewhere between 3.5 and 4 hours the rule gets all twelve right. Notice what you did: you tried a value, counted how many students the rule got right, and moved the value to make that count go up. A learning algorithm does exactly this, only with a better strategy than sliding by hand. The next two chapters are about those strategies.
+
+## The real test is new data
+
+A rule that is right about last year's students is not worth much on its own. Last year is over. What we want is a rule that will be right about the *next* student, whose result nobody knows yet.
+
+Go back to the figure and press **Test on new students**. Six more students appear, who were kept aside and played no part in choosing your threshold.
+
+Your rule does well on them, but not perfectly. One student passed after only three hours. Another failed after four and a half. Nothing was wrong with your threshold. These two simply do not follow the pattern, because hours of study is not the only thing that decides an exam.
+
+This is the most important idea in the chapter:
+
+- A model is fitted on one set of examples.
+- It is judged on *different* examples that it has never seen. Those are called the <Term id="test-set">test set</Term>.
+- Doing well on new examples is called being able to <Term id="generalize">generalize</Term>, and it is the only kind of doing well that counts.
+
+<Checkpoint
+  question="A model gets 100% of its training examples right and 60% of new examples right. What should you conclude?"
+  options={[
+    { text: 'It is an excellent model, since 100% is perfect', why: 'The 100% is on examples it was fitted to. That says little about how it handles anything new.' },
+    { text: 'Expect about 60% in real use', correct: true, why: 'Performance on unseen examples is the honest estimate. The gap means the model has partly memorised its training data.' },
+    { text: 'The new examples must be wrong', why: 'New examples that disagree with the model are information, not errors. They are the real test.' },
+  ]}
+/>
+
+## Three kinds of problem
+
+Almost every task in this book is one of three kinds. Telling them apart is the first step in solving any problem.
+
+| Kind | You predict | Example with our students |
+|---|---|---|
+| Regression | a number | What score will this student get? |
+| Classification | a category | Will this student pass or fail? |
+| Finding structure | nothing; there are no labels | Do the students fall into natural groups? |
+
+Predicting a number is called <Term id="regression">regression</Term>. Predicting a category is called <Term id="classification">classification</Term>. Both need labelled examples to learn from, so both are forms of <Term id="supervised">supervised learning</Term>: the labels supervise the model by showing it the right answers.
+
+The third kind has no labels at all. The program is given only the features and asked what patterns it can find. That is called unsupervised learning, and it has its own part of the book.
+
+The figure above was classification. The next chapter takes the same students and does regression: predicting the score itself.
+
+## In code
+
+Here is the figure as a program. It tries every sensible threshold and keeps the one that gets the most known students right, then checks that rule on the new students.
+
+```python
+import numpy as np
+
+hours  = np.array([1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9])
+passed = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], dtype=bool)
+
+def accuracy(t, hours, passed):
+    return np.mean((hours >= t) == passed)      # share of students the rule gets right
+
+# Training: try each threshold, keep the best.
+candidates = np.arange(0, 10.25, 0.25)
+best_t = max(candidates, key=lambda t: accuracy(t, hours, passed))
+print(best_t, accuracy(best_t, hours, passed))  # 3.75  1.0
+
+# Testing: six students the rule has never seen.
+new_hours  = np.array([0.5, 2.5, 3, 4.5, 6.5, 8.5])
+new_passed = np.array([0, 0, 1, 0, 1, 1], dtype=bool)
+print(accuracy(best_t, new_hours, new_passed))  # 0.667
+```
+
+Perfect on the twelve it learned from, four out of six on the new ones. Every model in this book is built and judged in these same two stages.
+
+<KeyTakeaways>
+
+- Machine learning is for tasks where **nobody can write down the rule**, but examples are available.
+- A dataset is a table of **examples**. **Features** are what you predict from; the **label** is what you predict.
+- A **model** is a rule with adjustable numbers. **Training** means choosing those numbers to fit the examples.
+- A model is only as good as its results on **new data** it has never seen.
+- Predicting a number is **regression**; predicting a category is **classification**.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Where the examples come from
+
+Everything a model knows comes from its examples. If last year's records only include students from one school, the rule may fail at another. If the labels contain mistakes, the model learns the mistakes. Collecting good examples is often harder than the learning itself, and the chapter on preparing data comes back to this.
+
+### A fourth kind of problem
+
+Some programs learn by trial and error instead of from a table: they act, receive a reward or a penalty, and adjust. This is called reinforcement learning, and it is how programs learn to play games. It is outside the scope of this book.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 1, [nnfs.io](https://nnfs.io).
+- Google, *Machine Learning Crash Course*, [developers.google.com/machine-learning/crash-course](https://developers.google.com/machine-learning/crash-course).
+- S. Yee and T. Chu, [A Visual Introduction to Machine Learning](https://r2d3.us/visual-intro-to-machine-learning-part-1/), R2D3.
+
+</References>

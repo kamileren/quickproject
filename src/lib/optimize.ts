@@ -31,6 +31,48 @@ export function descend(points: readonly Point[], start: Line, learningRate: num
 }
 
 /**
+ * Points on the contour where the MSE of a line equals `level`, in (w, b)
+ * space. The loss of a line is an exact quadratic bowl, so each contour is an
+ * ellipse centred on the least-squares solution. Returns [] if `level` is
+ * below the minimum.
+ */
+export function lossContour(points: readonly Point[], level: number, samples = 72): Line[] {
+  const n = points.length;
+  const sx = points.reduce((s, p) => s + p.x, 0);
+  const sxx = points.reduce((s, p) => s + p.x * p.x, 0);
+  const sy = points.reduce((s, p) => s + p.y, 0);
+  const sxy = points.reduce((s, p) => s + p.x * p.y, 0);
+  const det = n * sxx - sx * sx;
+  if (det === 0) throw new Error('lossContour: all x values are the same');
+  const best: Line = { w: (n * sxy - sx * sy) / det, b: (sxx * sy - sx * sxy) / det };
+  const min = points.reduce((s, p) => s + (predict(best, p.x) - p.y) ** 2, 0) / n;
+  if (level <= min) return [];
+
+  // MSE(w, b) = min + δᵀ·A·δ with δ = (w − w*, b − b*) and A = (1/n)·[[Σx², Σx], [Σx, n]].
+  const a = sxx / n;
+  const off = sx / n;
+  const d = 1;
+  const mid = (a + d) / 2;
+  const spread = Math.sqrt(((a - d) / 2) ** 2 + off * off);
+  const l1 = mid + spread;
+  const l2 = mid - spread;
+  // Unit eigenvector for l1; the other is perpendicular to it.
+  let v1: [number, number] = Math.abs(off) < 1e-12 ? (a >= d ? [1, 0] : [0, 1]) : [off, l1 - a];
+  const len = Math.hypot(v1[0], v1[1]);
+  v1 = [v1[0] / len, v1[1] / len];
+  const v2: [number, number] = [-v1[1], v1[0]];
+  const r1 = Math.sqrt((level - min) / l1);
+  const r2 = Math.sqrt((level - min) / l2);
+
+  return Array.from({ length: samples + 1 }, (_, i) => {
+    const t = (2 * Math.PI * i) / samples;
+    const c = r1 * Math.cos(t);
+    const s = r2 * Math.sin(t);
+    return { w: best.w + c * v1[0] + s * v2[0], b: best.b + c * v1[1] + s * v2[1] };
+  });
+}
+
+/**
  * Largest learning rate for which gradient descent on this data still
  * converges. Above it, every step overshoots further than the last.
  */

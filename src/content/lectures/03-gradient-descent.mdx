@@ -4,5 +4,239 @@ number: "3"
 part: learning
 order: 5
 summary: "Finding the best fit by taking small steps downhill."
-status: draft
+question: "If there were no formula for the best line, how could a computer still find it?"
+dataset: exam-scores
+minutes: 20
+status: ready
+prerequisites: [linear-regression]
 ---
+
+import RandomSearch from '@/components/figures/ch03/RandomSearch';
+import SlopeStep from '@/components/figures/ch03/SlopeStep';
+import Descent from '@/components/figures/ch03/Descent';
+import RateCurves from '@/components/figures/ch03/RateCurves';
+
+In the last chapter a formula handed us the best line for the twelve students. That was lucky. Most models in this book, and every neural network, have no such formula. What they do have is a way to measure how wrong they are.
+
+This chapter shows how to turn "how wrong am I?" into "which way should I change?", and then to repeat that until the model is good. The method is called gradient descent, and it is how almost all of modern machine learning is trained.
+
+## Learning by luck
+
+Start with the simplest idea that could possibly work. Pick a slope and a bias at random. Measure the error. If it beats the best line so far, keep it. Repeat.
+
+<Figure
+  title="Guessing lines at random"
+  caption="Each guess is a random slope and bias. The orange line is the best one found so far."
+  try="guess once a few times, then press the 100 button three or four times. Watch how rarely the best error improves."
+>
+  <RandomSearch client:visible />
+</Figure>
+
+The first few guesses help a great deal, because almost anything beats a terrible line. After that, progress stalls. Hundreds of guesses go by without an improvement, and the best error stays well above the lowest possible.
+
+The trouble is that each guess ignores everything learned from the previous ones. A good guess tells us roughly where good lines live, and random search throws that away. With two numbers to choose this is merely slow. With two million it is hopeless.
+
+<MarginNote>
+One small change from the last chapter: here we measure hours from the class average, 4.6. The bias b then means "the score of a student who studied the average amount". The end of the chapter explains why this helps.
+</MarginNote>
+
+## Feeling the slope
+
+Here is a better idea. Imagine standing on a hillside in thick fog. You cannot see the valley, but you can feel which way the ground tilts under your feet. Step downhill, feel again, step again.
+
+To make that concrete, freeze the bias at its best value and vary only the slope $w$. Every value of $w$ has an error, so we can draw the error as a curve over $w$. For squared error that curve is a bowl.
+
+<Figure
+  title="The error as a bowl"
+  caption="The dark curve is the error for each slope w. The dashed orange line touches the curve where you are standing and shows how steep it is there."
+  try="drag the dot to the left of the lowest point, then to the right, and watch the sign of the steepness flip. Then press the step button a few times."
+>
+  <SlopeStep client:visible />
+</Figure>
+
+The steepness of the curve where you stand is its derivative. Its sign is the useful part:
+
+- **Negative** steepness: the curve falls to the right, so increasing $w$ lowers the error.
+- **Positive** steepness: the curve rises to the right, so decreasing $w$ lowers the error.
+- **Zero**: the ground is flat. You are at the bottom.
+
+In every case, moving *against* the sign of the steepness goes downhill. The toolkit chapter on derivatives explains how the steepness is calculated.
+
+## The update rule
+
+That observation becomes a one-line rule. Take the current $w$, subtract the steepness, and you have moved downhill. One refinement is needed: the steepness can be a big number, so we multiply it by a small number first to keep the step under control.
+
+<Equation reads="new value = old value − learning rate × steepness of the error">
+
+$$
+w \;\leftarrow\; w - \eta\,\frac{\partial L}{\partial w}
+$$
+
+</Equation>
+
+The small number <Symbol id="eta" /> is the <Term id="learning-rate">learning rate</Term>. The fraction is the steepness of the loss <Symbol id="L" /> with respect to $w$. Repeating this update is <Term id="gradient-descent">gradient descent</Term>.
+
+Notice a useful side effect. Far from the bottom the bowl is steep, so the steps are large. Near the bottom it flattens, so the steps shrink on their own.
+
+<Example title="One step, with numbers">
+
+Start with a flat line: $w = 0$, $b = 50$. Its error on the twelve students is 467.
+
+The steepness of the error is $-64.7$ in the $w$ direction and $-34$ in the $b$ direction. Both are negative, so both numbers should go up. With a learning rate of $\eta = 0.1$:
+
+$$
+w \leftarrow 0 - 0.1 \times (-64.7) = 6.47
+\qquad
+b \leftarrow 50 - 0.1 \times (-34) = 53.4
+$$
+
+The new line has an error of 199. One step removed more than half the error, without a single guess.
+
+</Example>
+
+<Checkpoint
+  question="At the current w, the steepness of the error is +8. With learning rate 0.1, what does the update do to w?"
+  options={[
+    { text: 'Increases it by 0.8', why: 'A positive steepness means the error rises as w grows, so w has to go down, not up.' },
+    { text: 'Decreases it by 0.8', correct: true, why: 'The update is w − 0.1 × 8, so w drops by 0.8. Positive steepness means downhill is to the left.' },
+    { text: 'Decreases it by 8', why: 'That forgets the learning rate. The step is the steepness times η, which is 0.8.' },
+  ]}
+/>
+
+## Two parameters, one map
+
+A line has two parameters, so the error is really a surface over both $w$ and $b$: a bowl you could pour water into. It is easiest to draw from above, like a hiking map. Each ring joins lines with the same error, and the rings close in on the lowest point.
+
+With two parameters there are two steepnesses, one for each. Listed together they are called the <Term id="gradient">gradient</Term>. The gradient points in the direction where the error rises fastest, so each step goes the opposite way, and both parameters are updated at once:
+
+$$
+w \leftarrow w - \eta\,\frac{\partial L}{\partial w}
+\qquad\qquad
+b \leftarrow b - \eta\,\frac{\partial L}{\partial b}
+$$
+
+<Figure
+  title="Gradient descent, seen two ways"
+  caption="Left: the line moving through the data. Right: the same run drawn as a path on the map of the error. Every point on the map is one possible line."
+  try="press Step a few times and watch both panels, then press Run. Reset, drag the starting dot to a different corner of the map, and run again."
+>
+  <Descent client:visible />
+</Figure>
+
+Wherever you start, the path ends in the same place, and the line it ends on is the least-squares line from the last chapter. When further steps stop changing anything, the run has <Term id="converge">converged</Term>.
+
+<Derivation title="The two steepnesses for a line">
+
+For the mean squared error $L = \frac{1}{n}\sum_i (\hat{y}_i - y_i)^2$ with $\hat{y}_i = w x_i + b$, the chain rule gives
+
+$$
+\frac{\partial L}{\partial w} = \frac{2}{n}\sum_i (\hat{y}_i - y_i)\,x_i
+\qquad
+\frac{\partial L}{\partial b} = \frac{2}{n}\sum_i (\hat{y}_i - y_i)
+$$
+
+In words: take each student's miss, weight it by their hours for $w$ or leave it alone for $b$, and average. Students the line overshoots push the parameters down; students it undershoots push them up.
+
+</Derivation>
+
+## Choosing the learning rate
+
+The learning rate is the one thing gradient descent cannot work out for itself. You choose it, and the choice matters.
+
+- **Too small**, and every step is timid. The run heads the right way but needs a huge number of steps.
+- **Too large**, and each step jumps clean over the valley and lands higher up the other side. The error grows instead of shrinking, and the run is said to <Term id="diverge">diverge</Term>.
+
+<Figure
+  title="Three learning rates"
+  caption="Each curve shows the error after every step, starting from the same flat line."
+  try="slide the learning rate slowly upward from 0.005. Find roughly where the run is fastest, then keep going until it breaks."
+>
+  <RateCurves client:visible />
+</Figure>
+
+For this dataset the run breaks just above $\eta = 0.164$. That exact number belongs to this data and this model; a different problem has a different limit. In practice people try a few values spaced by factors of about three, such as 0.001, 0.003, 0.01, and keep the largest one that still goes down smoothly.
+
+<Checkpoint
+  question="You start training and the error goes 40, 95, 310, 1200. What is the most likely cause?"
+  options={[
+    { text: 'The learning rate is too small', why: 'A small learning rate is slow, but the error would still creep downward.' },
+    { text: 'The learning rate is too large', correct: true, why: 'Each step overshoots the valley by more than the last, so the error grows. Lower the learning rate.' },
+    { text: 'The model has converged', why: 'A converged run has an error that has stopped changing, not one that is growing.' },
+  ]}
+/>
+
+## Cheaper steps
+
+So far every step looked at all twelve students to compute the gradient. With twelve that is trivial. With twelve million it means reading the whole dataset just to move once.
+
+The fix is to estimate the gradient from a small random handful of examples, called a <Term id="mini-batch">mini-batch</Term>. The estimate is noisy, so the path wobbles, but each step costs a tiny fraction of the full calculation and the wobbles mostly average out. This is <Term id="sgd">stochastic gradient descent</Term>, and it is what trains large models. One full pass through the data, in batches, is called an <Term id="epoch">epoch</Term>.
+
+<Figure
+  title="Fewer students per step"
+  caption="The same descent, but each step may use only some of the students to estimate the downhill direction."
+  try="run it with all 12, then with 4, then with 1. Compare how straight the path is, and where it ends up."
+>
+  <Descent client:visible allowBatch initialRate={0.03} />
+</Figure>
+
+With one student per step the path never quite settles. It reaches the neighbourhood of the lowest point and then jitters around it, because each single student pulls the line toward themselves. Smaller learning rates calm the jitter.
+
+## In code
+
+The whole algorithm is a short loop. This version uses only NumPy, so nothing is hidden.
+
+```python
+import numpy as np
+
+hours = np.array([1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9])
+score = np.array([48, 53, 50, 60, 57, 66, 68, 75, 71, 82, 83, 91])
+x = hours - hours.mean()            # measure hours from the average
+
+w, b = 0.0, 50.0                    # starting line
+eta = 0.05                          # learning rate
+
+for step in range(200):
+    miss = (w * x + b) - score      # prediction minus truth, per student
+    grad_w = 2 * np.mean(miss * x)  # steepness in the w direction
+    grad_b = 2 * np.mean(miss)      # steepness in the b direction
+    w -= eta * grad_w               # step against the gradient
+    b -= eta * grad_b
+
+print(w, b)                         # 5.31  67.0
+```
+
+The slope matches the formula from the last chapter. The bias is 67 rather than 42.44 only because hours are now measured from the average: a student who studied the average amount is predicted to score 67.
+
+<KeyTakeaways>
+
+- When there is no formula for the best model, **follow the slope** of the loss downhill instead of guessing.
+- The update is always the same: parameter minus **learning rate** times the steepness of the loss.
+- The **gradient** is the list of steepnesses, one per parameter. All parameters step at once.
+- Too small a learning rate is slow. Too large and the run **diverges**.
+- **Mini-batches** make each step cheap by estimating the gradient from a few random examples.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Why we measured hours from the average
+
+With raw hours, the error bowl is a long, narrow valley: steep across, almost flat along. Gradient descent then zigzags across the steep walls and crawls along the floor, needing thousands of steps. Subtracting the average makes the bowl nearly round, and the same run takes about fifty. Rescaling features so that the loss is well shaped is one of the most useful habits in machine learning, and the chapter on preparing data returns to it.
+
+### Is the bottom always the true bottom?
+
+For a line with squared error, yes. The loss is <Term id="convex">convex</Term>, a single bowl, so downhill always leads to the one lowest point. Neural networks have bumpy losses with many dips. Gradient descent then finds *a* low point rather than *the* lowest, which in practice turns out to be good enough.
+
+### Smarter steps
+
+Plain gradient descent uses one fixed learning rate for every parameter. Methods such as momentum and Adam adapt the step as they go and are what most people use for neural networks. They have their own chapter later in the book.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 6 to 10, [nnfs.io](https://nnfs.io). The random-search experiment follows their idea.
+- T. Ma and A. Ng, *CS229 Lecture Notes*, section 1.1, [cs229.stanford.edu](https://cs229.stanford.edu/main_notes.pdf).
+- A. Karpathy and others, *CS231n notes: Optimization*, [cs231n.github.io](https://cs231n.github.io/optimization-1/).
+
+</References>

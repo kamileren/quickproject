@@ -180,22 +180,22 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 
 ### Wave 0: foundation
 
-- [ ] 1. Branch `rebuild`; ignore `LectureReference/`; untrack the committed PDF (`git rm --cached`).
-- [ ] 2. Scaffold Astro, React, TypeScript, Tailwind 4, MDX; park old code in `legacy/`.
-- [ ] 3. Style tokens, base layout, home page ported; matches today's page.
-- [ ] 4. Content collections, `parts.yaml`, glossary and notation files, lecture layout with auto numbering and prev/next; a stub chapter renders.
-- [ ] 5. Prose components, each shown on `/kit`.
-- [ ] 6. Pop-ins; all work by keyboard and on a phone.
-- [ ] 7. Figure core; a demo plot with a draggable point on `/kit`.
-- [ ] 8. Tooling: ESLint, type check, Vitest, build checks for undefined terms and section limits; one command runs all.
-- [ ] 9. Deploy workflow: Node 22, generated sitemap, per-page canonical, favicon, 404.
+- [x] 1. Branch `rebuild`; ignore `LectureReference/`; untrack the committed PDF (`git rm --cached`).
+- [x] 2. Scaffold Astro, React, TypeScript, Tailwind 4, MDX; park old code in `legacy/`.
+- [x] 3. Style tokens, base layout, home page ported; matches today's page.
+- [x] 4. Content collections, `parts.yaml`, glossary and notation files, lecture layout with auto numbering and prev/next; a stub chapter renders.
+- [x] 5. Prose components, each shown on `/kit`.
+- [x] 6. Pop-ins; all work by keyboard and on a phone.
+- [x] 7. Figure core; a demo plot with a draggable point on `/kit`.
+- [x] 8. Tooling: ESLint, type check, Vitest, build checks for undefined terms and section limits; one command runs all.
+- [x] 9. Deploy workflow: Node 22, generated sitemap, per-page canonical, favicon, 404.
 
 ### Wave 1: Part I
 
-- [ ] 10. Exam-score and house-price datasets; `linear`, `optimize`, `metrics` libraries.
-- [ ] 11. Chapter 1.
-- [ ] 12. Chapter 2; delete `legacy/`. (Merge to `master` waits for the owner.)
-- [ ] 13. Chapter 3.
+- [x] 10. Exam-score and house-price datasets; `linear`, `optimize`, `metrics` libraries.
+- [x] 11. Chapter 1.
+- [x] 12. Chapter 2; delete `legacy/`. (Merge to `master` waits for the owner.)
+- [x] 13. Chapter 3.
 - [ ] 14. Chapter 4.
 - [ ] 15. Chapter 5. Owner reviews Part I.
 
