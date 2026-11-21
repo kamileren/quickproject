@@ -11,6 +11,12 @@ import KeyTakeaways from './prose/KeyTakeaways.astro';
 import GoingFurther from './prose/GoingFurther.astro';
 import References from './prose/References.astro';
 import CodeFile from './prose/CodeFile.astro';
+import Pitfall from './prose/Pitfall.astro';
+import NowYouCan from './prose/NowYouCan.astro';
+import NextUp from './prose/NextUp.astro';
+import Exercises from './practice/Exercises.astro';
+import Exercise from './practice/Exercise.astro';
+import Solution from './practice/Solution.astro';
 import Term from './popins/Term.astro';
 import Symbol from './popins/Symbol.astro';
 import Checkpoint from './popins/Checkpoint.astro';
@@ -27,6 +33,12 @@ export const mdxComponents = {
   GoingFurther,
   References,
   CodeFile,
+  Pitfall,
+  NowYouCan,
+  NextUp,
+  Exercises,
+  Exercise,
+  Solution,
   Term,
   Symbol,
   Checkpoint,

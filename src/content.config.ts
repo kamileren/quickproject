@@ -29,7 +29,15 @@ const lectures = defineCollection({
 
 const parts = defineCollection({
   loader: file('src/content/parts.yaml'),
-  schema: z.object({ label: z.string(), title: z.string(), order: z.number() }),
+  schema: z.object({
+    label: z.string(),
+    title: z.string(),
+    order: z.number(),
+    /** One or two sentences on what the part is for. */
+    intro: z.string(),
+    /** What a reader should already have read. */
+    needs: z.string().optional(),
+  }),
 });
 
 const glossary = defineCollection({
@@ -47,4 +55,9 @@ const notation = defineCollection({
   schema: z.object({ symbol: z.string(), meaning: z.string() }),
 });
 
-export const collections = { lectures, parts, glossary, notation };
+const datasets = defineCollection({
+  loader: file('src/content/datasets.yaml'),
+  schema: z.object({ name: z.string(), about: z.string() }),
+});
+
+export const collections = { lectures, parts, glossary, notation, datasets };

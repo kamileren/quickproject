@@ -1,0 +1,16 @@
+---
+/** A mistake people really make with this chapter's idea, and how to avoid it. One or two per chapter. */
+interface Props {
+  /** The mistake, in a few words. */
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<aside class="my-10 rounded border border-stone-200 border-l-[3px] border-l-red-600 bg-white p-6">
+  <div class="mb-3 flex flex-wrap items-baseline gap-3">
+    <span class="micro-label text-red-600">Common mistake</span>
+    <span class="text-sm font-bold text-stone-900">{title}</span>
+  </div>
+  <div class="text-base leading-relaxed text-stone-700 [&>p+p]:mt-3"><slot /></div>
+</aside>

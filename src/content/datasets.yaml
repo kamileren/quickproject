@@ -1,0 +1,31 @@
+# The small datasets the book reuses. `id` is what a chapter writes in its `dataset:` field.
+- id: exam-scores
+  name: Exam scores
+  about: Twelve invented students, with the hours each studied and the score they got out of 100.
+- id: pass-fail
+  name: Pass or fail
+  about: Eighteen invented students, with the hours each studied and whether they passed the exam.
+- id: sleep-scores
+  name: Sleep and scores
+  about: Hours slept before an exam against the score. Invented, with a known curve that peaks near seven and a half hours.
+- id: study-sleep
+  name: Study, sleep and passing
+  about: Forty invented students, with hours studied, hours slept and whether they passed.
+- id: screening
+  name: A screening test
+  about: Two hundred invented patients, twenty of them ill, each with a risk score between 0 and 1.
+- id: toy2d
+  name: Points in the plane
+  about: Small invented sets of filled and hollow points with two features, so every decision a model makes can be seen.
+- id: moons
+  name: Two crescents
+  about: Two interleaved crescents of points that no straight line can separate.
+- id: messages
+  name: A tiny inbox
+  about: Thirty-four invented short messages, fourteen of them spam. Small enough to check every count by reading the list.
+- id: spiral
+  name: Spirals
+  about: Points along interleaved spiral arms, one arm for each class. A standard first test for a neural network.
+- id: fashion-mnist
+  name: Fashion-MNIST
+  about: Seventy thousand small grey pictures of clothing of ten kinds, published by Zalando Research.

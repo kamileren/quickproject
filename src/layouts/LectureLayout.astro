@@ -1,8 +1,11 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
+import { getEntry } from 'astro:content';
 import SiteNav from '@/components/SiteNav.astro';
-import { chapterLabel, chapterUrl, SITE_NAME, type Lecture, type Part } from '@/lib/book';
+import Pop from '@/components/popins/Pop';
+import { getReadyLectures } from '@/lib/book';
+import { chapterLabel, chapterName, chapterUrl, SITE_NAME, type Lecture, type Part } from '@/lib/book';
 
 interface Props {
   lecture: Lecture;
@@ -15,6 +18,13 @@ interface Props {
 
 const { lecture, part, headings, prev, next, prerequisites } = Astro.props;
 const { title, number, summary, question, minutes } = lecture.data;
+
+// The dataset the chapter works with, and the other chapters that use the same one.
+const dataset = lecture.data.dataset ? await getEntry('datasets', lecture.data.dataset) : undefined;
+if (lecture.data.dataset && !dataset) throw new Error(`${lecture.id}: unknown dataset "${lecture.data.dataset}"`);
+const sharers = dataset
+  ? (await getReadyLectures()).filter((l) => l.data.dataset === dataset.id && l.id !== lecture.id)
+  : [];
 const sections = headings.filter((h) => h.depth === 2 && h.text !== 'Key Takeaways' && h.text !== 'References');
 
 const jsonLd = {
@@ -38,7 +48,7 @@ const jsonLd = {
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>
           <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">
-            {chapterLabel(number)} // {part.data.title}
+            {chapterLabel(number)} // <a href={`/parts/${part.id}/`} class="hover:text-orange-600">{part.data.title}</a>
           </div>
         </div>
         <h1 data-pagefind-meta="title" class="display mb-8 text-[clamp(2rem,9.5vw,3rem)] leading-[1.05] break-words hyphens-auto sm:text-6xl md:text-7xl">{title}{/[?!.]$/.test(title) ? '' : '.'}</h1>
@@ -50,6 +60,24 @@ const jsonLd = {
               <div class="flex gap-2">
                 <dt class="font-bold tracking-widest uppercase">Reading time</dt>
                 <dd>{minutes} min</dd>
+              </div>
+            )
+          }
+          {
+            dataset && (
+              <div class="flex gap-2">
+                <dt class="font-bold tracking-widest uppercase">Data</dt>
+                <dd>
+                  <Pop
+                    client:idle
+                    reference
+                    heading={dataset.data.name}
+                    body={dataset.data.about}
+                    links={sharers.map((l) => ({ lead: 'Also in', label: chapterName(l), href: chapterUrl(l) }))}
+                  >
+                    {dataset.data.name}
+                  </Pop>
+                </dd>
               </div>
             )
           }

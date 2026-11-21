@@ -1,0 +1,107 @@
+---
+/** The opening page of a part: what it is for, what it needs, and its chapters. */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
+import { chapterUrl, getLectures, getParts, SITE_NAME, type Part } from '@/lib/book';
+
+export async function getStaticPaths() {
+  const parts = await getParts();
+  return parts.map((part, i) => ({ params: { part: part.id }, props: { part, prev: parts[i - 1], next: parts[i + 1] } }));
+}
+
+interface Props {
+  part: Part;
+  prev?: Part;
+  next?: Part;
+}
+const { part, prev, next } = Astro.props;
+const all = await getLectures();
+const chapters = all.filter((l) => l.data.part === part.id);
+const ready = chapters.filter((l) => l.data.status === 'ready');
+const minutes = ready.reduce((sum, l) => sum + (l.data.minutes ?? 0), 0);
+const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
+---
+
+<BaseLayout title={`${part.data.label}: ${part.data.title} — ${SITE_NAME}`} description={part.data.intro}>
+  <main class="px-6 pt-16 pb-32">
+    <div class="mx-auto max-w-3xl">
+      <SiteNav />
+      <header class="mb-14">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">{part.data.label}</div>
+        </div>
+        <h1 class="display mb-8 text-[clamp(2rem,9.5vw,3rem)] leading-[1.05] sm:text-6xl">{part.data.title}.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-600">{part.data.intro}</p>
+        <dl class="mt-8 space-y-2 font-mono text-[11px] text-stone-500">
+          {
+            part.data.needs && (
+              <div class="flex gap-2">
+                <dt class="shrink-0 font-bold tracking-widest uppercase">Read first</dt>
+                <dd>{part.data.needs}</dd>
+              </div>
+            )
+          }
+          <div class="flex gap-2">
+            <dt class="shrink-0 font-bold tracking-widest uppercase">Chapters</dt>
+            <dd>
+              {ready.length} of {chapters.length} published{minutes > 0 && `, about ${Math.round(minutes / 5) * 5} minutes of reading`}
+            </dd>
+          </div>
+        </dl>
+      </header>
+
+      <ol class="border-t-2 border-stone-900">
+        {
+          chapters.map((l) => {
+            const isReady = l.data.status === 'ready';
+            const number = l.data.number.includes('.') ? l.data.number : l.data.number.padStart(2, '0');
+            const needs = l.data.prerequisites.filter((id) => all.find((x) => x.id === id)?.data.part !== part.id);
+            return (
+              <li class="grid grid-cols-[2.5rem_1fr] gap-x-4 border-b border-stone-100 py-5">
+                <span class:list={['pt-1 font-mono text-xs font-bold', !isReady && 'text-stone-300']}>{number}</span>
+                <div>
+                  {isReady ? (
+                    <a href={chapterUrl(l)} class="display text-xl underline decoration-orange-300 decoration-2 underline-offset-4 hover:text-orange-700">
+                      {l.data.title}
+                    </a>
+                  ) : (
+                    <span class="display text-xl text-stone-400">{l.data.title}</span>
+                  )}
+                  <p class:list={['mt-1.5 text-base leading-relaxed', isReady ? 'text-stone-600' : 'text-stone-400']}>
+                    {l.data.question ?? l.data.summary}
+                  </p>
+                  <p class="mt-1.5 font-mono text-[11px] text-stone-400">
+                    {isReady ? `${l.data.minutes ?? '?'} min` : 'Coming soon'}
+                    {isReady && needs.length > 0 && ` · builds on ${needs.map(titleOf).join(', ')}`}
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ol>
+
+      <nav aria-label="Parts" class="mt-16 grid gap-4 font-sans sm:grid-cols-2">
+        {
+          prev ? (
+            <a href={`/parts/${prev.id}/`} class="group block">
+              <div class="micro-label mb-1 text-stone-400">‹ {prev.data.label}</div>
+              <div class="display text-lg group-hover:text-orange-700">{prev.data.title}</div>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a href={`/parts/${next.id}/`} class="group block sm:text-right">
+              <div class="micro-label mb-1 text-stone-400">{next.data.label} ›</div>
+              <div class="display text-lg group-hover:text-orange-700">{next.data.title}</div>
+            </a>
+          )
+        }
+      </nav>
+    </div>
+  </main>
+</BaseLayout>

@@ -12,10 +12,11 @@ export interface CheckpointOption {
 interface CheckpointProps {
   question: string;
   options: CheckpointOption[];
+  predict?: boolean;
 }
 
 /** A single multiple-choice question. The reader can keep trying, and the last answer is remembered. */
-export default function CheckpointIsland({ question, options }: CheckpointProps) {
+export default function CheckpointIsland({ question, options, predict = false }: CheckpointProps) {
   const [picked, setPicked] = useState<number | null>(null);
   const feedbackId = useId();
 
@@ -33,7 +34,10 @@ export default function CheckpointIsland({ question, options }: CheckpointProps)
 
   return (
     <div className="my-10 rounded border border-stone-200 bg-stone-50/60 p-6 font-serif">
-      <div className="micro-label mb-3 text-stone-900">Checkpoint</div>
+      <div className="mb-3 flex flex-wrap items-baseline gap-3">
+        <span className="micro-label text-stone-900">{predict ? 'Predict first' : 'Checkpoint'}</span>
+        {predict && <span className="font-sans text-xs text-stone-500">Commit to a guess, then use the figure below to check it.</span>}
+      </div>
       <p className="mb-4 text-base leading-relaxed text-stone-800">{question}</p>
       <div className="grid gap-2" role="group" aria-label="Answers">
         {options.map((option, i) => {

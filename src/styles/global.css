@@ -297,6 +297,9 @@ body {
   .figure-number::after {
     content: ' ' var(--chapter) '.' counter(figure);
   }
+  .exercise-number::after {
+    content: ' ' var(--chapter) '.' counter(exercise);
+  }
   .definition-number::after {
     content: ' ' var(--chapter) '.' counter(definition) '.';
   }

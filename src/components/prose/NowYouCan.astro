@@ -1,0 +1,28 @@
+---
+/** What the reader is able to do after the chapter: a short list of skills, each starting with a verb. */
+---
+
+<section class="now-you-can my-12 rounded border border-stone-200 bg-stone-50/60 p-6">
+  <div class="micro-label mb-3 text-stone-900">You can now</div>
+  <div class="text-base leading-relaxed text-stone-700"><slot /></div>
+</section>
+
+<style is:global>
+  .now-you-can ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .now-you-can li {
+    position: relative;
+    margin-bottom: 0.4rem;
+    padding-left: 1.75rem;
+  }
+  .now-you-can li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: var(--accent);
+  }
+</style>

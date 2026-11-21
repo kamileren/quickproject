@@ -5,11 +5,13 @@ import CheckpointIsland, { type CheckpointOption } from './CheckpointIsland';
 interface Props {
   question: string;
   options: CheckpointOption[];
+  /** Ask it before the figure it is about, so the reader commits to a guess first. */
+  predict?: boolean;
 }
-const { question, options } = Astro.props;
+const { question, options, predict = false } = Astro.props;
 if (options.filter((o) => o.correct).length !== 1) {
   throw new Error(`<Checkpoint question="${question}"> needs exactly one correct option`);
 }
 ---
 
-<CheckpointIsland client:visible question={question} options={options} />
+<CheckpointIsland client:visible question={question} options={options} predict={predict} />
