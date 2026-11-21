@@ -91,7 +91,7 @@ export default function Pop({ heading, body, symbol = false, reference = false, 
           onPointerLeave={(e) => {
             if (isMouse(e) && !pinned) scheduleClose();
           }}
-          className="z-50 w-72 max-w-[calc(100vw-24px)] rounded border border-stone-900 bg-white p-4 text-left font-serif shadow-2xl"
+          className="pop-card z-50 w-72 max-w-[calc(100vw-24px)] rounded border border-stone-900 bg-white p-4 text-left font-serif shadow-2xl"
         >
           <span className="micro-label mb-1.5 block text-orange-600" style={symbol ? { textTransform: 'none', fontSize: 13 } : undefined}>
             {heading}
@@ -101,7 +101,7 @@ export default function Pop({ heading, body, symbol = false, reference = false, 
             <span className="mt-3 block space-y-1 border-t border-stone-100 pt-2.5 font-sans text-[11px] leading-snug text-stone-500">
               {links.map((link) => (
                 <span key={link.href + link.label} className="block">
-                  {link.lead && <span className="mr-1 text-stone-400">{link.lead}</span>}
+                  {link.lead && <span className="mr-1 text-stone-500">{link.lead}</span>}
                   <a href={link.href} className="font-semibold text-stone-800 underline decoration-orange-300 underline-offset-2 hover:text-orange-700">
                     {link.label}
                   </a>
@@ -109,7 +109,7 @@ export default function Pop({ heading, body, symbol = false, reference = false, 
               ))}
             </span>
           )}
-          <Popover.Arrow className="fill-stone-900" width={12} height={6} />
+          <Popover.Arrow className="pop-arrow fill-stone-900" width={12} height={6} />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

@@ -25,9 +25,12 @@ interface Props {
   barTitle?: string;
   /** The page has a section list the bar should offer (chapter pages). */
   sections?: boolean;
+  /** Chapters before and after, for the arrows in the bar. */
+  prevUrl?: string;
+  nextUrl?: string;
 }
 
-const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true, bar = true, current, barTitle, sections = false } = Astro.props;
+const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true, bar = true, current, barTitle, sections = false, prevUrl, nextUrl } = Astro.props;
 const image = new URL(`/og/${shareImage}.png`, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
@@ -75,7 +78,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   </head>
   <body class="min-h-screen">
     <a href="#main" class="skip-link">Skip to the text</a>
-    {bar && <SiteBar current={current} title={barTitle} sections={sections} />}
+    {bar && <SiteBar current={current} title={barTitle} sections={sections} prev={prevUrl} next={nextUrl} />}
     <div id="main"><slot /></div>
     <SiteChrome searchWindow={searchWindow} />
   </body>

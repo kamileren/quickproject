@@ -51,6 +51,16 @@ At **degree 9** the curve bends to pass close to every fitted student. Its error
 
 Collect the two errors for every degree and plot them against each other.
 
+<Checkpoint
+  predict
+  question="As the degree rises from 1 to 9, the error on the fitted students keeps falling. What do you expect the error on new students to do?"
+  options={[
+    { text: 'Fall as well, a little behind', why: 'That would make the most flexible model the best one. Think about what the degree-9 curve was doing between the dots.' },
+    { text: 'Fall at first, then rise', correct: true, why: 'Some flexibility is needed to follow the real pattern. Beyond that, extra flexibility is spent on noise, and new students pay for it.' },
+    { text: 'Rise from the start', why: 'The straight line was missing a real pattern, so some extra flexibility does help new students too.' },
+  ]}
+/>
+
 <Figure
   title="Two errors, two stories"
   caption="The dark line is the error on the twelve fitted students. The orange line is the error on twenty new ones."
@@ -308,6 +318,26 @@ With this seed the output is:
 ```
 
 Training error falls every time the degree goes up. Error on new points falls from degree 1 to 3 and then explodes at degree 9. The noise has a variance of $0.3^2 = 0.09$, so no model can do much better than 0.09 on new points, and degree 3 is already close.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="with the figure">
+
+In the figure "The same model, different classes", draw six new classes at degree 1, then reset and draw six at degree 8. For each, describe how much the fitted curves differ from one another, and how far each set is from the true pattern.
+
+<Hint>
+
+One of the two is wrong in the same way every time. The other is wrong in a different way every time.
+
+</Hint>
+
+<Solution>
+
+At degree 1 the six lines lie almost on top of each other, and all of them miss the rise and fall of the true curve in the same way. The model barely depends on which students it saw (low variance), and it is systematically wrong (high bias).
+
+At degree 8 the six curves go everywhere. Each follows its own class closely and disagrees wildly with the others, especially near the edges. On average they are centred on the truth (low bias), but any single one is unreliable (high variance).
 
 </Solution>
 

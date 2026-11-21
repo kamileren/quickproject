@@ -288,6 +288,26 @@ C plays the role of one over λ. In ridge regression λ multiplies the penalty o
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "How much to mind the awkward points", read the width of the street and the number of points inside it at C = 100 and at C = 0.01. Which setting would you expect to do better on new data if the awkward points are noise?
+
+<Hint>
+
+A point inside the street is one the optimiser decided was not worth bending the boundary for.
+
+</Hint>
+
+<Solution>
+
+At C = 100 the street is 0.25 wide with 2 points inside it. At C = 0.01 it is 5.75 wide and holds 26 of the 44 points.
+
+If the awkward points are noise, the large C has bent the boundary to accommodate them, and it will carry that distortion to new data. The small C follows the overall trend and ignores them, so it should generalise better. If those points were real structure, the opposite would hold. Cross-validation decides which it is.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>
@@ -316,6 +336,6 @@ Before deep learning, kernel SVMs were the strongest general-purpose classifiers
 
 <NextUp>
 
-That completes the classifiers of Part II. From here the book goes two ways. Part III builds models out of simple yes-or-no questions and has hundreds of them vote. Part IV starts from a single artificial neuron and builds up to a network that recognises pictures.
+That completes the classifiers of Part II. From here the book goes two ways. Part III, which is still being written, builds models out of simple yes-or-no questions and has hundreds of them vote. Part IV, ready now, starts from a single artificial neuron and builds up to a network that recognises pictures.
 
 </NextUp>

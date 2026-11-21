@@ -316,6 +316,26 @@ A loss of 8 means the correct class is getting a probability of about $e^{-8}$, 
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "From scores to probabilities", note the three probabilities. Add 3 to every score and compare. Then raise only the highest score by 3 and compare again.
+
+<Hint>
+
+Softmax only sees the gaps between the scores.
+
+</Hint>
+
+<Solution>
+
+Adding 3 to every score changes nothing. All the gaps between scores are the same as before, and the gaps are all that softmax uses.
+
+Raising only the highest score by 3 widens its gap over the others, and its probability jumps towards 100% while the other two shrink, although their own scores did not move. The probabilities compete for a fixed total of 1.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "typecheck": "astro check",
     "test": "node scripts/run-vitest.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run check:content && npm run build",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run check:content && npm run build && node scripts/check-html.mjs",
     "check:content": "node scripts/check-content.mjs && node scripts/make-notebooks.mjs --check && node scripts/make-og.mjs --check",
     "og": "node scripts/make-og.mjs",
     "notebooks": "node scripts/make-notebooks.mjs"

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroFit from '@/components/figures/home/HeroFit';
 import { chapterUrl, getLectures, getParts, SITE_NAME } from '@/lib/book';
 
 const lectures = await getLectures();
@@ -39,6 +40,10 @@ const quickLinks = [
   { label: 'Recap', href: '/recap/' },
 ];
 
+const regression = lectures.find((l) => l.id === 'linear-regression' && l.data.status === 'ready');
+// One opening question is shown under the cover; the page script swaps in a different one on each visit.
+const questions = ready.filter((l) => l.data.question).map((l) => ({ text: l.data.question, url: chapterUrl(l), label: l.data.number.includes('.') ? `Toolkit ${l.data.number}` : `Chapter ${l.data.number}` }));
+
 const description =
   'A free, interactive online textbook that teaches machine learning from first principles: regression, classification, trees, neural networks and more, one idea at a time.';
 
@@ -56,7 +61,7 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={`${SITE_NAME} — A Free Interactive ML Textbook`} description={description} jsonLd={jsonLd} bar={false}>
+<BaseLayout title={`${SITE_NAME}: A Free Interactive Textbook`} description={description} jsonLd={jsonLd} bar={false}>
   <main class="relative px-5 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-32">
     <div class="absolute top-2 right-2 flex font-sans text-stone-500 sm:top-4 sm:right-4" data-print-hide>
       <button type="button" data-open="settings-window" aria-label="Text size and colours" title="Text size and colours (t)" class="grid h-10 w-10 cursor-pointer place-items-center rounded font-serif text-base leading-none hover:bg-stone-100 hover:text-stone-900">
@@ -68,13 +73,21 @@ const jsonLd = {
     </div>
     <div class="mx-auto max-w-4xl">
       <header class="mb-12 text-center sm:mb-24">
-        <div class="micro-label mb-5 tracking-[0.35em] text-orange-600 sm:mb-6 sm:tracking-[0.5em]">Volume I // First Edition</div>
         <h1 class="display mb-8 text-[clamp(2.6rem,12.5vw,3.75rem)] leading-[0.95] sm:mb-10 sm:text-7xl sm:leading-[0.9] md:text-8xl">
           The Book of <br />
           <span class="italic">Machine Learning.</span>
         </h1>
         <div class="mx-auto max-w-xl">
-          <p class="mb-7 text-[1.0625rem] leading-relaxed font-light text-stone-500 italic sm:mb-10 sm:text-xl">
+          {/* Shown in place of the pitch to a reader who has been here before. Filled in by the page script. */}
+          <a id="welcome-back" hidden href="/" class="mb-7 block rounded border-2 border-stone-900 p-5 text-left transition-colors hover:bg-stone-50 sm:mb-10">
+            <span class="micro-label mb-2 block text-orange-700">Pick up where you stopped</span>
+            <span id="welcome-title" class="display block text-2xl leading-tight"></span>
+            <span id="welcome-detail" class="mt-1.5 block font-sans text-sm text-stone-600"></span>
+            <span class="mt-4 block h-1.5 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
+              <span id="welcome-bar" class="block h-full w-0 rounded-full bg-orange-600"></span>
+            </span>
+          </a>
+          <p id="pitch" class="mb-7 text-[1.0625rem] leading-relaxed font-light text-stone-500 italic sm:mb-10 sm:text-xl">
             Machine learning from first principles, one idea at a time. Every chapter starts with a question, works
             through a real example, and gives you something to try.
           </p>
@@ -85,7 +98,7 @@ const jsonLd = {
                   <span id="start-text">Start Reading</span> <span aria-hidden="true">→</span>
                 </a>
               </div>
-              <p class="mt-4 font-mono text-[10px] tracking-wider text-stone-400 uppercase">{stats.join(' · ')}</p>
+              <p class="mt-4 font-mono text-[10px] tracking-wider text-stone-500 uppercase">{stats.join(' · ')}</p>
               <nav aria-label="Reference pages" class="mt-7 flex justify-center gap-x-6 font-sans text-sm text-stone-600">
                 {quickLinks.map((link) => (
                   <a href={link.href} data-open={link.open} class="py-1 underline decoration-orange-300 decoration-2 underline-offset-4 transition-colors hover:text-orange-700">
@@ -96,6 +109,27 @@ const jsonLd = {
             )
           }
         </div>
+
+        {
+          regression && (
+            <div class="mx-auto mt-10 max-w-xl rounded-sm border-2 border-stone-900 p-4 sm:mt-14 sm:p-6">
+              <div id="hero-figure-label" class="micro-label mb-3 text-left text-stone-900">Try it before you read anything</div>
+              <HeroFit client:idle chapterUrl={chapterUrl(regression)} />
+            </div>
+          )
+        }
+
+        {
+          questions.length > 0 && (
+            <p class="mx-auto mt-10 max-w-xl text-center sm:mt-14">
+              <span class="micro-label mb-2 block text-stone-500">A question from the book</span>
+              <a id="teaser" href={questions[0].url} class="group block" data-questions={JSON.stringify(questions)}>
+                <span id="teaser-text" class="block text-xl leading-snug text-stone-800 italic group-hover:text-orange-800 sm:text-2xl">“{questions[0].text}”</span>
+                <span id="teaser-label" class="mt-2 inline-block font-sans text-xs font-bold tracking-wider text-orange-700 uppercase">{questions[0].label} →</span>
+              </a>
+            </p>
+          )
+        }
       </header>
 
       <section aria-labelledby="paths" class="mb-12 sm:mb-24">
@@ -114,6 +148,9 @@ const jsonLd = {
               </a>
             ))
           }
+        </div>
+        <div id="path-dots" class="mt-3 flex justify-center gap-1.5 md:hidden" aria-hidden="true">
+          {paths.map((_, i) => <span class:list={['h-1.5 w-1.5 rounded-full bg-stone-300 transition-colors', i === 0 && 'is-on']} />)}
         </div>
       </section>
 
@@ -144,7 +181,7 @@ const jsonLd = {
             <p class="mt-1 text-[13px]">
               <a id="review-link" hidden href="/review/" class="text-orange-700 underline decoration-orange-300 underline-offset-2 hover:text-orange-900"></a>
             </p>
-            <p class="mt-3 text-[11px] leading-relaxed text-stone-400">
+            <p class="mt-3 text-[11px] leading-relaxed text-stone-500">
               Remembered by this browser, on this device.{' '}
               <button id="progress-clear" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-red-600">Clear it</button>
             </p>
@@ -175,7 +212,7 @@ const jsonLd = {
                             </span>
                           </span>
                           <span class="flex shrink-0 items-center gap-2 sm:gap-3">
-                            {isReady && l.data.minutes && <span class="toc-min font-mono text-[10px] text-stone-400">{l.data.minutes} min</span>}
+                            {isReady && l.data.minutes && <span class="toc-min font-mono text-[10px] text-stone-500">{l.data.minutes} min</span>}
                             <span class="toc-status text-right text-[9px] font-bold tracking-widest uppercase sm:w-10">{isReady ? 'Read' : 'Soon'}</span>
                             <span aria-hidden="true" class={isReady ? 'text-orange-600' : 'text-stone-200'}>
                               ›
@@ -189,6 +226,7 @@ const jsonLd = {
                             <a
                               href={chapterUrl(l)}
                               data-chapter-id={l.id}
+                              data-minutes={l.data.minutes}
                               class="toc-row flex items-center justify-between gap-3 py-3 text-stone-900 transition-colors hover:text-orange-700 sm:py-2.5"
                             >
                               {row}
@@ -208,7 +246,7 @@ const jsonLd = {
                 );
                 return published === 0 ? (
                   <details class="fold toc-later border-b border-stone-100 pb-2">
-                    <summary class="micro-label py-2 tracking-widest text-stone-400">
+                    <summary class="micro-label py-2 tracking-widest text-stone-500">
                       <span class="flex-1">{heading}</span>
                       <span class="font-normal tracking-wider">{own.length} chapters, coming soon</span>
                     </summary>
@@ -221,7 +259,7 @@ const jsonLd = {
                       <a href={`/parts/${part.id}/`} class="inline-block py-1.5 hover:text-orange-800">
                         {heading} <span aria-hidden="true">›</span>
                       </a>
-                      <span data-part-count class="shrink-0 font-normal tracking-wider text-stone-400">
+                      <span data-part-count class="shrink-0 font-normal tracking-wider text-stone-500">
                         {published === own.length ? `${own.length} chapters` : `${published} of ${own.length} out`}
                       </span>
                     </h3>
@@ -263,12 +301,59 @@ const jsonLd = {
     }
   });
 
+  // The row of starting points: mark which card is in view.
+  const pathRow = document.querySelector<HTMLElement>('.path-row');
+  const dots = [...document.querySelectorAll<HTMLElement>('#path-dots span')];
+  pathRow?.addEventListener(
+    'scroll',
+    () => {
+      const cards = [...pathRow.children] as HTMLElement[];
+      const middle = pathRow.scrollLeft + pathRow.clientWidth / 2;
+      const nearest = cards.reduce((best, card, i) => (Math.abs(card.offsetLeft + card.offsetWidth / 2 - middle) < Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - middle) ? i : best), 0);
+      dots.forEach((d, i) => d.classList.toggle('is-on', i === nearest));
+    },
+    { passive: true },
+  );
+
+  // A different question from the book on each visit.
+  const teaser = document.getElementById('teaser') as HTMLAnchorElement | null;
+  if (teaser) {
+    const all = JSON.parse(teaser.dataset.questions ?? '[]') as { text: string; url: string; label: string }[];
+    // Prefer chapters the reader has not finished.
+    const fresh = all.filter((q) => !progress.read[q.url.replace(/\//g, '')]);
+    const pool = fresh.length > 0 ? fresh : all;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick) {
+      teaser.href = pick.url;
+      document.getElementById('teaser-text')!.textContent = `“${pick.text}”`;
+      document.getElementById('teaser-label')!.textContent = `${pick.label} →`;
+    }
+  }
+
   const last = progress.last;
   const lastRow = last && rows.find((r) => r.dataset.chapterId === last.id);
   const start = document.getElementById('start-link') as HTMLAnchorElement | null;
   const startText = document.getElementById('start-text');
   if (last && lastRow && start && startText) {
-    start.href = lastRow.href + (last.section ? `#${last.section}` : '');
+    const resume = lastRow.href + (last.section ? `#${last.section}` : '');
+    start.href = resume;
+
+    // Returning readers get their place in the book instead of the pitch.
+    const welcome = document.getElementById('welcome-back') as HTMLAnchorElement | null;
+    const finished = Boolean(progress.read[last.id]);
+    if (welcome && !finished) {
+      const minutes = Number(lastRow.dataset.minutes ?? 0);
+      const left = minutes > 0 ? Math.max(1, Math.round(minutes * (1 - (last.fraction ?? 0)))) : 0;
+      welcome.href = resume;
+      document.getElementById('welcome-title')!.textContent = `${last.label}: ${last.title}`;
+      document.getElementById('welcome-detail')!.textContent =
+        (last.sectionTitle ? `You were at “${last.sectionTitle}”` : 'You had just started') + (left > 0 ? `, about ${left} min left.` : '.');
+      document.getElementById('welcome-bar')!.style.width = `${Math.round(100 * (last.fraction ?? 0))}%`;
+      const figureLabel = document.getElementById('hero-figure-label');
+      if (figureLabel) figureLabel.textContent = 'A figure from chapter 2';
+      welcome.hidden = false;
+      document.getElementById('pitch')?.setAttribute('hidden', '');
+    }
     startText.textContent = `Continue: ${last.title}`;
   }
 
@@ -314,6 +399,9 @@ const jsonLd = {
   }
   .path-row::-webkit-scrollbar {
     display: none;
+  }
+  #path-dots .is-on {
+    background: var(--ink);
   }
   .toc-later > summary::before {
     color: var(--faint);

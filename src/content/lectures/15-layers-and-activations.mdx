@@ -31,6 +31,16 @@ Running an input through every layer in turn, from first to last, is called a <T
 
 Take the smallest possible stack: one neuron feeding another. The first computes $h = w_1 x + b_1$, and the second computes $w_2 h + b_2$.
 
+<Checkpoint
+  predict
+  question="Two neurons are connected in a row with nothing between them. Together they have four adjustable numbers. Can you set them so that the output bends?"
+  options={[
+    { text: 'Yes, four numbers are enough for a bend', why: 'The count of numbers is not what matters. Try it in the figure below.' },
+    { text: 'Only if the weights are large enough', why: 'Large weights make the line steeper. They do not change what kind of shape it is.' },
+    { text: 'No, the output is always a straight line', correct: true, why: 'A straight line fed into a straight line is still a straight line. The figure lets you try to break this, and the algebra after it shows why you cannot.' },
+  ]}
+/>
+
 <Figure
   title="Two neurons, still one line"
   caption="The dashed line is the value after the first neuron. The solid line is the final output."
@@ -284,6 +294,26 @@ Gradient descent needs to know how the output changes when a weight changes a li
 Its slope is zero everywhere, except at the jump, where it has no slope at all. Gradient descent changes each weight in proportion to how the loss responds to a small change in that weight. With a step function, a small change in a weight almost never changes the output, so the response is zero and the weight is never updated. The network cannot learn.
 
 ReLU has a slope of 1 for every positive input, so the signal for learning passes through. The sigmoid and tanh have useful slopes near zero and nearly none far from it, which is why very deep networks built on them train slowly.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="with the figure">
+
+In the figure "A curve from straight pieces", step the number of hidden neurons from 1 to 2 to 8 and note the largest gap each time. Roughly how does the gap shrink as neurons are added, and why does each extra neuron help less than the one before?
+
+<Hint>
+
+Each neuron contributes one bend. Think about where the first bend is needed most.
+
+</Hint>
+
+<Solution>
+
+With one neuron the fit is a straight line and the largest gap is 21 points. With two there is one bend, and the gap drops to 5.5. With eight it is about a third of a point.
+
+The first bend fixes the biggest failure, a line trying to follow a curve that rises and falls. Each later bend only refines a fit that is already close, so it has less left to fix. This pattern, big gains first and small ones later, is typical when capacity is added to a model.
 
 </Solution>
 

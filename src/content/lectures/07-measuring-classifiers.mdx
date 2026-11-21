@@ -276,6 +276,26 @@ An AUC of 0.3 means the model usually ranks positives **below** negatives. It ha
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "A trade, not a free choice", read precision and recall at a threshold of 0.50 and at 0.70. Then find the lowest threshold at which no ill patient is missed, and read the precision there.
+
+<Hint>
+
+At 0.50 the model catches 17 of 20 with 15 false alarms.
+
+</Hint>
+
+<Solution>
+
+At 0.50, recall is 85% and precision about 53%. At 0.70, precision rises to 85% and recall falls to 55%: the flags are more trustworthy and nearly half the ill patients are missed.
+
+To miss nobody the threshold has to drop well below 0.50, and precision falls a long way, because most of the people flagged are now healthy. For a screening test that can be the right choice: a false alarm costs a follow-up test, and a miss costs far more.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

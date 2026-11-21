@@ -21,7 +21,7 @@ const minutes = ready.reduce((sum, l) => sum + (l.data.minutes ?? 0), 0);
 const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
 ---
 
-<BaseLayout title={`${part.data.label}: ${part.data.title} — ${SITE_NAME}`} description={part.data.intro}>
+<BaseLayout title={`${part.data.label}: ${part.data.title} — ${SITE_NAME}`} description={part.data.intro.length > 155 ? part.data.intro.split('. ').slice(0, 2).join('. ').replace(/\.?$/, '.') : part.data.intro}>
   <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
       <header class="mb-14">
@@ -64,12 +64,12 @@ const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
                       {l.data.title}
                     </a>
                   ) : (
-                    <span class="display text-xl text-stone-400">{l.data.title}</span>
+                    <span class="display text-xl text-stone-500">{l.data.title}</span>
                   )}
                   <p class:list={['mt-1.5 text-base leading-relaxed', isReady ? 'text-stone-600' : 'text-stone-400']}>
                     {l.data.question ?? l.data.summary}
                   </p>
-                  <p class="mt-1.5 font-mono text-[11px] text-stone-400">
+                  <p class="mt-1.5 font-mono text-[11px] text-stone-500">
                     {isReady ? `${l.data.minutes ?? '?'} min` : 'Coming soon'}
                     {isReady && needs.length > 0 && ` · builds on ${needs.map(titleOf).join(', ')}`}
                   </p>
@@ -84,7 +84,7 @@ const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
         {
           prev ? (
             <a href={`/parts/${prev.id}/`} class="group block">
-              <div class="micro-label mb-1 text-stone-400">‹ {prev.data.label}</div>
+              <div class="micro-label mb-1 text-stone-500">‹ {prev.data.label}</div>
               <div class="display text-lg group-hover:text-orange-700">{prev.data.title}</div>
             </a>
           ) : (
@@ -94,7 +94,7 @@ const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
         {
           next && (
             <a href={`/parts/${next.id}/`} class="group block sm:text-right">
-              <div class="micro-label mb-1 text-stone-400">{next.data.label} ›</div>
+              <div class="micro-label mb-1 text-stone-500">{next.data.label} ›</div>
               <div class="display text-lg group-hover:text-orange-700">{next.data.title}</div>
             </a>
           )

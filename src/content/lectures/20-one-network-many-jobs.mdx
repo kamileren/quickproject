@@ -278,6 +278,26 @@ Without a hidden layer the decision boundary must be a straight line. A hidden l
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "A network with one neuron", choose the output with no activation and drag the training steps upward. What do the weight and bias approach? Then switch the output layer to the sigmoid and do it again. Which earlier models have you just trained?
+
+<Hint>
+
+The chapter on linear regression found a slope of 5.31 for the same students.
+
+</Hint>
+
+<Solution>
+
+With no activation the neuron settles at a weight of 5.31 and a bias of 42.44, with a loss of 6.13. Those are the numbers the least-squares formula gave in chapter 2. A neuron with no activation trained on squared error is linear regression, found by gradient descent instead of by a formula.
+
+With the sigmoid and cross-entropy the same neuron settles on the weights of the logistic regression model from chapter 6. The two oldest models in the book are the smallest possible neural networks.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

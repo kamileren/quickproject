@@ -316,6 +316,26 @@ Adam helps when gradients differ greatly in size from weight to weight, which is
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "A ball that remembers", raise the momentum from 0 to 0.9 and count the steps to settle. Then try 0.98. What goes wrong, and how does it differ from a learning rate that is too large?
+
+<Hint>
+
+With plain steps and a cautious rate, the run never arrived within 100 steps.
+
+</Hint>
+
+<Solution>
+
+With no momentum the cautious learning rate does not arrive in 100 steps. At 0.9 it gets there in 24, because steps along the valley floor all point the same way and build on each other.
+
+At 0.98 the ball carries so much speed that it sails past the lowest point and has to come back, swinging to and fro before it settles. That is different from a learning rate that is too large. The ball still settles in the end, because friction removes a little speed at every step, whereas too large a learning rate makes each step bigger than the last and never recovers.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

@@ -12,7 +12,7 @@ Static site built with Astro, MDX and React islands. The full plan and progress 
 | `npm run check` | Lint, type check, unit tests, content rules, production build |
 | `npm run preview` | Serve the production build |
 
-`/kit/` on the dev server shows every building block of a chapter on one page.
+`src/pages/_kit.astro` shows every building block of a chapter on one page. The underscore keeps it out of the site; rename it to `kit.astro` while you work and open `/kit/`.
 
 ## Where things live
 

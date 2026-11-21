@@ -272,6 +272,26 @@ What helps is a network that can see small local details, which a flattened imag
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Which clothes get mixed up", click the cell for shirts that the network called T-shirts, and look at the images. Then click the diagonal cell for trousers. What do the mistaken images have in common, and why are trousers so easy?
+
+<Hint>
+
+Imagine each image blurred. Which garments would you still tell apart?
+
+</Hint>
+
+<Solution>
+
+Look at what the mistaken images share: each is a torso with two sleeves, and whatever makes it a shirt, a collar or a row of buttons, is a handful of pixels at this size. A person would hesitate over several of them too. The network's errors are concentrated where the classes really do look alike.
+
+Trousers are right 49 times out of 50 because their outline, two long legs, is shared by nothing else in the dataset. A network that only compares overall shapes can separate them easily and has trouble exactly where the difference lies in small details.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

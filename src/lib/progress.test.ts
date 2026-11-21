@@ -35,7 +35,7 @@ describe('reading progress', () => {
     markRead('linear-regression', 1000, store);
     markRead('linear-regression', 2000, store); // the first time is kept
     const progress = loadProgress(store);
-    expect(progress.last).toEqual({ id: 'gradient-descent', title: 'Gradient Descent', label: 'Chapter 3', section: undefined });
+    expect(progress.last).toMatchObject({ id: 'gradient-descent', title: 'Gradient Descent', label: 'Chapter 3' });
     expect(progress.read).toEqual({ 'linear-regression': 1000 });
   });
 
@@ -51,10 +51,10 @@ describe('reading progress', () => {
   it('remembers the section reached, and keeps it when the same chapter is reopened', () => {
     const store = memoryStore();
     noteOpened('knn', 'Nearest Neighbours', 'Chapter 8', store);
-    noteSection('knn', 'choosing-k', store);
-    noteSection('svm', 'ignored', store); // not the open chapter
+    noteSection('knn', 'choosing-k', 'Choosing k', 0.42, store);
+    noteSection('svm', 'ignored', 'Ignored', 0.9, store); // not the open chapter
     noteOpened('knn', 'Nearest Neighbours', 'Chapter 8', store);
-    expect(loadProgress(store).last?.section).toBe('choosing-k');
+    expect(loadProgress(store).last).toMatchObject({ section: 'choosing-k', sectionTitle: 'Choosing k', fraction: 0.42 });
     noteOpened('svm', 'Support Vector Machines', 'Chapter 10', store);
     expect(loadProgress(store).last?.section).toBeUndefined();
   });

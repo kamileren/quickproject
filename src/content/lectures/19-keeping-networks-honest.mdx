@@ -294,6 +294,26 @@ In practice people combine several of these. Whatever you try, choose its streng
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Smaller weights, smoother regions", train with λ off, with λ = 0.001 and with λ = 0.1. Compare the shapes of the regions and the accuracy on new points with the table in the chapter. What has gone wrong at 0.1?
+
+<Hint>
+
+Look at the accuracy on the training points as well as on the new ones.
+
+</Hint>
+
+<Solution>
+
+With the penalty off the regions have sharp, narrow fingers reaching for individual training points, and accuracy on new points is 66%. At λ = 0.001 the fingers are gone, the regions are smoother, and accuracy on new points rises to 77%, with training accuracy still at 96%.
+
+At λ = 0.1 the network is right about only 58% of its own training points and 47% of new ones. The penalty is now so strong that keeping the weights small matters more than fitting the data, and the regions are nearly featureless. The cure for overfitting has become underfitting.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

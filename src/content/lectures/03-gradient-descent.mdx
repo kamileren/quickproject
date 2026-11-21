@@ -146,6 +146,16 @@ The learning rate is the one thing gradient descent cannot work out for itself. 
 - **Too small**, and every step is timid. The run heads the right way but needs a huge number of steps.
 - **Too large**, and each step jumps clean over the valley and lands higher up the other side. The error grows instead of shrinking, and the run is said to <Term id="diverge">diverge</Term>.
 
+<Checkpoint
+  predict
+  question="Gradient descent is working, but slowly. You make the learning rate much larger to speed it up. What is the worst that can happen?"
+  options={[
+    { text: 'It reaches the best line sooner, and nothing else changes', why: 'Up to a point, yes. But there is a limit, and past it something quite different happens.' },
+    { text: 'It stops just short of the best line', why: 'Stopping short is what a rate that is too small looks like when the run ends early. Too large fails in another way.' },
+    { text: 'The error grows with every step', correct: true, why: 'Each step jumps over the bottom of the valley and lands higher up the other side. The figure shows the exact rate at which this starts.' },
+  ]}
+/>
+
 <Figure
   title="Three learning rates"
   caption="Each curve shows the error after every step, starting from the same flat line."
@@ -334,6 +344,26 @@ print(round(w, 3), round(b, 3))        # 1.25 0.5
 ```
 
 With a learning rate of 0.2 the numbers grow without limit and the program prints `nan`. For this data, anything above about 0.137 diverges.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="with the figure">
+
+In the figure "Three learning rates", find the largest learning rate at which the run still settles. Then go a little higher. Describe what the error does in each case, and compare your limit with the 0.164 given in the chapter.
+
+<Hint>
+
+Just below the limit the error still falls, but not smoothly.
+
+</Hint>
+
+<Solution>
+
+Just below 0.164 the error bounces: each step overshoots the valley and lands on the other side, a little lower than before, so it still gets there in the end. Just above, each bounce lands a little higher than the last, and the error grows without limit.
+
+The fastest runs are at rates somewhat below the limit, where steps are large and overshoot only slightly. That is why the usual advice is to find the rate at which training breaks and then back off.
 
 </Solution>
 

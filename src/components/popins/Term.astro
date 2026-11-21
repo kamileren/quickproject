@@ -19,7 +19,8 @@ if (home && !isHome) links.push({ lead: 'Introduced in', label: chapterName(home
 for (const other of entry.data.seeAlso) {
   const related = await getEntry('glossary', other);
   if (!related) throw new Error(`glossary.yaml: "${id}" lists unknown seeAlso "${other}"`);
-  links.push({ lead: 'See also', label: related.data.term.toLowerCase(), href: `/glossary/#${other}` });
+  // Only terms a published chapter introduces have a place in the glossary to link to.
+  if ((await termHomes()).has(other)) links.push({ lead: 'See also', label: related.data.term.toLowerCase(), href: `/glossary/#${other}` });
 }
 links.push({ label: 'Glossary', href: `/glossary/#${id}` });
 ---

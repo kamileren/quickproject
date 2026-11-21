@@ -130,7 +130,7 @@ export function Plot({
   const right = width - MARGIN.right;
 
   return (
-    <div ref={wrapRef} className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+    <div ref={wrapRef} data-plot className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
       <svg
         ref={svgRef}
         role="img"

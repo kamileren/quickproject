@@ -326,6 +326,26 @@ Nudging the weight up and down by a tiny amount and dividing gives −14, the sa
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Backpropagation against brute force", pick a weight and compare the two numbers with a small nudge. Then make the nudge very large. Which number changes, and why is the other one unaffected?
+
+<Hint>
+
+Only one of the two methods uses the nudge at all.
+
+</Hint>
+
+<Solution>
+
+With a small nudge the two numbers agree to several decimal places. With a very large nudge the nudged estimate drifts away, and the backpropagated gradient stays exactly where it was.
+
+Backpropagation computes the slope at the point itself using the chain rule, and no nudge is involved. The nudging method measures the average slope across the gap it opened. For a small gap that is the same thing. For a large one, the loss curves within the gap and the average is no longer the slope at the point.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

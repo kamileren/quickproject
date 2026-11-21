@@ -261,6 +261,26 @@ Machine learning earns its place when the rule exists but nobody can state it, a
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Find the cut-off", put the threshold at 2 hours and count the mistakes. Move it to 6 hours and count again. Which kind of mistake does each setting make? Where between them do the mistakes disappear?
+
+<Hint>
+
+A threshold that is too low passes students who failed. Think about what one that is too high does.
+
+</Hint>
+
+<Solution>
+
+At 2 hours the rule says "pass" to nearly everyone, so its mistakes are students who failed but were predicted to pass. At 6 hours it says "fail" to nearly everyone, so its mistakes are students who passed but were predicted to fail.
+
+Between 3.5 and 4 hours both kinds of mistake are gone and the rule is right about all twelve. Sliding the threshold trades one kind of mistake for the other, an idea that returns in the chapter on measuring classifiers.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

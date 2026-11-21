@@ -62,10 +62,10 @@ const description = `Every term the book defines, ${entries.length} of them, eac
                         <a href={`${chapterUrl(home)}#term-${e.id}`} class="underline decoration-orange-300 underline-offset-2 hover:text-orange-700">
                           {chapterName(home)}
                         </a>
-                        {e.data.seeAlso.length > 0 && (
+                        {e.data.seeAlso.filter((other) => homes.has(other)).length > 0 && (
                           <span>
                             {' · See also '}
-                            {e.data.seeAlso.map((other, i) => (
+                            {e.data.seeAlso.filter((other) => homes.has(other)).map((other, i) => (
                               <>
                                 {i > 0 && ', '}
                                 <a href={`#${other}`} class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">

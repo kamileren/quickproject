@@ -282,6 +282,26 @@ The best λ is at the bottom of the validation curve. The training curve cannot 
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Shrinking against switching off", raise λ slowly with ridge selected, then again with lasso. How does the way the bars shrink differ? At $\lambda = 1$ under lasso, how many features are still in use?
+
+<Hint>
+
+Look for bars that reach exactly zero, and count the ones that remain.
+
+</Hint>
+
+<Solution>
+
+Under ridge all the bars shrink together, each in proportion to its size, and none of them ever reaches zero. Under lasso the bars drop one at a time to exactly zero and stay there.
+
+At $\lambda = 1$ the lasso keeps four of the nine features. It has chosen a simpler model for you, which ridge never does.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

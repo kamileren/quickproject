@@ -313,6 +313,26 @@ Notice that the same extra hour does not add a fixed amount of probability. From
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "What the two numbers do", set $w$ to about 1.55 and $b$ to −6.0, close to the fitted values. Where does the curve cross 50%? Now double $w$ to about 3.1 and adjust $b$ until the crossing is back in the same place. What changed about the curve, and what would that mean for the model's predictions?
+
+<Hint>
+
+The crossing is where $wx + b = 0$. Doubling $w$ means $b$ must double too.
+
+</Hint>
+
+<Solution>
+
+The curve crosses 50% where $wx + b = 0$, at about 3.9 hours. With $w$ doubled, $b$ has to be about −12 to keep the crossing there.
+
+The crossing is the same and the curve is much steeper: it goes from nearly 0% to nearly 100% within about an hour. The model would make the same yes-or-no decisions and be far more confident about them. Whether that confidence is deserved is what the log loss checks, which is why the fitted model settled on the gentler slope.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

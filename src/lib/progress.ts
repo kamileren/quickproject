@@ -19,7 +19,7 @@ export interface Progress {
   /** Chapter id → when the reader reached its end (ms since 1970). */
   read: Record<string, number>;
   /** The chapter the reader had open most recently, and the section they had reached. */
-  last?: { id: string; title: string; label: string; section?: string };
+  last?: { id: string; title: string; label: string; section?: string; sectionTitle?: string; fraction?: number };
   /** Chapter id → question text → index of the option picked. */
   answers: Record<string, Record<string, number>>;
   /** Chapter id → numbers (from 1) of the exercises ticked as done. */
@@ -81,16 +81,27 @@ function save(progress: Progress, store: Store | undefined): void {
 export function noteOpened(id: string, title: string, label: string, store: Store | undefined = defaultStore()): void {
   const progress = loadProgress(store);
   // Coming back to the same chapter keeps the section the reader had reached.
-  const section = progress.last?.id === id ? progress.last.section : undefined;
-  progress.last = { id, title, label, section };
+  const kept = progress.last?.id === id ? progress.last : undefined;
+  progress.last = { id, title, label, section: kept?.section, sectionTitle: kept?.sectionTitle, fraction: kept?.fraction };
   save(progress, store);
 }
 
 /** Remembers the section the reader has scrolled to in the open chapter. */
-export function noteSection(id: string, section: string | undefined, store: Store | undefined = defaultStore()): void {
+export function noteSection(
+  id: string,
+  section: string | undefined,
+  sectionTitle?: string,
+  fraction?: number,
+  store: Store | undefined = defaultStore(),
+): void {
   const progress = loadProgress(store);
-  if (progress.last?.id !== id || progress.last.section === section) return;
+  if (progress.last?.id !== id) return;
+  // Written when the section changes, or the reader has moved a noticeable way through the chapter.
+  const moved = fraction !== undefined && Math.abs(fraction - (progress.last.fraction ?? 0)) >= 0.05;
+  if (progress.last.section === section && !moved) return;
   progress.last.section = section;
+  progress.last.sectionTitle = sectionTitle;
+  if (fraction !== undefined) progress.last.fraction = Math.round(fraction * 100) / 100;
   save(progress, store);
 }
 

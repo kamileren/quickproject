@@ -44,7 +44,7 @@ const description = 'The key points of every chapter on one page, for revising w
                 </h2>
                 {own.map(({ lecture, takeaways, skills }) => (
                   <article class="recap-card mb-6 rounded border border-stone-200 p-5 sm:p-6" data-chapter-id={lecture.id}>
-                    <div class="micro-label mb-1 text-stone-400">{chapterLabel(lecture.data.number)}</div>
+                    <div class="micro-label mb-1 text-stone-500">{chapterLabel(lecture.data.number)}</div>
                     <h3 class="display text-xl">
                       <a href={chapterUrl(lecture)} class="underline decoration-orange-300 decoration-2 underline-offset-4 hover:text-orange-700">
                         {lecture.data.title}

@@ -421,6 +421,26 @@ print(round(rmse, 2))                    # 2.48
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Every miss, and their average", make the line flat at the average score, about 67. Read the error. Then tilt the line until the error is as low as you can get it, and reveal the best line. How do your three numbers compare with the R² of 0.966 in the chapter?
+
+<Hint>
+
+A flat line at the average is the "lazy model" that R² measures against.
+
+</Hint>
+
+<Solution>
+
+The flat line at 67 has an error of about 178. That is the lazy model's MSE. The best line has an error of about 6.1.
+
+R² is one minus the ratio of the two: $1 - 6.13 / 177.8 \approx 0.966$. You have just measured both halves of that formula by hand. Any line you set by eye lands between the two, usually much nearer the best, because the eye is good at this.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

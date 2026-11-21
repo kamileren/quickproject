@@ -5,7 +5,7 @@ import { getCollection, getEntry } from 'astro:content';
 import SectionList from '@/components/SectionList.astro';
 import { lastChanged, longDate } from '@/lib/git';
 import Pop from '@/components/popins/Pop';
-import { getReadyLectures } from '@/lib/book';
+import { getReadyLectures, termHomes } from '@/lib/book';
 import { chapterLabel, chapterName, chapterUrl, REPO_BRANCH, REPO_SLUG, SITE_NAME, type Lecture, type Part } from '@/lib/book';
 
 interface Props {
@@ -43,6 +43,20 @@ const notation = Object.fromEntries(
 const updated = lecture.filePath ? lastChanged(lecture.filePath) : undefined;
 const editUrl = lecture.filePath ? `https://github.com/${REPO_SLUG}/edit/${REPO_BRANCH}/${lecture.filePath}` : undefined;
 
+// Terms this chapter is the first to explain, in the order they appear: a small index beside the text.
+const homes = await termHomes();
+const ownTerms = (
+  await Promise.all(
+    [...(lecture.body ?? '').matchAll(/<Term\s+id="([^"]+)"/g)]
+      .map((m) => m[1])
+      .filter((id) => homes.get(id)?.id === lecture.id)
+      .map(async (id) => ({ id, term: (await getEntry('glossary', id))?.data.term ?? id })),
+  )
+);
+
+// The opening question plus the summary says more to a searcher than either alone.
+const metaDescription = [question, summary, `${chapterLabel(number)} of a free interactive textbook.`].filter(Boolean).join(' ');
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Chapter',
@@ -54,7 +68,7 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={`${title} — ${SITE_NAME}`} description={summary} jsonLd={jsonLd} shareImage={lecture.id} barTitle={`${number.includes('.') ? 'Toolkit' : 'Ch.'} ${number} · ${title}`} sections>
+<BaseLayout title={`${title} — ${SITE_NAME}`} description={metaDescription} jsonLd={jsonLd} shareImage={lecture.id} barTitle={`${number.includes('.') ? 'Toolkit' : 'Ch.'} ${number} · ${title}`} sections prevUrl={prev && chapterUrl(prev)} nextUrl={next && chapterUrl(next)}>
   <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600" data-print-hide></div>
   <main id="top" class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="relative mx-auto max-w-3xl">
@@ -117,13 +131,40 @@ const jsonLd = {
         </dl>
       </header>
 
-      {/* Section list: beside the text on very wide screens, above it otherwise. */}
+      {/* On narrower screens the section list lives in a sheet; this line opens it. */}
+      <button
+        type="button"
+        data-open="sections-window"
+        data-print-hide
+        class="mb-10 flex w-full cursor-pointer items-center justify-between gap-3 rounded border border-stone-200 px-4 py-3 text-left font-sans text-sm text-stone-600 transition-colors hover:border-stone-900 min-[1280px]:hidden"
+      >
+        <span>
+          <span class="font-semibold text-stone-900">{sections.length} sections</span>
+          {hasExercises && ' and exercises'}
+          {minutes && ` · ${minutes} min`}
+        </span>
+        <span class="micro-label text-orange-700">Show</span>
+      </button>
+
+      {/* Section list: beside the text on wide screens. */}
       {
         sections.length > 0 && (
-          <nav aria-label="In this chapter" class="mb-12 min-[1280px]:absolute min-[1280px]:top-0 min-[1280px]:right-full min-[1280px]:mr-10 min-[1280px]:mb-0 min-[1280px]:h-full min-[1280px]:w-44 min-[1500px]:mr-16 min-[1500px]:w-48">
-            <div class="min-[1280px]:sticky min-[1280px]:top-20">
-              <div class="micro-label mb-3 text-stone-400">In this chapter</div>
+          <nav aria-label="In this chapter" class="hidden min-[1280px]:block min-[1280px]:absolute min-[1280px]:top-0 min-[1280px]:right-full min-[1280px]:mr-10 min-[1280px]:mb-0 min-[1280px]:h-full min-[1280px]:w-44 min-[1500px]:mr-16 min-[1500px]:w-48">
+            <div class="min-[1280px]:sticky min-[1280px]:top-20 min-[1280px]:max-h-[calc(100vh-6rem)] min-[1280px]:overflow-y-auto">
+              <div class="micro-label mb-3 text-stone-500">In this chapter</div>
               <SectionList links={sectionLinks} />
+              {ownTerms.length > 0 && (
+                <div class="mt-8" data-print-hide>
+                  <div class="micro-label mb-3 text-stone-500">New terms</div>
+                  <ul class="space-y-1 border-l border-stone-100 pl-4 font-serif text-[13px] leading-snug text-stone-500 italic">
+                    {ownTerms.map((t) => (
+                      <li>
+                        <a href={`#term-${t.id}`} class="transition-colors hover:text-orange-600">{t.term.toLowerCase()}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </nav>
         )
@@ -133,7 +174,7 @@ const jsonLd = {
         <slot />
       </article>
 
-      <p class="mt-16 flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-stone-400" data-print-hide>
+      <p class="mt-16 flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-stone-500" data-print-hide>
         {updated && <span>Last updated <time datetime={updated}>{longDate(updated)}</time></span>}
         {editUrl && (
           <a href={editUrl} rel="noopener" class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
@@ -147,7 +188,7 @@ const jsonLd = {
         {
           prev ? (
             <a href={chapterUrl(prev)} rel="prev" class="chapter-card group block">
-              <div class="micro-label mb-1 text-stone-400">‹ Previous</div>
+              <div class="micro-label mb-1 text-stone-500">‹ Previous</div>
               <div class="display text-lg group-hover:text-orange-700">{prev.data.title}</div>
             </a>
           ) : (
@@ -157,12 +198,12 @@ const jsonLd = {
         {
           next ? (
             <a href={chapterUrl(next)} rel="next" class="chapter-card is-next group block sm:text-right">
-              <div class="micro-label mb-1 text-stone-400">Next ›</div>
+              <div class="micro-label mb-1 text-stone-500">Next ›</div>
               <div class="display text-lg group-hover:text-orange-700">{next.data.title}</div>
             </a>
           ) : (
             <a href="/" class="chapter-card group block sm:text-right">
-              <div class="micro-label mb-1 text-stone-400">More chapters are on the way</div>
+              <div class="micro-label mb-1 text-stone-500">More chapters are on the way</div>
               <div class="display text-lg group-hover:text-orange-700">Back to contents</div>
             </a>
           )

@@ -3,6 +3,7 @@
 //
 // Per section (text under one `##` heading):
 //   - at most 1 <Figure>, 1 <Checkpoint>, 3 <Term>
+//   - and at most 1 extra <Checkpoint predict>, placed before the figure
 // Per chapter:
 //   - 4 to 8 sections, a <KeyTakeaways> block and a <References> block
 //   - every <Term id> exists in the glossary, every <Symbol id> in the notation file
@@ -39,8 +40,12 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.mdx')).sort())
     const title = section.split('\n')[0].trim();
     // Stop at the chapter-level blocks that follow the last section.
     const content = section.split(/<KeyTakeaways>|<GoingFurther>|<References>/)[0];
+    const predicts = (content.match(/<Checkpoint\s+predict\b/g) ?? []).length;
+    if (predicts > 1) fail(`section "${title}" has ${predicts} predict-first questions; the limit is 1`);
     for (const [tag, max] of Object.entries(LIMITS)) {
-      const count = (content.match(new RegExp(`<${tag}[\\s>]`, 'g')) ?? []).length;
+      // A "predict first" question comes before a figure and is counted on its own, below.
+      const counted = tag === 'Checkpoint' ? content.replace(/<Checkpoint\s+predict\b/g, '<PredictFirst ') : content;
+      const count = (counted.match(new RegExp(`<${tag}[\\s>]`, 'g')) ?? []).length;
       if (count > max) fail(`section "${title}" has ${count} <${tag}>; the limit is ${max}`);
     }
   }

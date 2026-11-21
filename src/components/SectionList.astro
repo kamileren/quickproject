@@ -13,7 +13,7 @@ const { links, large = false } = Astro.props;
     links.map((link) => (
       <li>
         <a href={link.href} class:list={['-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600', large && 'py-1.5']}>
-          {link.tag && <span class="mr-1.5 font-mono text-[10px] text-stone-400">{link.tag}</span>}
+          {link.tag && <span class="mr-1.5 font-mono text-[10px] text-stone-500">{link.tag}</span>}
           {link.label}
         </a>
       </li>

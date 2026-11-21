@@ -290,6 +290,26 @@ There is no training step. The whole method is the three lines inside the functi
 
 </Exercise>
 
+<Exercise kind="with the figure">
+
+In the figure "Mistakes against k", read the two curves at k = 1, at about k = 25 and at k = 41. At which of the three is the gap between the curves largest, and what does the gap tell you?
+
+<Hint>
+
+The dark curve is mistakes on the stored points, the orange one on new points.
+
+</Hint>
+
+<Solution>
+
+At k = 1 the model makes no mistakes on its stored points and 14% on new ones. Around k = 25 the error on new points is lowest, about 9%. By k = 41 it has crept back up to about 12%.
+
+The gap is largest at k = 1. A big gap between error on stored and new points is the sign of overfitting: the model is treating noise in its own data as if it were pattern. At large k the two curves are close and both are getting worse, which is underfitting.
+
+</Solution>
+
+</Exercise>
+
 </Exercises>
 
 <GoingFurther>

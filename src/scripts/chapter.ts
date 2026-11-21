@@ -47,7 +47,10 @@ if (article) {
     for (const list of lists) {
       list.querySelectorAll('a').forEach((a, i) => (i === current ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
     }
-    noteSection(chapterId, current >= 0 ? targets[current]?.id : undefined);
+    const heading = current >= 0 ? targets[current] : null;
+    // The heading's own words, without the "#" link button added to it.
+    const headingText = heading ? [...heading.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent).join('').trim() : undefined;
+    noteSection(chapterId, heading?.id, headingText || undefined, done);
   };
   const onScroll = () => {
     if (!queued) {

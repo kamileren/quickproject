@@ -828,3 +828,47 @@ dialog.site-dialog[open] {
     right: 0;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Final polish.
+   --------------------------------------------------------------------------- */
+
+/* Symbols in a table heading keep their case: y and ŷ must not both become Y. */
+.book-prose th .katex {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 1.3em;
+}
+
+@media (max-width: 640px) {
+  /* A plot stays in view while the reader works the controls under it. */
+  figure.book-figure:not(.is-expanded) [data-plot] {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 2;
+    box-shadow: 0 6px 12px -8px rgb(0 0 0 / 0.25);
+  }
+
+  /* A pop-in opens as a sheet at the bottom, where a thumb can reach it and nothing covers it. */
+  [data-radix-popper-content-wrapper] {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    transform: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .pop-card {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 1.25rem 1.25rem 1.75rem !important;
+    border-width: 2px 0 0 !important;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    box-shadow: 0 -12px 30px rgb(0 0 0 / 0.18) !important;
+  }
+  .pop-card > span:nth-child(2) {
+    font-size: 15px;
+  }
+  .pop-arrow {
+    display: none;
+  }
+}
