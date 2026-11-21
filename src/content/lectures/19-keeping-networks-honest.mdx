@@ -38,7 +38,7 @@ Accuracy on new points barely changes while their loss triples. The network is n
 
 ## A price on large weights
 
-The first remedy is one you already know. The regularization chapter added a penalty on the size of the weights to the loss, so that the model had to justify every large weight. The same <Term id="weight-decay">weight penalty</Term> works for a network.
+The first remedy is one you already know. <Ref to="regularization">The regularization chapter</Ref> added a penalty on the size of the weights to the loss, so that the model had to justify every large weight. The same <Term id="weight-decay">weight penalty</Term> works for a network.
 
 <Equation reads="loss = how badly it fits the data + λ × the sum of all squared weights">
 
@@ -138,6 +138,12 @@ Underneath all three remedies is the oldest one: more data. Overfitting is a mis
   ]}
 />
 
+<Pitfall title="Leaving dropout switched on">
+
+Dropout belongs to training only. If it is still active when the network is used, every prediction is made by a random half of the network, so the same input can give different answers on different calls, and accuracy drops for no visible reason. Every library has a switch between training and prediction modes. Forgetting to flip it is one of the most common bugs in deep learning, and the symptom to look for is a network that does worse when deployed than it did during validation.
+
+</Pitfall>
+
 ## In code
 
 The dense layer gains an optional penalty, and dropout is a new layer with a `training` switch. The full file is <CodeFile file="ch19_regularization.py" />.
@@ -180,6 +186,82 @@ Run on its own random set of 45 points, the Python version scores 72% on new poi
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Spot a memorising network from its two loss curves.
+- Add a weight penalty to a network and say what it does to the gradients.
+- Explain how dropout works, and why outputs are scaled up during training.
+- Use held-out loss to decide when to stop training.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+A layer outputs $[2,\ 4,\ 6,\ 8]$. Dropout at a rate of 50% happens to switch off the second and third neurons. What does the layer pass on, after scaling? Compare the average before and after.
+
+<Solution>
+
+The kept values are divided by the share that is kept, 0.5, which doubles them. The layer passes on $[4,\ 0,\ 0,\ 16]$.
+
+The average before was $20 / 4 = 5$. The average after is also $20 / 4 = 5$.
+
+That is the purpose of the scaling. The next layer learned its weights while seeing inputs of a certain typical size. Without scaling, its inputs would be twice as large at prediction time, when nothing is dropped, as they were in training.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A layer has the weights $[3,\ -4,\ 0.5]$ and a penalty strength of $\lambda = 0.01$. What does the penalty add to the loss? What does it add to the gradient of each weight?
+
+<Solution>
+
+The penalty is $\lambda$ times the sum of squared weights: $0.01 \times (9 + 16 + 0.25) = 0.2525$.
+
+It adds $2\lambda w$ to each gradient: $0.06$, $-0.08$ and $0.01$.
+
+Gradient descent subtracts the gradient, so the weight of 3 is pulled down, the weight of −4 is pulled up, and both move towards zero. The pull is proportional to the size of the weight: the large weights feel it most and the small one hardly at all.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+During training, the loss on held-out data at the end of each epoch is 0.90, 0.61, 0.48, 0.45, 0.47, 0.52 and 0.60. The training loss falls throughout. Which epoch's weights should you keep? Why should you not stop the moment the held-out loss first rises?
+
+<Solution>
+
+Keep the weights from epoch 4, where the held-out loss was lowest at 0.45. After that the network keeps improving on its training data and gets worse on everything else.
+
+Held-out loss is noisy, and it often wobbles upward for an epoch before continuing down. Stopping at the first rise would end many runs too early. The usual approach is to save the weights every time a new best is reached and stop only after several epochs in a row without one. That number of epochs is called the patience.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+A network is right about 96% of its training examples and 70% of new ones. List four things you could try, starting with the one most likely to help.
+
+<Solution>
+
+1. **Get more training data.** It attacks the cause directly: with more examples there is less room to memorise. Nothing else works as well when it is possible.
+2. **Add a weight penalty or dropout.** Both make memorising harder without changing the size of the network.
+3. **Stop earlier.** Keep the weights from the epoch where held-out loss was lowest.
+4. **Use a smaller network.** Fewer neurons or layers leave less capacity to fit noise.
+
+In practice people combine several of these. Whatever you try, choose its strength using held-out data and not the test set.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Penalising absolute values
@@ -199,3 +281,9 @@ For images, new training examples can be manufactured from old ones: flip a pict
 - S. J. D. Prince, *Understanding Deep Learning*, chapter 9. Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
 
 </References>
+
+<NextUp>
+
+The network now learns quickly and generalises. It still does only one job: choosing one class out of several. The next chapter shows that predicting a number, or answering yes or no, needs a change to the last layer and nothing else.
+
+</NextUp>

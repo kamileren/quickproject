@@ -14,7 +14,7 @@ prerequisites: [backpropagation]
 import RavineDescent from '@/components/figures/ch18/RavineDescent';
 import SpiralTraining from '@/components/figures/ch17/SpiralTraining';
 
-The last chapter ended with a network that learned, but slowly: 2,000 steps to get 62% of the spiral right. The gradients were exact. What was crude was how we used them: subtract the gradient, times one fixed number, every time. The rule that turns gradients into updates is called an <Term id="optimizer">optimizer</Term>, and this chapter builds better ones, each fixing a specific weakness of the one before.
+<Ref to="backpropagation">The last chapter</Ref> ended with a network that learned, but slowly: 2,000 steps to get 62% of the spiral right. The gradients were exact. What was crude was how we used them: subtract the gradient, times one fixed number, every time. The rule that turns gradients into updates is called an <Term id="optimizer">optimizer</Term>, and this chapter builds better ones, each fixing a specific weakness of the one before.
 
 ## What plain gradient descent gets wrong
 
@@ -140,7 +140,7 @@ To be fair to it: we saw that plain gradient descent *can* match them here, at a
 
 ## On a real network
 
-Now the test that matters. This is the spiral network from the last chapter, unchanged: same data, same 195 weights, same starting point. Only the optimizer differs.
+Now the test that matters. This is the spiral network from <Ref to="backpropagation">the last chapter</Ref>, unchanged: same data, same 195 weights, same starting point. Only the optimizer differs.
 
 <Figure
   title="The same network, five optimizers"
@@ -170,6 +170,12 @@ Adam passes 96% within the first 300 steps. Nothing about the network or the dat
     { text: 'AdaGrad, because its steps only shrink', why: 'Steps that only shrink are its weakness: on long runs it can stall before training is done.' },
   ]}
 />
+
+<Pitfall title="Carrying a learning rate over to another optimizer">
+
+A learning rate only means something for the optimizer it was chosen for. Plain gradient descent multiplies the rate by the gradient, so a rate of 0.5 or 1 can be reasonable. Adam divides each gradient by its typical size first, so every weight moves by roughly the learning rate itself on every step, and a rate of 1 would throw the weights around wildly. Typical values for Adam are ten to a thousand times smaller. When you switch optimizer, choose the learning rate again from scratch.
+
+</Pitfall>
 
 ## In code
 
@@ -209,6 +215,85 @@ In the training loop, the single line that updated the weights is the only thing
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Explain why one learning rate cannot suit a lopsided loss surface.
+- Work out a decayed learning rate and a momentum update by hand.
+- Say what RMSProp and Adam each add, and why Adam is the usual first choice.
+- Pick sensible starting settings for an optimizer.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+A run uses a starting learning rate of 1 and a decay of 0.1. What is the learning rate at step 0, at step 10 and at step 90?
+
+<Solution>
+
+The rule is: current rate = starting rate ÷ (1 + decay × steps so far).
+
+- Step 0: $1 / (1 + 0) = 1$
+- Step 10: $1 / (1 + 1) = 0.5$
+- Step 90: $1 / (1 + 9) = 0.1$
+
+The rate halves in the first ten steps and then takes another eighty to fall to a tenth. Decay acts quickly at first and ever more gently later.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+With momentum, each update is 0.9 times the previous update, minus the learning rate times the gradient. The learning rate is 0.1. First suppose the gradient is 1 at every step: what are the first three updates, and what do they approach? Then suppose the gradient alternates between 1 and −1: what are the first three updates?
+
+<Solution>
+
+**Steady gradient.** The updates are $-0.1$, then $0.9 \times (-0.1) - 0.1 = -0.19$, then $0.9 \times (-0.19) - 0.1 = -0.271$. They keep growing and approach $-0.1 / (1 - 0.9) = -1$. In a direction where the gradient always agrees with itself, momentum ends up moving ten times as fast as a plain step.
+
+**Alternating gradient.** The updates are $-0.1$, then $0.9 \times (-0.1) + 0.1 = 0.01$, then $0.9 \times 0.01 - 0.1 = -0.091$. They never build up, and none is larger than a plain step, because each one is partly cancelled by what came before.
+
+That is the whole benefit: fast along the valley, calm across it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+The valley in this chapter is $f(x, y) = 0.05x^2 + y^2$. With plain gradient descent, each step multiplies $y$ by $(1 - 2\eta)$ and $x$ by $(1 - 0.1\eta)$. Use this to explain why the run diverges just above a learning rate of 1, and why it is slow even at 0.9.
+
+<Solution>
+
+**The limit.** The size of $y$ grows whenever $1 - 2\eta$ is below −1, which happens as soon as $\eta$ is above 1. The steep direction sets the limit.
+
+**The slowness.** At $\eta = 0.9$ the flat direction is multiplied by $1 - 0.09 = 0.91$ at each step. Shrinking $x$ to a tenth of its starting value takes about 24 steps, since $0.91^{24} \approx 0.1$. The learning rate that $x$ would like, about 10, is ten times beyond what $y$ can survive.
+
+One rate has to serve two directions with very different steepness. Momentum and the adaptive methods are both ways out of that bind.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+Two weights have gradients that are steadily 100 and 0.01. With plain gradient descent and a learning rate of 0.01, how far does each move in one step? Roughly how far does each move in one step of Adam with the same learning rate? What does that tell you about when Adam helps?
+
+<Solution>
+
+**Plain gradient descent** moves each weight by the rate times its gradient: 1 for the first weight and 0.0001 for the second. One of them is moving ten thousand times faster than the other.
+
+**Adam** divides each gradient by its own typical size before applying the rate, so both weights move by about 0.01.
+
+Adam helps when gradients differ greatly in size from weight to weight, which is normal in a deep network: layers near the output usually see larger gradients than layers near the input. It removes the need to find one rate that suits them all.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### The learning rate still matters
@@ -228,3 +313,9 @@ For some problems, especially image models trained for a long time, SGD with mom
 - D. P. Kingma and J. Ba, [Adam: a method for stochastic optimization](https://arxiv.org/abs/1412.6980), 2014.
 
 </References>
+
+<NextUp>
+
+With Adam the network fits the spiral almost perfectly. That creates a new problem, the same one a degree-9 curve had many chapters ago. A network that can fit anything will also fit the noise.
+
+</NextUp>

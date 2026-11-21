@@ -67,9 +67,9 @@ The choice between this head and the previous one comes down to a question about
 
 ## A number
 
-To predict a number, remove the final activation altogether. The output neuron's weighted sum *is* the prediction, free to be any size, positive or negative. The loss is the mean squared error from the linear regression chapter.
+To predict a number, remove the final activation altogether. The output neuron's weighted sum *is* the prediction, free to be any size, positive or negative. The loss is the mean squared error from <Ref to="linear-regression">the linear regression chapter</Ref>.
 
-Here is the sleep data from the generalization chapter, where a straight line failed and we had to guess the right degree of polynomial.
+Here is the sleep data from <Ref to="generalization">the generalization chapter</Ref>, where a straight line failed and we had to guess the right degree of polynomial.
 
 <Figure
   title="No activation on the output"
@@ -125,6 +125,12 @@ In practice the decision takes a few seconds, because the task dictates it.
   ]}
 />
 
+<Pitfall title="Predicting large numbers without rescaling the targets">
+
+A network that predicts house prices is aiming at numbers like 300,000. It starts out predicting values near zero, so the first squared errors are around ninety billion, the first gradients are enormous, and the weights are thrown so far that training never recovers. Rescale the targets before training, for instance by subtracting their average and dividing by their spread, just as you would the inputs. Then convert the network's predictions back to real units at the end.
+
+</Pitfall>
+
 ## In code
 
 The two new heads are four small classes. The full file, <CodeFile file="ch20_heads.py" />, also trains the two one-neuron networks.
@@ -169,6 +175,87 @@ Trained on the exam data, the one-neuron network prints `5.31 42.44 6.13`. On th
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Separate a network into its body and its head.
+- Choose the output layer and the loss for a given task.
+- Work out binary cross-entropy and mean squared error for a small example.
+- Explain how linear and logistic regression are networks with a single neuron.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="think">
+
+For each task, say how many outputs the network needs, what activation goes on them, and which loss to use.
+
+1. Estimating the price of a house.
+2. Deciding whether an email is spam.
+3. Recognising a handwritten digit, 0 to 9.
+4. Tagging a photo with any of "beach", "people" and "night", in any combination.
+5. Locating an object in an image by its x and y coordinates.
+
+<Solution>
+
+1. **One output, no activation,** mean squared error. It is a number.
+2. **One output with a sigmoid,** binary cross-entropy. It is a yes or no.
+3. **Ten outputs with softmax,** cross-entropy. Exactly one of ten classes is right.
+4. **Three outputs, each with its own sigmoid,** binary cross-entropy on each. The tags are three separate yes-or-no questions, and softmax would wrongly force them to compete.
+5. **Two outputs, no activation,** mean squared error. It is two numbers.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A yes-or-no network outputs a probability of 0.8. What is the binary cross-entropy if the true answer is yes? What if it is no? In each case, what is the gradient for the score that went into the sigmoid?
+
+<Solution>
+
+**True answer yes.** The loss is $-\ln(0.8) \approx 0.22$. The gradient is probability minus truth, $0.8 - 1 = -0.2$: raise the score a little.
+
+**True answer no.** The probability given to "no" was 0.2, so the loss is $-\ln(0.2) \approx 1.61$. The gradient is $0.8 - 0 = 0.8$: lower the score a lot.
+
+The same "prediction minus truth" appears as for softmax. The more wrong the network is, the harder the push.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A network predicts $[2.5,\ 0,\ 2]$ for three examples whose targets are $[3,\ -0.5,\ 2]$. What is the mean squared error? What is its gradient for each prediction?
+
+<Solution>
+
+The misses (prediction minus target) are $-0.5$, $0.5$ and $0$. Squared, they are 0.25, 0.25 and 0. The mean is $0.5 / 3 \approx 0.167$.
+
+The gradient for each prediction is 2 times its miss, divided by the number of examples: $-0.33$, $0.33$ and $0$.
+
+The first prediction is too low and should rise. The second is too high and should fall. The third is exactly right and gets no push at all.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+A network has no hidden layers and one output with a sigmoid, trained with binary cross-entropy. Which model from earlier in the book is it? What does adding a hidden layer with ReLU change?
+
+<Solution>
+
+It is logistic regression. One neuron computes a weighted sum plus a bias, the sigmoid turns it into a probability, and the loss is the log loss. Trained to convergence it finds the same weights.
+
+Without a hidden layer the decision boundary must be a straight line. A hidden layer with ReLU lets the network bend its inputs into a new set of features first, and the final neuron then draws a straight line in that new space. Seen from the original inputs, the boundary can be curved. The crescents in this chapter's first figure need exactly that.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Scaling the target
@@ -188,3 +275,9 @@ A regression head can have more than one output neuron. A network that predicts 
 - S. J. D. Prince, *Understanding Deep Learning*, chapter 5 (loss functions). Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
 
 </References>
+
+<NextUp>
+
+Every piece is now in place: layers, activations, three kinds of output, backpropagation, an optimizer and the means to keep it all honest. So far it has only met a few hundred invented points. The next chapter gives it seventy thousand real pictures.
+
+</NextUp>

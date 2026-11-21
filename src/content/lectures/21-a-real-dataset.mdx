@@ -61,7 +61,7 @@ $$
 
 ## Training in batches
 
-With 60,000 images we can no longer compute the gradient on all the data for every step, as we did on the spiral. Instead the data is cut into mini-batches, as the gradient descent chapter described. The <Term id="batch-size">batch size</Term> here is 128.
+With 60,000 images we can no longer compute the gradient on all the data for every step, as we did on the spiral. Instead the data is cut into mini-batches, as <Ref to="gradient-descent">the gradient descent chapter</Ref> described. The <Term id="batch-size">batch size</Term> here is 128.
 
 | | |
 |---|---|
@@ -87,7 +87,7 @@ Nothing was added to achieve this. The layers, the loss, the backward pass and t
 
 ## How good is it?
 
-An accuracy of 86.9% says how often the network is right. It does not say where it goes wrong, and for that we need the confusion matrix from the chapter on measuring classifiers, now with ten classes instead of two.
+An accuracy of 86.9% says how often the network is right. It does not say where it goes wrong, and for that we need the confusion matrix from <Ref to="measuring-classifiers">the chapter on measuring classifiers</Ref>, now with ten classes instead of two.
 
 <Figure
   title="Which clothes get mixed up"
@@ -125,6 +125,12 @@ The code at the end of the chapter demonstrates this directly. A freshly created
     { text: 'Only the final loss and accuracy', why: 'Those describe how well the network did. They contain nothing that can make a prediction.' },
   ]}
 />
+
+<Pitfall title="Expecting the same accuracy on your own photos">
+
+The 87% was measured on test images that came from the same source as the training images: the same size, centred, on a plain background, lit the same way. A photo of your own jacket, taken on a phone against a cluttered room, is a different kind of picture, and the network may do far worse on it. A test score describes performance on data like the test set and promises nothing beyond that. Before relying on a model, test it on examples collected the way it will really be used.
+
+</Pitfall>
 
 ## In code
 
@@ -165,6 +171,85 @@ Running it prints the table in the training figure: 84.6% after the first epoch 
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Describe how an image becomes the input to a dense network.
+- Prepare image data for training: scale it, shuffle it and cut it into batches.
+- Count the weights in a network and the steps in an epoch.
+- Read a ten-class confusion matrix, and save and reload a trained model.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+The network has 784 inputs, two hidden layers of 64 neurons and 10 outputs. How many weights and biases does it have in total?
+
+<Solution>
+
+Each layer has one weight for every pair of input and neuron, plus one bias per neuron.
+
+- First hidden layer: $784 \times 64 + 64 = 50{,}240$
+- Second hidden layer: $64 \times 64 + 64 = 4{,}160$
+- Output layer: $64 \times 10 + 10 = 650$
+
+That makes 55,050 numbers. More than nine tenths of them are in the first layer, because every one of its neurons is connected to every pixel.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+There are 60,000 training images and the batch size is 128. How many steps are in one epoch, and how many images are in the last batch? How many updates does the network receive in five epochs?
+
+<Solution>
+
+$60{,}000 / 128 = 468.75$, so there are 468 full batches and one smaller one: 469 steps.
+
+The full batches use $468 \times 128 = 59{,}904$ images, leaving 96 for the last batch.
+
+Five epochs give $5 \times 469 = 2{,}345$ updates. On the spiral, one update used all the data. Here each update sees about a fifth of one percent of it, and that is enough.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Pixels are scaled by subtracting 127.5 and dividing by 127.5. What do the pixel values 0, 255 and 51 become? Why must an image given to the finished network be scaled the same way?
+
+<Solution>
+
+- 0 becomes $-127.5 / 127.5 = -1$
+- 255 becomes $127.5 / 127.5 = 1$
+- 51 becomes $-76.5 / 127.5 = -0.6$
+
+The network's weights were learned for inputs between −1 and 1. Hand it a raw image and its first layer receives numbers over a hundred times larger than it has ever seen. The sums are enormous and the output is meaningless. The scaling is part of the model, as much as the weights are.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+The confusion matrix shows that shirts are often mistaken for T-shirts, pullovers and coats, while trousers are almost never mistaken for anything. Why might that be? Would changing a threshold help? What would?
+
+<Solution>
+
+Shirts, T-shirts, pullovers and coats have nearly the same outline at 28 by 28 pixels: a torso and two sleeves. They differ in small details such as collars, buttons and sleeve length, which take up only a few pixels. Trousers have a shape nothing else shares.
+
+There is no threshold to move. The network picks the class with the highest probability, and the trouble is that it gives the wrong class the highest probability.
+
+What helps is a network that can see small local details, which a flattened image makes hard, because the pixels of a collar are scattered across the list of 784 inputs. Layers that keep the picture as a grid do much better. More training examples of the confused classes also help.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Where this part of the book ends
@@ -188,3 +273,9 @@ In practice nobody writes backward passes by hand. Libraries such as PyTorch pro
 - A. Zhang, Z. C. Lipton, M. Li and A. J. Smola, *Dive into Deep Learning*, chapter 4 (image classification). Free at [d2l.ai](https://d2l.ai).
 
 </References>
+
+<NextUp>
+
+The dense network treats a picture as a list of 784 unrelated numbers. It does not know that neighbouring pixels belong together, or that a collar is a collar wherever it appears. The chapters that follow introduce layers built for exactly that kind of structure: one for images, and one for sequences such as text.
+
+</NextUp>
