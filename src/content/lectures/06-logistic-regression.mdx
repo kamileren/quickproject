@@ -108,7 +108,7 @@ The formula looks heavy, but it is only the table above written compactly. When 
 
 ## Fitting the curve
 
-Unlike the straight line, this model has no formula for the best $w$ and $b$. That is no obstacle, because chapter 3 gave us a method that needs only a loss and its slope. Start with $w = 0$ and $b = 0$, which predicts 50% for everyone and has a loss of 0.69, and walk downhill.
+Unlike the straight line, this model has no formula for the best $w$ and $b$. That is no obstacle, because <Ref to="gradient-descent">chapter 3</Ref> gave us a method that needs only a loss and its slope. Start with $w = 0$ and $b = 0$, which predicts 50% for everyone and has a loss of 0.69, and walk downhill.
 
 The slopes turn out to be almost the same as for linear regression:
 
@@ -136,6 +136,18 @@ $$
 
 A student who studied four and a half hours has about a 73% chance of passing. The straight-line model could only say "pass". This one says how sure it is.
 
+<Example title="Two students, by hand">
+
+Use the fitted model, $w = 1.56$ and $b = -6.03$.
+
+**A student who studied 3 hours.** The score is $1.56 \times 3 - 6.03 = -1.35$, and the sigmoid turns it into $1 / (1 + e^{1.35}) \approx 0.206$. The model gives about a 21% chance of passing. If the student failed, the loss is $-\ln(1 - 0.206) \approx 0.23$. If they passed, it is $-\ln(0.206) \approx 1.58$.
+
+**A student who studied 6 hours.** The score is $3.33$ and the probability is about 0.965. If the student passed, the loss is $-\ln(0.965) \approx 0.04$. If they failed, it is $-\ln(1 - 0.965) \approx 3.37$.
+
+Being this sure and wrong costs almost a hundred times as much as being this sure and right. That is what pushes the model away from overconfidence.
+
+</Example>
+
 ## From probability to decision
 
 Often a probability is not enough and a decision is needed: admit or not, flag or not. The usual rule is to answer yes when the probability is at least 50%. That cut-off is called the <Term id="threshold">threshold</Term>.
@@ -162,6 +174,12 @@ Two things are worth noticing. First, the boundary is always straight, however t
     { text: 'Retrain the model until it says more than 50%', why: 'The probability may be accurate. The decision rule is what needs changing, not the model.' },
   ]}
 />
+
+<Pitfall title="Expecting a curved boundary">
+
+The S-shape is in the probability, not in the boundary. Along any straight path that crosses the boundary, the probability rises in an S. The boundary itself, the set of places where the probability is exactly 50%, is a straight line however the weights are set. If two classes can only be separated by a curve, plain logistic regression will not find it. You would need to add features, such as squares of the inputs, or use one of the methods from the coming chapters.
+
+</Pitfall>
 
 ## In code
 
@@ -194,11 +212,90 @@ print(model.score(X, passed))                      # 0.889: 16 of 18 right
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Turn a score into a probability with the sigmoid.
+- Work out the log loss of a prediction and say why confident mistakes cost so much.
+- Find where a model's decision boundary lies for a given threshold.
+- Read a weight as a multiplier on the odds.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Work out the sigmoid of 0, of 2 and of −2. What do the last two answers add up to, and why?
+
+<Solution>
+
+$\sigma(0) = 1 / (1 + 1) = 0.5$.
+
+$\sigma(2) = 1 / (1 + e^{-2}) = 1 / 1.135 \approx 0.88$.
+
+$\sigma(-2) = 1 / (1 + e^{2}) = 1 / 8.39 \approx 0.12$.
+
+The last two add up to 1. The sigmoid is symmetric: a score of $-z$ gives the probability that a score of $z$ leaves over. Flipping the sign of the score swaps "yes" and "no".
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+The fitted model is $w = 1.56$, $b = -6.03$. With a threshold of 50%, how many hours of study put a student exactly on the boundary? Where does the boundary move if the threshold is raised to 73%?
+
+<Solution>
+
+A probability of 50% means a score of zero: $1.56x - 6.03 = 0$, so $x = 6.03 / 1.56 \approx 3.87$ hours. Students above that are predicted to pass.
+
+The chapter worked out that 4.5 hours gives a probability of 73%. So with a threshold of 73% the boundary sits at 4.5 hours. Raising the threshold moves the boundary towards the "yes" side, and fewer students are predicted to pass.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A model makes three predictions. It gives a student who passed a 90% chance of passing, another student who passed a 60% chance, and a student who failed a 20% chance of passing. What is the log loss of each prediction, and the average? How does that compare with a model that says 50% for everyone?
+
+<Solution>
+
+Log loss is minus the logarithm of the probability given to what actually happened.
+
+- Passed, given 0.9: $-\ln(0.9) \approx 0.105$
+- Passed, given 0.6: $-\ln(0.6) \approx 0.511$
+- Failed, so the probability given to failing was 0.8: $-\ln(0.8) \approx 0.223$
+
+The average is about 0.28. A model that always says 50% scores $-\ln(0.5) \approx 0.693$ on every example. That is the starting loss in the gradient descent figure, and any useful model must beat it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+With $w = 1.56$, each extra hour multiplies the odds of passing by $e^{1.56} \approx 4.76$. At 3.87 hours the odds are even, 1 to 1. What are the odds, and the probability, one hour later?
+
+<Solution>
+
+The odds become 4.76 to 1. Odds of 4.76 to 1 mean 4.76 passes for every fail, so the probability is $4.76 / (4.76 + 1) \approx 0.83$.
+
+You can check with the sigmoid. One hour beyond the boundary the score is $1.56$, and $\sigma(1.56) \approx 0.83$.
+
+Notice that the same extra hour does not add a fixed amount of probability. From 50% it added 33 points. From 83% another hour would add far fewer, because the curve flattens.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### When the classes separate perfectly
 
-If one cut-off divides the passes from the fails with no mistakes, the data is <Term id="separable">separable</Term>, and something odd happens. The model can always lower the loss a little more by making the curve steeper, so the weights grow without limit and training never settles. A small ridge penalty from the last chapter fixes it, which is one reason libraries apply one by default.
+If one cut-off divides the passes from the fails with no mistakes, the data is <Term id="separable">separable</Term>, and something odd happens. The model can always lower the loss a little more by making the curve steeper, so the weights grow without limit and training never settles. A small ridge penalty from <Ref to="regularization">the last chapter</Ref> fixes it, which is one reason libraries apply one by default.
 
 ### More than two classes
 
@@ -217,3 +314,9 @@ In linear regression a weight is "points per hour". Here the score $w x + b$ is 
 - Google, *Machine Learning Crash Course*: [Logistic regression](https://developers.google.com/machine-learning/crash-course/logistic-regression).
 
 </References>
+
+<NextUp>
+
+Choosing a threshold raised a question this chapter did not settle. A classifier can be wrong in two different ways, and they rarely cost the same. The next chapter is about measuring a classifier properly.
+
+</NextUp>

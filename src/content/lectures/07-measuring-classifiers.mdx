@@ -38,7 +38,7 @@ Accuracy counts all mistakes as equal and all examples as equal. When one class 
 
 ## Four kinds of outcome
 
-A real model gives each patient a risk score, and we flag those above a threshold, as in the last chapter. Every patient then lands in one of four groups, depending on what the model said and what was true.
+A real model gives each patient a risk score, and we flag those above a threshold, as in <Ref to="logistic-regression">the last chapter</Ref>. Every patient then lands in one of four groups, depending on what the model said and what was true.
 
 The table of those four counts is the <Term id="confusion-matrix">confusion matrix</Term>. Two of its cells are mistakes. A healthy patient who is flagged is a <Term id="false-positive">false positive</Term>, a false alarm. An ill patient who is cleared is a <Term id="false-negative">false negative</Term>, a miss.
 
@@ -140,6 +140,12 @@ The default threshold of 0.50 treats both mistakes as equally bad. That is almos
   ]}
 />
 
+<Pitfall title="Quoting precision without recall">
+
+Either number can be made perfect on its own. Flag only the single case you are surest about, and precision is 100%. Flag everybody, and recall is 100%. Neither model is any use. A precision figure means something only next to the recall achieved at the same threshold, and the other way round. When someone reports just one of them, ask for the other.
+
+</Pitfall>
+
 ## In code
 
 ```python
@@ -170,6 +176,84 @@ Note that scikit-learn puts the negative class first, so the matrix reads cleare
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Explain why accuracy misleads when one class is rare.
+- Fill in a confusion matrix and work out precision, recall and F1 from it.
+- Read an ROC curve and say what AUC measures.
+- Choose a threshold from the costs of the two kinds of mistake.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+At a threshold of 0.50 the screening model catches 17 of the 20 ill patients and raises 15 false alarms among the 180 healthy ones. Fill in the four cells of the confusion matrix, then work out accuracy, precision, recall and F1.
+
+<Solution>
+
+True positives 17, false negatives 3, false positives 15, true negatives $180 - 15 = 165$.
+
+- Accuracy: $(17 + 165) / 200 = 91\%$
+- Precision: $17 / (17 + 15) = 17 / 32 \approx 53\%$
+- Recall: $17 / 20 = 85\%$
+- F1: $2 \times 0.53 \times 0.85 / (0.53 + 0.85) \approx 0.65$
+
+About half of the flags are false alarms, and three ill patients in twenty are missed. The accuracy figure hides both facts.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+For the same 200 patients, work out accuracy, precision and recall for a model that flags everyone, and for a model that flags no one.
+
+<Solution>
+
+**Flags everyone.** All 20 ill patients are caught, so recall is 100%. Of the 200 flags, 20 are right, so precision is 10%. Accuracy is also 10%.
+
+**Flags no one.** No ill patient is caught, so recall is 0%. Accuracy is $180 / 200 = 90\%$. Precision is 0 divided by 0, which has no value: the model never made a flag to be judged.
+
+The two extremes show why one number is never enough. Each of them is perfect on one measure and useless in practice.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A false alarm costs 1 (a follow-up test) and a missed illness costs 20. Threshold A gives 15 false alarms and 3 misses. Threshold B gives 40 false alarms and 1 miss. Which is cheaper? Which has the higher accuracy?
+
+<Solution>
+
+Cost of A: $15 \times 1 + 3 \times 20 = 75$. Cost of B: $40 \times 1 + 1 \times 20 = 60$. **B is cheaper.**
+
+Accuracy of A: 18 mistakes in 200, so 91%. Accuracy of B: 41 mistakes in 200, so 79.5%. **A is more accurate.**
+
+Accuracy counts every mistake the same. When a miss is twenty times worse than a false alarm, the better model is the one that makes more mistakes of the cheap kind.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+What does an AUC of 0.5 tell you about a model? What about an AUC of 0.3, and what would you do with such a model?
+
+<Solution>
+
+AUC is the chance that the model gives a randomly chosen positive case a higher score than a randomly chosen negative one. At 0.5 the scores carry no information: the model ranks no better than a coin.
+
+An AUC of 0.3 means the model usually ranks positives **below** negatives. It has found a real pattern and has it backwards. Flip its scores (use one minus the score) and the AUC becomes 0.7. In practice an AUC well below 0.5 nearly always means a bug, such as labels swapped somewhere.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### When to prefer a precision-recall curve
@@ -193,3 +277,9 @@ With several classes the confusion matrix grows to one row and one column per cl
 - T. Fawcett, "An introduction to ROC analysis", *Pattern Recognition Letters* 27 (2006).
 
 </References>
+
+<NextUp>
+
+With a way to measure classifiers in hand, the rest of this part builds three more of them, each on a different idea. The first has no weights and does no training at all.
+
+</NextUp>

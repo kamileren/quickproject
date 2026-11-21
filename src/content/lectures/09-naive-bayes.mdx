@@ -158,6 +158,12 @@ Its weakness is the one already named: when features are strongly related, or wh
   ]}
 />
 
+<Pitfall title="Multiplying hundreds of small numbers">
+
+A long message means multiplying hundreds of probabilities, each well below 1. A hundred words at 1% each gives a product of $10^{-200}$. Two hundred words give $10^{-400}$, which is smaller than the smallest number a computer can store, so it is rounded to exactly zero. Both classes then score zero and the comparison is meaningless. Always add the logarithms instead. The sum for a hundred such words is about −460, an ordinary number, and the larger sum still wins.
+
+</Pitfall>
+
 ## In code
 
 ```python
@@ -188,6 +194,89 @@ print(model.predict_proba(["free prize"])[0, 1])       # 0.97: chance of spam
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Use Bayes' rule to turn "how likely is the evidence" into "how likely is the cause".
+- Classify a short message by hand with Naive Bayes.
+- Explain what smoothing fixes.
+- Say why the method works despite its assumption being false, and where it should not be trusted.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+A test catches 90% of the people who have an illness and wrongly flags 5% of the people who do not. One person in a hundred has the illness. Someone tests positive. How likely is it that they are ill? Work it out by imagining 10,000 people.
+
+<Solution>
+
+Of 10,000 people, 100 are ill and 9,900 are healthy.
+
+- Ill and positive: 90% of 100 is 90.
+- Healthy and positive: 5% of 9,900 is 495.
+
+There are 585 positive results, and 90 of them belong to ill people: $90 / 585 \approx 15\%$.
+
+A positive result raised the chance from 1% to about 15%. That is a big change, and still far from the 90% most people guess. The healthy group is so much larger that even a small error rate produces more false alarms than there are real cases.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+An inbox has 10 spam messages and 20 normal ones. The spam messages contain 100 words in total, with "prize" appearing 6 times and "meeting" once. The normal messages contain 200 words, with "prize" appearing once and "meeting" 10 times. Classify the message "prize meeting" without smoothing.
+
+<Solution>
+
+Priors: $10/30 = 1/3$ for spam and $2/3$ for normal.
+
+Word shares in spam: "prize" $6/100 = 0.06$, "meeting" $1/100 = 0.01$. In normal: "prize" $1/200 = 0.005$, "meeting" $10/200 = 0.05$.
+
+Multiply the prior by the share of each word:
+
+- Spam: $\tfrac{1}{3} \times 0.06 \times 0.01 = 0.0002$
+- Normal: $\tfrac{2}{3} \times 0.005 \times 0.05 \approx 0.000167$
+
+Spam has the larger score. As a probability, $0.0002 / (0.0002 + 0.000167) \approx 55\%$. The two words pull in opposite directions and nearly cancel, so the model is barely more sure than a coin.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+In the same inbox the word "lottery" appears 3 times in spam and never in normal messages. The inbox uses 50 different words. What share does "lottery" get in each class without smoothing, and with it? Why does the difference matter?
+
+<Solution>
+
+**Without smoothing.** Spam: $3 / 100 = 0.03$. Normal: $0 / 200 = 0$.
+
+**With smoothing.** Spam: $(3 + 1) / (100 + 50) \approx 0.027$. Normal: $(0 + 1) / (200 + 50) = 0.004$.
+
+Without smoothing, the zero wipes out the whole product for the normal class. Any message containing "lottery" is declared spam with complete certainty, whatever else it says. With smoothing, "lottery" is still strong evidence for spam, about seven times more likely there, but other words can outweigh it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+Naive Bayes assumes the words in a message are independent of each other given the class. Give an example where that is plainly false, and say what effect it has on the model's output.
+
+<Solution>
+
+"Free" and "prize" tend to appear together in spam. Once you have seen "free", seeing "prize" is less of a surprise and so carries less new information. The model does not know that. It counts both words at full strength, as if they were two separate pieces of evidence.
+
+The effect is overconfidence. Related words are double-counted, pushing probabilities towards 0% and 100%. The side that wins is usually still the right one, because the evidence does point that way, so the classification is good even though the stated probability is not. Trust the ranking, and be wary of the percentage.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Numbers instead of words
@@ -207,3 +296,9 @@ Naive Bayes is a *generative* model: it learns what each class looks like, and c
 - scikit-learn user guide, [Naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html).
 
 </References>
+
+<NextUp>
+
+Three classifiers so far, each drawing its boundary for a different reason: a fitted probability, a vote among neighbours, a weighing of evidence. The last one in this part asks a question none of them did. When many boundaries separate the classes, which is the best one?
+
+</NextUp>

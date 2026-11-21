@@ -44,7 +44,7 @@ $$
 \text{minimise } \tfrac{1}{2}\lVert w \rVert^2 \quad \text{subject to} \quad y_i\,(w \cdot x_i + b) \ge 1 \ \text{ for every point } i
 $$
 
-The condition says every point must be on its correct side and outside the street. Notice that the thing being minimised is the ridge penalty from the regularization chapter. An SVM is, in a sense, all regularization: the smallest weights that still classify everything correctly.
+The condition says every point must be on its correct side and outside the street. Notice that the thing being minimised is the ridge penalty from <Ref to="regularization">the regularization chapter</Ref>. An SVM is, in a sense, all regularization: the smallest weights that still classify everything correctly.
 
 </Derivation>
 
@@ -90,6 +90,18 @@ $$
 - **Large C** makes violations expensive. The street narrows to avoid them, and the boundary bends to the awkward points.
 - **Small C** makes them cheap. The street widens, more points end up inside it, and the boundary reflects the overall trend.
 
+<Example title="Adding up the intrusions">
+
+Take the boundary $w = [3,\ 4]$, $b = -12$. The length of $w$ is $\sqrt{3^2 + 4^2} = 5$, so the street is $2 / 5 = 0.4$ wide. Three points belong to the class labelled $+1$.
+
+- **(4, 2):** $3 \times 4 + 4 \times 2 - 12 = 8$. Well above 1, so it is far outside the street. No intrusion.
+- **(2, 1.75):** $6 + 7 - 12 = 1$. Exactly on the edge of the street. No intrusion. This point is a support vector.
+- **(2, 1.6):** $6 + 6.4 - 12 = 0.4$. On the correct side of the boundary, but inside the street. It intrudes by $1 - 0.4 = 0.6$.
+
+The quantity being minimised is $\tfrac{1}{2} \times 25 + C \times 0.6$. With a large $C$, that 0.6 is expensive, and the optimiser will turn or narrow the street to remove it. With a small $C$, it will leave the point where it is and keep the street wide.
+
+</Example>
+
 <Figure
   title="How much to mind the awkward points"
   caption="The two groups overlap, so some points must end up inside the street or on the wrong side."
@@ -100,7 +112,7 @@ $$
 
 At $C = 100$ the street is 0.25 wide with only 2 points inside it. At $C = 0.01$ it is 5.75 wide and holds 26 of the 44 points. Every point inside the street or on its edge is now a support vector.
 
-This is the same trade as the penalty strength in the regularization chapter, turned upside down: a *small* $C$ means *strong* regularization. Like every hyperparameter, it is chosen by cross-validation.
+This is the same trade as the penalty strength in <Ref to="regularization">the regularization chapter</Ref>, turned upside down: a *small* $C$ means *strong* regularization. Like every hyperparameter, it is chosen by cross-validation.
 
 ## Bending the boundary
 
@@ -137,6 +149,12 @@ The two extremes of $\gamma$ are both bad, in the familiar way. With $\gamma$ ve
   ]}
 />
 
+<Pitfall title="Reading the score as a probability">
+
+An SVM's output, $w \cdot x + b$, says which side of the boundary a point is on and roughly how far from it. It is not a probability. A score of 2 does not mean "twice as sure" as a score of 1, and nothing limits it to the range 0 to 1. If you need probabilities, for ranking by risk or for choosing a threshold by cost, either use a model that produces them, such as logistic regression, or fit a separate step that converts scores into probabilities.
+
+</Pitfall>
+
 ## In code
 
 ```python
@@ -169,6 +187,85 @@ Use `SVC(kernel="linear")` or the faster `LinearSVC` for a straight boundary. Be
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Explain why the widest margin is a sensible choice of boundary.
+- Tell which points are support vectors and what would happen if the others were removed.
+- Say what C trades off, and what small and large values do.
+- Describe what a kernel changes and how γ affects the boundary.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+A boundary has $w = [1,\ 1]$ and $b = -5$. How wide is its street? For each of the points (4, 3), (2, 2.5) and (1, 1), work out the score $w \cdot x + b$ and say where the point lies.
+
+<Solution>
+
+The length of $w$ is $\sqrt{2}$, so the street is $2 / \sqrt{2} \approx 1.41$ wide.
+
+- **(4, 3):** $4 + 3 - 5 = 2$. Positive side, and outside the street, because the score is above 1.
+- **(2, 2.5):** $2 + 2.5 - 5 = -0.5$. Negative side, but inside the street, because the score is between −1 and 1.
+- **(1, 1):** $1 + 1 - 5 = -3$. Negative side, far outside the street.
+
+The sign of the score gives the class. Whether its size is above 1 says whether the point is clear of the street.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+An SVM is trained on 100 points that a line separates cleanly, and 4 of them turn out to be support vectors. How many points could you delete without changing the boundary at all? What happens if you delete one of the 4?
+
+<Solution>
+
+All 96 points that are not support vectors could be deleted and the boundary would stay exactly where it is. They sit behind the edges of the street and play no part in fixing it.
+
+Delete a support vector and the street is no longer held on that side. It can usually widen or swing until it touches another point, which becomes a new support vector, and the boundary moves.
+
+This is very different from logistic regression, where every point contributes to the loss and removing any of them shifts the fit a little.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+The RBF kernel scores the similarity of two points as $e^{-\gamma d^2}$, where $d$ is the distance between them. Work it out for points 1 apart and 2 apart, first with $\gamma = 1$ and then with $\gamma = 0.1$. What does γ control?
+
+<Solution>
+
+With $\gamma = 1$: at distance 1, $e^{-1} \approx 0.37$. At distance 2, $e^{-4} \approx 0.02$.
+
+With $\gamma = 0.1$: at distance 1, $e^{-0.1} \approx 0.90$. At distance 2, $e^{-0.4} \approx 0.67$.
+
+γ sets how quickly similarity fades with distance. With a large γ, a point 2 units away is already treated as unrelated, so each training point influences only its immediate surroundings and the boundary can wrap tightly around individual points. With a small γ, influence reaches far, and the boundary is smooth.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+You train an SVM with a very small C and another with a very large C on noisy data. Which is more likely to underfit, and which to overfit? How does C relate to the λ of ridge regression?
+
+<Solution>
+
+**Very small C** makes intrusions cheap. The optimiser cares mostly about a wide street and tolerates many points inside it, or on the wrong side. Taken too far, the boundary ignores real structure: underfitting.
+
+**Very large C** makes every intrusion expensive. The street narrows and the boundary bends to get each awkward point right, including the noisy ones: overfitting.
+
+C plays the role of one over λ. In ridge regression λ multiplies the penalty on the weights, so a large λ means strong regularization. In an SVM, C multiplies the error term instead, so a large C means weak regularization.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### The hinge loss
@@ -192,3 +289,9 @@ Before deep learning, kernel SVMs were the strongest general-purpose classifiers
 - scikit-learn user guide, [Support Vector Machines](https://scikit-learn.org/stable/modules/svm.html).
 
 </References>
+
+<NextUp>
+
+That completes the classifiers of Part II. From here the book goes two ways. Part III builds models out of simple yes-or-no questions and has hundreds of them vote. Part IV starts from a single artificial neuron and builds up to a network that recognises pictures.
+
+</NextUp>
