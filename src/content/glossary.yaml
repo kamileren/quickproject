@@ -199,3 +199,15 @@
 - id: auc
   term: AUC
   definition: Area under the ROC curve. It is the chance that the model scores a random yes above a random no. 1 is perfect, 0.5 is guessing.
+- id: knn
+  term: k-nearest neighbours
+  definition: A method that classifies a new point by finding the k most similar known points and taking a vote among them.
+- id: euclidean-distance
+  term: Euclidean distance
+  definition: Ordinary straight-line distance. Square the difference in each feature, add them up, and take the square root.
+- id: instance-based
+  term: Instance-based learning
+  definition: Learning by storing the examples themselves and comparing new cases against them, rather than fitting weights.
+- id: curse-of-dimensionality
+  term: Curse of dimensionality
+  definition: The way data becomes sparse as features are added. With many features every point is far from every other, and "nearest" stops meaning much.

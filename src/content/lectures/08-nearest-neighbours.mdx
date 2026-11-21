@@ -4,5 +4,186 @@ number: "8"
 part: classification
 order: 10
 summary: "Classifying a point by looking at the points around it."
-status: draft
+question: "Can you classify something without ever fitting a model?"
+dataset: toy2d
+minutes: 16
+status: ready
+prerequisites: [generalization]
 ---
+
+import NeighbourVote from '@/components/figures/ch08/NeighbourVote';
+import KnnRegions from '@/components/figures/ch08/KnnRegions';
+import KCurve from '@/components/figures/ch08/KCurve';
+import ScaleMatters from '@/components/figures/ch08/ScaleMatters';
+import DimensionCurve from '@/components/figures/ch08/DimensionCurve';
+
+Every model so far has had weights, and learning meant finding good values for them. This chapter's method has no weights and does no training at all. It is one of the oldest ideas in machine learning, it fits in a sentence, and it is a strong baseline for surprisingly many problems.
+
+The sentence is: *to classify something new, find the most similar things you have already seen, and go with the majority.*
+
+## Ask the neighbours
+
+Suppose you already know the kind of sixty points: some filled, some hollow. A new point arrives. Look at the few known points closest to it and let them vote.
+
+The number of neighbours asked is called $k$, and the method is <Term id="knn">k-nearest neighbours</Term>, or k-NN.
+
+<Figure
+  title="A vote among the closest points"
+  caption="Sixty known points of two kinds. The orange point is new, and the lines join it to the neighbours that get a vote."
+  try="drag the orange point through the gap between the two groups and watch the vote change. Then set k to 1, and to 15."
+>
+  <NeighbourVote client:visible />
+</Figure>
+
+"Closest" needs a definition. The usual one is <Term id="euclidean-distance">Euclidean distance</Term>, the straight-line distance you would measure with a ruler:
+
+<Equation reads="distance = square root of the summed squared differences, feature by feature">
+
+$$
+\text{distance}(a, b) = \sqrt{(a_1 - b_1)^2 + (a_2 - b_2)^2 + \dots + (a_d - b_d)^2}
+$$
+
+</Equation>
+
+The formula works for any number of features, which is what lets the same idea compare patients, houses or images as easily as points on a page.
+
+## The whole map
+
+Ask the same question at every spot in the plane and colour each spot by the answer. The result is a map of the model's decisions. Unlike logistic regression, whose boundary was always a straight line, this boundary can take any shape the data suggests.
+
+<Figure
+  title="What k-NN would say everywhere"
+  caption="Shaded areas would be called filled, unshaded areas hollow."
+  try="start with k = 1 and look for small islands around single points. Raise k and watch them dissolve. Then click to add a few points of the wrong kind inside a region."
+>
+  <KnnRegions client:visible />
+</Figure>
+
+Notice what happened when you added a point: the map changed at once, with no retraining. There is nothing to retrain. The "model" *is* the stored data. This style is called <Term id="instance-based">instance-based learning</Term>, and it has a price. All the work happens at prediction time: every new point must be compared with every stored one, so answers get slower as the data grows.
+
+<Checkpoint
+  question="A k-NN classifier holds a million stored examples. Compared with logistic regression, where does it spend its effort?"
+  options={[
+    { text: 'Mostly in training', why: 'k-NN does no training at all. It only stores the examples.' },
+    { text: 'Mostly at prediction time', correct: true, why: 'Each prediction compares the new point with the stored examples, a million distances here. Logistic regression does its work once, in training, and then predicts with one small calculation.' },
+    { text: 'Equally in both', why: 'Training is just storage. All of the computation is in answering questions.' },
+  ]}
+/>
+
+## Choosing k
+
+The number of neighbours is a hyperparameter, and it sets how flexible the model is. This is the lesson of the generalization chapter in a new setting.
+
+With $k = 1$ every stored point rules its own little territory, including the odd ones that sit in the wrong crowd. The model gets every known point right and has learned their noise. With a very large $k$, the vote is taken over such a wide area that local detail is lost, and the model underfits.
+
+<Figure
+  title="Mistakes against k"
+  caption="The dark line counts mistakes on the sixty stored points. The orange line counts mistakes on three hundred new ones."
+  try="slide k from 1 upward. Find where the orange line is lowest, and notice how flat the bottom is."
+>
+  <KCurve client:visible />
+</Figure>
+
+At $k = 1$ the model makes no mistakes on its own points and 14% on new ones, the largest gap on the chart. Around $k = 25$ mistakes on new points fall to about 9%, and by $k = 41$ they have crept back up to 12%. The bottom of the curve is wide, which is typical: k-NN is forgiving about the exact value. Choose $k$ by cross-validation, and use an odd number with two classes so that votes cannot tie.
+
+## Scale decides who is near
+
+Distance adds up differences across features, so the units of each feature matter a great deal. Here are the forty students from the logistic regression chapter, with one change: sleep is now recorded in minutes, not hours.
+
+<Figure
+  title="Hours against minutes"
+  caption="The plot stretches each axis to fill the frame, so it looks balanced. The algorithm sees the raw numbers."
+  try="with raw numbers, look at which five students are joined to the orange point. Then switch to rescaled and compare."
+>
+  <ScaleMatters client:visible />
+</Figure>
+
+A difference of two hours of study is 2. A difference of thirty minutes of sleep is 30. With raw numbers the sleep column drowns out the study column, and the "nearest" students are simply those who slept a similar number of minutes, however differently they studied.
+
+The fix is to put every feature on the same footing before measuring distance: subtract its average and divide by its spread. After that, a typical difference counts the same in every feature. This step matters for any method based on distance, and as always the averages and spreads must come from the training data only.
+
+<MarginNote>
+Rescaling is not always right. If you know one feature truly matters more, you may want it to count for more. But you should choose that, not let the units choose it for you.
+</MarginNote>
+
+## Too many features
+
+One more weakness is less obvious. k-NN relies on nearby points being similar. In a space with many features, there are no nearby points.
+
+Scatter 200 random points and compare, for one of them, the distance to its nearest neighbour with the distance to its farthest.
+
+<Figure
+  title="When everything is far away"
+  caption="Each dot is an average over several sets of 200 random points."
+  try="move the slider from 2 features to 100 and watch the ratio climb."
+>
+  <DimensionCurve client:visible />
+</Figure>
+
+With 2 features the nearest neighbour is about 3% as far away as the farthest: near and far are very different things. With 100 features it is about 74% as far. Every point is roughly the same distance from every other, and a vote among the "nearest" is hardly better than a vote among random points.
+
+This is the <Term id="curse-of-dimensionality">curse of dimensionality</Term>. Each added feature multiplies the amount of space the data has to fill, and no realistic dataset can keep up. It is why k-NN works best with a handful of meaningful features, and one reason later chapters put effort into reducing the number of features.
+
+<Checkpoint
+  question="A k-NN model on 5 well-chosen features works well. Someone adds 200 more features that are mostly irrelevant. What is the likely effect?"
+  options={[
+    { text: 'It improves, since more information cannot hurt', why: 'Every feature contributes to the distance. Irrelevant ones add noise to it and dilute the features that matter.' },
+    { text: 'It gets worse', correct: true, why: 'The distances become dominated by irrelevant differences, and in 205 dimensions all points are nearly equally far apart. The neighbours stop being meaningfully similar.' },
+    { text: 'Nothing changes, because k is the same', why: 'The same number of neighbours is asked, but they are now a different and less relevant set.' },
+  ]}
+/>
+
+## In code
+
+```python
+from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+# Scaling lives inside the pipeline, so it is learned from the training folds only.
+model = make_pipeline(StandardScaler(), KNeighborsClassifier())
+
+# Try odd values of k and keep the one with the best cross-validated accuracy.
+search = GridSearchCV(model, {"kneighborsclassifier__n_neighbors": range(1, 42, 2)}, cv=5)
+search.fit(X_train, y_train)
+
+print(search.best_params_)              # the chosen k
+print(search.score(X_test, y_test))     # accuracy on the held-out test set
+```
+
+`fit` here does little more than store the scaled training data. The real work happens inside `score`, when each test point looks for its neighbours.
+
+<KeyTakeaways>
+
+- k-NN classifies a new point by a **vote among the k closest known points**. It has no weights and no training.
+- Its boundary can take **any shape**, and adding data changes it immediately.
+- **k sets the flexibility**: 1 memorises noise, very large values blur everything. Choose it by cross-validation.
+- Distance depends on units, so **rescale features first**.
+- With many features all points are far apart, and nearness stops being informative.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Predicting numbers
+
+The same idea does regression. Find the k nearest known points and average their values instead of voting. The prediction is a staircase rather than a smooth curve, but it follows any shape without being told what shape to expect.
+
+### Weighted votes
+
+A neighbour right beside the new point arguably deserves more say than one at the edge of the group. Weighting each vote by one over its distance does this, and makes the choice of k less critical.
+
+### Making it fast
+
+Comparing against every stored point is too slow for large datasets. Tree structures and approximate search methods find the nearest neighbours without checking them all. The same machinery is what lets modern systems search millions of documents or images by similarity.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, sections 2.2 and 4.7. Free at [statlearning.com](https://www.statlearning.com).
+- A. Karpathy and others, *CS231n notes: Image classification*, [cs231n.github.io/classification](https://cs231n.github.io/classification/).
+- scikit-learn user guide, [Nearest Neighbors](https://scikit-learn.org/stable/modules/neighbors.html).
+
+</References>

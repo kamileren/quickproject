@@ -70,6 +70,8 @@ interface PlotProps {
   tickFormat?: (v: number) => string;
   /** Format x-axis ticks only, e.g. for a logarithmic scale. Falls back to tickFormat. */
   xTickFormat?: (v: number) => string;
+  /** Called with data coordinates when the reader clicks or taps an empty part of the plot. */
+  onPlotClick?: (p: Point) => void;
   children?: ReactNode;
 }
 
@@ -92,6 +94,7 @@ export function Plot({
   yTicks = 5,
   tickFormat = (v) => String(+v.toFixed(4)),
   xTickFormat,
+  onPlotClick,
   children,
 }: PlotProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -136,6 +139,18 @@ export function Plot({
         width={width}
         height={height}
         className="block h-auto w-full touch-none select-none"
+        style={onPlotClick ? { cursor: 'crosshair' } : undefined}
+        onClick={
+          onPlotClick
+            ? (e) => {
+                const ctm = svgRef.current?.getScreenCTM();
+                if (!ctm) return;
+                const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+                const p = { x: sx.invert(pt.x), y: sy.invert(pt.y) };
+                if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) onPlotClick(p);
+              }
+            : undefined
+        }
       >
         <defs>
           <clipPath id={clipId}>
