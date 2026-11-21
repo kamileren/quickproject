@@ -55,7 +55,7 @@ A typical mark is about 2 away from the average of 5.
 </Example>
 
 <MarginNote>
-Squaring should feel familiar. Mean squared error, from the linear regression chapter, is the same calculation with "distance from the prediction" in place of "distance from the average".
+Squaring should feel familiar. Mean squared error, from <Ref to="linear-regression">the linear regression chapter</Ref>, is the same calculation with "distance from the prediction" in place of "distance from the average".
 </MarginNote>
 
 ## The bell curve
@@ -86,7 +86,7 @@ The bell curve matters to this book for a specific reason. The usual picture of 
 
 Probabilities change when you learn something. The chance that a message is spam is one number. The chance that it is spam *given that it contains the word "free"* is a different, larger number. A probability that takes known information into account is a <Term id="conditional-probability">conditional probability</Term>.
 
-Conditioning sounds abstract and is really just narrowing your attention. Here are the 34 messages from the Naive Bayes chapter, sorted two ways at once.
+Conditioning sounds abstract and is really just narrowing your attention. Here are the 34 messages from <Ref to="naive-bayes">the Naive Bayes chapter</Ref>, sorted two ways at once.
 
 <Figure
   title="Conditioning is looking at one row or one column"
@@ -113,6 +113,12 @@ Two things are <Term id="independence">independent</Term> when knowing one tells
     { text: 'Nothing can be said', why: 'Something can: taxi drivers are rare, so even strong evidence leaves the chance low. The exact number needs the share of non-drivers with long-held licences.' },
   ]}
 />
+
+<Pitfall title="Reading a conditional backwards">
+
+"Most people with the illness test positive" does not mean "most people who test positive have the illness". If the illness is rare, the positives are mostly healthy people the test got wrong. Whenever you see a "given", check which group is being counted in the bottom of the fraction. This single confusion is behind a large share of the bad statistics in news reports and courtrooms.
+
+</Pitfall>
 
 ## In code
 
@@ -147,6 +153,87 @@ print(is_spam[has_free == 1].mean())            # 0.90  P(spam | free)
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Work out the average and standard deviation of a small set of numbers.
+- Use the 68% and 95% rules to say where values from a bell curve will fall.
+- Read a conditional probability off a table of counts, in either direction.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Eight quiz scores are 2, 4, 4, 4, 5, 5, 7 and 9. Find the average, then the standard deviation (divide by the number of values).
+
+<Solution>
+
+The scores add up to 40, so the average is $40 / 8 = 5$.
+
+The distances from the average are −3, −1, −1, −1, 0, 0, 2 and 4. Squared, they are 9, 1, 1, 1, 0, 0, 4 and 16, which add up to 32. The average squared distance is $32 / 8 = 4$, and its square root is the standard deviation: 2.
+
+A typical score is about 2 points away from 5.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Exam scores follow a bell curve with an average of 70 and a standard deviation of 8. Roughly what share of students score between 62 and 78? Between 54 and 86? Above 86?
+
+<Solution>
+
+62 to 78 is one standard deviation either side of the average: about 68%.
+
+54 to 86 is two standard deviations either side: about 95%.
+
+That leaves about 5% outside the range 54 to 86, split evenly between the two tails, so about 2.5% score above 86.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Out of 100 emails, 30 are spam. The word "free" appears in 18 of the spam emails and in 7 of the others. What is the chance that a spam email contains "free"? What is the chance that an email containing "free" is spam?
+
+<Solution>
+
+Given spam, look only at the 30 spam emails: $18 / 30 = 0.6$.
+
+Given "free", look only at the emails that contain it. There are $18 + 7 = 25$ of them, and 18 are spam: $18 / 25 = 0.72$.
+
+The same 18 emails sit on top of both fractions. The answers differ because the bottoms differ: 30 spam emails in one case, 25 "free" emails in the other.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="in code">
+
+Simulate rolling a die 10 times and work out the share of sixes. Run it several times. Then do the same with 10,000 rolls. What changes?
+
+<Solution>
+
+```python
+import numpy as np
+
+rng = np.random.default_rng()
+for n in (10, 10_000):
+    rolls = rng.integers(1, 7, size=n)   # whole numbers from 1 to 6
+    print(n, (rolls == 6).mean())
+```
+
+Your numbers will differ on every run. With 10 rolls the share of sixes jumps around, and anything from 0 to 0.4 is common. With 10,000 rolls it stays within about 0.01 of the true value, $1/6 \approx 0.167$. A probability describes the long run, and small samples are ragged.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <References>
 
 - D. Kunin and others, [Seeing Theory](https://seeing-theory.brown.edu), a visual introduction to probability and statistics.
@@ -154,3 +241,9 @@ print(is_spam[has_free == 1].mean())            # 0.90  P(spam | free)
 - K. P. Murphy, *Probabilistic Machine Learning: An Introduction*, chapter 2, [probml.github.io/pml-book](https://probml.github.io/pml-book/).
 
 </References>
+
+<NextUp>
+
+That is the whole toolkit: vectors to hold data, derivatives to measure change, and probability to describe uncertainty. The book proper starts with the question all three serve. What does it mean for a program to learn?
+
+</NextUp>

@@ -270,6 +270,12 @@ One alternative is to average the *absolute* misses instead of the squared ones.
 
 Neither choice is always right. Squared error is smooth and has an exact formula, which is why it is the default. Absolute error is sturdier when the data contains mistakes or freak results. The first thing to do with a surprising fit is to plot the data and look for a point like this.
 
+<Pitfall title="Reading the slope as cause and effect">
+
+The slope says that, among these students, those who studied an hour longer scored about 5.3 points higher on average. It does not say that making one student study an extra hour will add 5.3 points to that student's score. Perhaps keen students both study more and already know more. A fitted line describes a pattern in the data you have. Whether changing the input would change the output is a separate question, and it needs an experiment to answer.
+
+</Pitfall>
+
 ## In code
 
 In practice nobody computes the two formulas by hand. Here is the whole chapter in a few lines of Python, using the scikit-learn library.
@@ -304,6 +310,95 @@ The numbers match the ones we worked out, because `fit` is doing exactly the cal
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Turn an input into a prediction with a line, and say what the slope and bias mean.
+- Work out residuals and the mean squared error by hand.
+- Find the best line for a small dataset with the formula.
+- Report how good a fit is with RMSE and R², and say what each number means.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Three points: (0, 1), (2, 2) and (4, 6). Use the formula to find the best line. Then work out its three residuals, its MSE and its RMSE.
+
+<Solution>
+
+The averages are $\bar{x} = 2$ and $\bar{y} = 3$.
+
+Top of the slope formula: $(-2)(-2) + (0)(-1) + (2)(3) = 4 + 0 + 6 = 10$. Bottom: $(-2)^2 + 0^2 + 2^2 = 8$. So $w = 10 / 8 = 1.25$ and $b = 3 - 1.25 \times 2 = 0.5$.
+
+The line predicts 0.5, 3 and 5.5. The residuals (true minus predicted) are 0.5, −1 and 0.5. Squared: 0.25, 1 and 0.25. The MSE is $1.5 / 3 = 0.5$ and the RMSE is $\sqrt{0.5} \approx 0.71$.
+
+Notice that the residuals add up to zero. That is always true for the best line.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+For the same three points, work out R². Start with the MSE of the lazy model that predicts the average for everyone.
+
+<Solution>
+
+The lazy model predicts 3 every time. Its misses are −2, −1 and 3, which squared are 4, 1 and 9. Its MSE is $14 / 3 \approx 4.67$.
+
+$R^2 = 1 - 0.5 / 4.67 \approx 0.89$.
+
+The line removes about 89% of the squared error that the lazy model makes.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+The best line for the twelve students is $w = 5.31$, $b = 42.44$. What does it predict for 4.5 hours of study? For 20 hours? What is wrong with the second answer?
+
+<Solution>
+
+For 4.5 hours: $5.31 \times 4.5 + 42.44 \approx 66.3$ points.
+
+For 20 hours: $5.31 \times 20 + 42.44 \approx 148.6$ points, on an exam marked out of 100.
+
+Nobody in the data studied for more than 9 hours, so the line has no evidence about what happens at 20. It keeps climbing because a line is all it knows how to be. Real scores level off as they approach 100. This is extrapolation, and the model gives no warning when you do it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="in code">
+
+Fit a line to the twelve students with NumPy and check that you get the numbers from the chapter. Hours: 1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9. Scores: 48, 53, 50, 60, 57, 66, 68, 75, 71, 82, 83, 91.
+
+<Solution>
+
+```python
+import numpy as np
+
+hours = np.array([1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9])
+scores = np.array([48, 53, 50, 60, 57, 66, 68, 75, 71, 82, 83, 91])
+
+w, b = np.polyfit(hours, scores, 1)      # a polynomial of degree 1 is a line
+print(round(w, 2), round(b, 2))          # 5.31 42.44
+
+predicted = w * hours + b
+rmse = np.sqrt(np.mean((scores - predicted) ** 2))
+print(round(rmse, 2))                    # 2.48
+```
+
+`polyfit` uses the same least-squares calculation as the formula in this chapter.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### More than one feature
@@ -333,3 +428,9 @@ A straight line is the right tool when the relationship really is straight, when
 - MLU-Explain, [Linear Regression](https://mlu-explain.github.io/linear-regression/), an interactive article.
 
 </References>
+
+<NextUp>
+
+A formula found the best line in one step. That luck does not last, because most models have no such formula. The next chapter finds the same line by a method that works for almost any model: take small steps downhill on the loss.
+
+</NextUp>

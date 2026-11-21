@@ -120,6 +120,12 @@ The third kind has no labels at all. The program is given only the features and 
 
 The figure above was classification. The next chapter takes the same students and does regression: predicting the score itself.
 
+<Pitfall title="Marking your own homework">
+
+The most common mistake in machine learning is to measure a model on the same examples it learned from and report that number. It is always flattering and often meaningless. Before you train anything, set some examples aside and do not look at them. The score on those examples is the one to believe, and the one to tell other people.
+
+</Pitfall>
+
 ## In code
 
 Here is the figure as a program. It tries every sensible threshold and keeps the one that gets the most known students right, then checks that rule on the new students.
@@ -156,11 +162,88 @@ Perfect on the twelve it learned from, four out of six on the new ones. Every mo
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Tell whether a task suits machine learning or is better solved with rules written by hand.
+- Point to the examples, the features and the label in a dataset.
+- Say whether a problem is regression or classification.
+- Explain why a model must be tested on examples it has not seen.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="think">
+
+For each task, name some features, name the label, and say whether it is regression or classification.
+
+1. Estimating the price a house will sell for.
+2. Deciding whether an email is spam.
+3. Forecasting tomorrow's highest temperature.
+4. Recognising which of three species a flower belongs to.
+
+<Solution>
+
+1. Features: floor area, number of bedrooms, location, age. Label: the sale price. A number, so **regression**.
+2. Features: the words in the email, the sender, whether it has links. Label: spam or not. A category, so **classification**.
+3. Features: today's temperature, pressure, wind, the time of year. Label: tomorrow's highest temperature. **Regression**.
+4. Features: petal length, petal width, colour. Label: the species. Three categories, so **classification**.
+
+Your features may differ. What matters is that they are things you would know before the answer, and that they plausibly carry information about it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Six students studied for 1, 2, 3, 4, 5 and 6 hours. Their results were fail, fail, pass, fail, pass, pass. Using a rule of the form "pass if hours are at least t", which threshold makes the fewest mistakes? Can any threshold be right about all six?
+
+<Solution>
+
+Try each gap in turn. A threshold between 2 and 3 predicts a pass for the students with 3, 4, 5 and 6 hours, and is wrong only about the student with 4 hours. A threshold between 4 and 5 predicts a pass for 5 and 6 hours, and is wrong only about the student with 3 hours. Both make one mistake. Every other threshold makes two or more.
+
+No threshold is perfect, because a pass at 3 hours comes before a fail at 4 hours. A single cut-off can never put those two students on the correct sides. Real data usually looks like this, and a good model is one that makes few mistakes, not none.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+A model is right about 100% of the examples it was trained on and 60% of a set of new examples. What has probably happened, and which number describes how good the model is?
+
+<Solution>
+
+The model has fitted its training examples very closely, including details that are particular to those examples and do not hold in general. It has partly memorised them.
+
+The number that describes the model is 60%, because that is how it behaves on data it has not seen, which is the only situation it will ever be used in. The chapter on generalization is about this gap and how to close it.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+Give one task where writing the rules by hand is the better choice, and say why.
+
+<Solution>
+
+Any task where the rule is known, short and exact. Working out the tax owed on an income, sorting a list of names, or checking that a password has at least eight characters. Someone has already written the rule down, a program that follows it is always right, and it needs no examples. Learning the rule from data would be slower, need thousands of examples, and still make occasional mistakes.
+
+Machine learning earns its place when the rule exists but nobody can state it, as with recognising a face or judging whether a message is spam.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Where the examples come from
 
-Everything a model knows comes from its examples. If last year's records only include students from one school, the rule may fail at another. If the labels contain mistakes, the model learns the mistakes. Collecting good examples is often harder than the learning itself, and the chapter on preparing data comes back to this.
+Everything a model knows comes from its examples. If last year's records only include students from one school, the rule may fail at another. If the labels contain mistakes, the model learns the mistakes. Collecting good examples is often harder than the learning itself, and <Ref to="preparing-data">the chapter on preparing data</Ref> comes back to this.
 
 ### A fourth kind of problem
 
@@ -175,3 +258,9 @@ Some programs learn by trial and error instead of from a table: they act, receiv
 - S. Yee and T. Chu, [A Visual Introduction to Machine Learning](https://r2d3.us/visual-intro-to-machine-learning-part-1/), R2D3.
 
 </References>
+
+<NextUp>
+
+The threshold rule could only say pass or fail. The next chapter keeps the same twelve students and predicts the score itself, using the simplest model that has adjustable numbers: a straight line.
+
+</NextUp>
