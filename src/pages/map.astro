@@ -11,19 +11,28 @@ const lectures = await getLectures();
 const BOX_W = 58;
 const BOX_H = 38;
 const GAP_X = 16;
-const ROW_H = 104;
+const ROW_H = 92;
 const LEFT = 16;
 const TOP = 30;
 
-const nodes = new Map(
-  parts.flatMap((part, row) =>
-    lectures
-      .filter((l) => l.data.part === part.id)
-      .map((l, col) => [l.id, { lecture: l, x: LEFT + col * (BOX_W + GAP_X), y: TOP + row * ROW_H, row }] as const),
-  ),
-);
-const width = LEFT * 2 + Math.max(...parts.map((p) => lectures.filter((l) => l.data.part === p.id).length)) * (BOX_W + GAP_X) - GAP_X;
-const height = TOP + parts.length * ROW_H - 30;
+const PER_ROW = 5;
+
+// Each part starts a new band; a part with more than five chapters wraps onto further rows.
+let row = 0;
+const bands: { part: (typeof parts)[number]; row: number }[] = [];
+const placed: [string, { lecture: (typeof lectures)[number]; x: number; y: number; row: number }][] = [];
+for (const part of parts) {
+  const own = lectures.filter((l) => l.data.part === part.id);
+  bands.push({ part, row });
+  own.forEach((l, i) => {
+    const r = row + Math.floor(i / PER_ROW);
+    placed.push([l.id, { lecture: l, x: LEFT + (i % PER_ROW) * (BOX_W + GAP_X), y: TOP + r * ROW_H, row: r }]);
+  });
+  row += Math.max(1, Math.ceil(own.length / PER_ROW));
+}
+const nodes = new Map(placed);
+const width = LEFT * 2 + PER_ROW * (BOX_W + GAP_X) - GAP_X;
+const height = TOP + row * ROW_H - 34;
 
 const edges = [...nodes.values()].flatMap((to) =>
   to.lecture.data.prerequisites.flatMap((id) => {
@@ -77,10 +86,10 @@ const description = 'How the chapters of the book build on one another, in one p
         </p>
       </header>
 
-      <div class="overflow-x-auto rounded border border-stone-200 bg-stone-50/50 p-2">
-        <svg id="book-map" viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Chapters and what each one builds on" style={`min-width: ${Math.round(width * 0.8)}px`} class="block w-full">
+      <div class="mx-auto max-w-xl rounded border border-stone-200 bg-stone-50/50 p-2">
+        <svg id="book-map" viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Chapters and what each one builds on" class="block w-full">
           {
-            parts.map((part, row) => (
+            bands.map(({ part, row }) => (
               <text x={LEFT} y={TOP + row * ROW_H - 12} class="map-part">
                 {part.data.label.toUpperCase()} · {part.data.title.toUpperCase()}
               </text>
@@ -106,13 +115,13 @@ const description = 'How the chapters of the book build on one another, in one p
         </svg>
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-stone-500">
+      <div class="mx-auto mt-4 flex max-w-xl flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-stone-500">
         <span><span class="mr-1.5 inline-block h-3 w-3 border border-stone-900 bg-white align-[-2px]"></span>Published</span>
         <span><span class="mr-1.5 inline-block h-3 w-3 border border-stone-900 bg-orange-600 align-[-2px]"></span>You have finished it</span>
         <span><span class="mr-1.5 inline-block h-3 w-3 border border-dashed border-stone-400 bg-white align-[-2px]"></span>Coming soon</span>
       </div>
 
-      <section id="map-detail" aria-live="polite" class="mt-8 min-h-40 rounded border-2 border-stone-900 p-6">
+      <section id="map-detail" aria-live="polite" class="mx-auto mt-8 min-h-40 max-w-xl rounded border-2 border-stone-900 p-6">
         <p class="text-stone-500 italic">Pick a chapter in the map.</p>
       </section>
     </div>

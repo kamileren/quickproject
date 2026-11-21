@@ -26,7 +26,7 @@ export default defineConfig({
   integrations: [
     react(),
     mdx(),
-    sitemap({ filter: (page) => !page.includes('/kit/') && !page.includes('/search/') }),
+    sitemap({ filter: (page) => !page.includes('/kit/') && !page.includes('/search/') && !page.includes('/review/') }),
   ],
   markdown: {
     // Maths needs remark/rehype plugins, so use the unified processor.

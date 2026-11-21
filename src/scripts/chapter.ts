@@ -31,7 +31,6 @@ if (article) {
   const targets = firstList
     ? [...firstList.querySelectorAll<HTMLAnchorElement>('a')].map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
     : [];
-  const toTop = document.getElementById('to-top');
 
   let queued = false;
   const update = () => {
@@ -48,7 +47,6 @@ if (article) {
       list.querySelectorAll('a').forEach((a, i) => (i === current ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
     }
     noteSection(chapterId, current >= 0 ? targets[current]?.id : undefined);
-    if (toTop) toTop.hidden = window.scrollY < 800;
   };
   const onScroll = () => {
     if (!queued) {
@@ -181,7 +179,11 @@ if (article) {
     const set = (on: boolean) => {
       figure.classList.toggle('is-expanded', on);
       document.documentElement.classList.toggle('has-expanded-figure', on);
-      button.textContent = on ? '✕ Close' : '⤢ Expand';
+      const icon = button.querySelector('[data-icon]');
+      const label = button.querySelector('[data-label]');
+      if (icon) icon.textContent = on ? '✕' : '⤢';
+      if (label) label.textContent = on ? 'Close' : 'Expand';
+      button.setAttribute('aria-label', on ? 'Close the expanded figure' : 'Expand this figure to fill the screen');
       button.setAttribute('aria-pressed', String(on));
     };
     button.hidden = false;

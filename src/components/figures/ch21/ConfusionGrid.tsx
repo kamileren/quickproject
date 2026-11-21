@@ -32,8 +32,8 @@ export default function ConfusionGrid() {
               <td className="border-0" />
               {SHORT.map((name) => (
                 <th key={name} scope="col" className="border-0 p-0 align-bottom">
-                  <div className="mx-auto h-14 w-6 sm:w-8">
-                    <span className="block origin-bottom-left translate-x-4 translate-y-12 -rotate-60 font-mono text-[9px] whitespace-nowrap text-stone-500 sm:translate-x-5">{name}</span>
+                  <div className="mx-auto h-14 w-5 sm:w-8">
+                    <span className="block origin-bottom-left translate-x-3 translate-y-12 -rotate-60 font-mono text-[8px] sm:text-[9px] whitespace-nowrap text-stone-500 sm:translate-x-5">{name}</span>
                   </div>
                 </th>
               ))}
@@ -42,7 +42,7 @@ export default function ConfusionGrid() {
           <tbody>
             {counts.map((row, t) => (
               <tr key={t}>
-                <th scope="row" className="border-0 py-0 pr-2 text-right font-mono text-[9px] font-normal whitespace-nowrap text-stone-500">
+                <th scope="row" className="border-0 py-0 pr-1.5 text-right font-mono text-[8px] sm:pr-2 sm:text-[9px] font-normal whitespace-nowrap text-stone-500">
                   {SHORT[t]}
                 </th>
                 {row.map((n, p) => {
@@ -58,7 +58,7 @@ export default function ConfusionGrid() {
                         aria-pressed={selected}
                         aria-label={`${n} ${log.classes[t]} images called ${log.classes[p]}`}
                         onClick={() => setCell([t, p])}
-                        className={`block h-6 w-6 cursor-pointer font-mono text-[10px] tabular-nums sm:h-8 sm:w-8 sm:text-[11px] ${dark ? 'text-white' : 'text-stone-700'} ${selected ? 'outline-2 outline-offset-[-2px] outline-stone-900' : ''}`}
+                        className={`block h-5 w-5 cursor-pointer font-mono text-[9px] tabular-nums sm:h-8 sm:w-8 sm:text-[11px] ${dark ? 'text-white' : 'text-stone-700'} ${selected ? 'outline-2 outline-offset-[-2px] outline-stone-900' : ''}`}
                         style={{ background }}
                       >
                         {n || ''}

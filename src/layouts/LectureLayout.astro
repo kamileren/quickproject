@@ -57,7 +57,7 @@ const jsonLd = {
 
 <BaseLayout title={`${title} — ${SITE_NAME}`} description={summary} jsonLd={jsonLd} shareImage={lecture.id}>
   <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600"></div>
-  <main class="px-6 pt-16 pb-32">
+  <main id="top" class="px-6 pt-10 pb-24 sm:pt-16 sm:pb-32">
     <div class="relative mx-auto max-w-3xl">
       <SiteNav />
 
@@ -174,16 +174,27 @@ const jsonLd = {
   </main>
 
   {/* On screens too narrow for the side list: a button that pulls the list up, and one that goes to the top. */}
-  <div class="fixed right-4 bottom-4 z-30 flex flex-col gap-2 min-[1280px]:hidden" data-print-hide>
-    <button id="to-top" type="button" hidden aria-label="Back to the top" class="float-button" onclick="window.scrollTo({ top: 0 })">↑</button>
-    <button type="button" data-open="sections-window" aria-label="Sections of this chapter" class="float-button">≡</button>
-  </div>
+  <button
+    type="button"
+    data-open="sections-window"
+    data-print-hide
+    aria-label="Sections of this chapter, search and settings"
+    class="float-button fixed right-3 bottom-3 z-30 min-[1280px]:hidden"
+  >
+    ≡
+  </button>
   <dialog id="sections-window" aria-label="In this chapter" class="site-dialog w-[min(26rem,calc(100vw-1.5rem))]">
     <div class="mb-4 flex items-center justify-between">
       <span class="micro-label text-stone-900">In this chapter</span>
-      <button type="button" data-close class="micro-label cursor-pointer text-stone-500 hover:text-stone-900">Close</button>
+      <button type="button" data-close class="micro-label cursor-pointer p-2 text-stone-500 hover:text-stone-900">Close</button>
     </div>
-    <SectionList links={sectionLinks} large />
+    <SectionList links={[{ href: '#top', label: 'Top of the chapter', tag: '' }, ...sectionLinks]} large />
+    <div class="mt-5 grid grid-cols-2 gap-2 border-t border-stone-100 pt-4 font-sans text-sm">
+      <a href="/search/" data-open="search-window" class="rounded border border-stone-200 px-3 py-2.5 text-center text-stone-700">Search</a>
+      <button type="button" data-open="settings-window" class="cursor-pointer rounded border border-stone-200 px-3 py-2.5 text-stone-700">Text and colours</button>
+      {prev && <a href={chapterUrl(prev)} class="rounded border border-stone-200 px-3 py-2.5 text-center text-stone-700">‹ Previous</a>}
+      {next && <a href={chapterUrl(next)} class="rounded border border-stone-200 px-3 py-2.5 text-center text-stone-700">Next ›</a>}
+    </div>
   </dialog>
 
   <div id="symbol-tip" role="tooltip" hidden class="pointer-events-none fixed z-50 max-w-64 rounded border border-stone-900 bg-white px-3 py-2 font-serif text-[13px] leading-snug text-stone-700 shadow-xl"></div>

@@ -58,6 +58,11 @@ The content check enforces the limits that keep chapters readable: per section a
 `<Checkpoint>` and three new `<Term>`s; every figure has a `try` prompt; every term exists in the glossary and is
 introduced once; every chapter has its pitfall, skills list, exercises with solutions, and closing bridge.
 
+Reader-facing extras live in a few places: `src/scripts/site.ts` (windows, shortcuts, settings, offline),
+`src/scripts/chapter.ts` (everything a chapter page does), `src/lib/prefs.ts` and `src/lib/progress.ts` (what is
+stored in the browser), `public/sw.js` (offline cache) and `public/search.js` (search). When something readers
+would notice is published, add an entry to `src/content/changelog.yaml`.
+
 The site also builds a glossary (`/glossary/`), a notation table (`/notation/`), a page per part (`/parts/<id>/`)
 and a search page (`/search/`, indexed by Pagefind during `npm run build`). Reading progress is stored only in
 the reader's browser (`src/lib/progress.ts`).

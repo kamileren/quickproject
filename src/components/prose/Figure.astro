@@ -15,24 +15,26 @@ const { title, caption, try: tryIt } = Astro.props;
       <div class="flex items-baseline"><div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div><span data-anchor-slot></span></div>
       <p class="text-xs text-stone-500 italic">{title}</p>
     </div>
-    <span class="flex shrink-0 flex-wrap justify-end gap-2">
+    <span class="flex shrink-0 justify-end gap-2">
     <button
       type="button"
       hidden
       data-figure-expand
       title="Let this figure fill the screen"
+      aria-label="Expand this figure to fill the screen"
       class="micro-label cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
     >
-      ⤢ Expand
+      <span data-icon aria-hidden="true">⤢</span><span data-label class="ml-1.5 hidden sm:inline">Expand</span>
     </button>
     <button
       type="button"
       hidden
       data-figure-reset
       title="Put this figure back the way it started"
+      aria-label="Start this figure over"
       class="micro-label cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
     >
-      ↺ Start over
+      <span aria-hidden="true">↺</span><span class="ml-1.5 hidden sm:inline">Start over</span>
     </button>
     </span>
   </header>

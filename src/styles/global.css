@@ -585,7 +585,7 @@ html:has(dialog[open]) {
   height: 2.75rem;
   border: 1px solid var(--ink);
   border-radius: 9999px;
-  background: #fff;
+  background: rgb(255 255 255 / 0.92);
   font-family: var(--font-mono);
   font-size: 1.1rem;
   color: var(--ink);
@@ -677,4 +677,57 @@ html.has-expanded-figure {
   border-left-color: var(--accent);
   color: var(--ink);
   font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Touch screens: bigger targets, and nothing that needs a hover to be found.
+   --------------------------------------------------------------------------- */
+@media (pointer: coarse) {
+  nav[aria-label='Site'] :is(a, button) {
+    padding-block: 0.5rem;
+  }
+  nav[aria-label='Site'] {
+    row-gap: 0;
+  }
+  .fold > summary {
+    padding-block: 0.6rem;
+  }
+  input[type='range'].book-range {
+    height: 2.25rem;
+  }
+  .exercise-done {
+    padding-block: 0.4rem;
+  }
+  .exercise-done input {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  /* Copying LaTeX is a desk job; on a phone the button would only sit over the formula. */
+  .copy-tex {
+    display: none;
+  }
+  .pop-trigger {
+    cursor: pointer;
+  }
+}
+
+/* Small screens: figures use the full width, with less frame around them. */
+@media (max-width: 640px) {
+  figure.book-figure {
+    margin-inline: -0.75rem;
+    padding: 1rem;
+    border-width: 1.5px;
+  }
+  figure.book-figure.is-expanded {
+    margin: 0;
+  }
+  .book-prose h2 {
+    margin-top: 3.5rem;
+    font-size: 1.0625rem;
+  }
+  dialog.site-dialog {
+    margin-top: 4vh;
+    max-height: 90vh;
+    padding: 1.25rem;
+  }
 }

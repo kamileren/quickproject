@@ -41,7 +41,7 @@ document.querySelectorAll<HTMLDialogElement>('dialog.site-dialog').forEach((d) =
   // A click on the dimmed area around the window closes it.
   d.addEventListener('click', (e) => {
     // Following a link inside the window (a section, a search result) also closes it.
-    if (e.target === d || (e.target as Element).closest('a')) d.close();
+    if (e.target === d || (e.target as Element).closest('a:not([data-open])')) d.close();
   });
 });
 

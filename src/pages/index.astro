@@ -92,7 +92,7 @@ const jsonLd = {
               <div>
                 <h3 class="display mb-2 text-lg">{path.title}</h3>
                 <p class="mb-3 text-sm leading-7 text-stone-600">{path.text}</p>
-                <a class="font-sans text-xs font-bold tracking-wider text-orange-700 uppercase hover:text-orange-900" href={path.href}>
+                <a class="inline-block py-1.5 font-sans text-xs font-bold tracking-wider text-orange-700 uppercase hover:text-orange-900" href={path.href}>
                   {path.action} <span aria-hidden="true">→</span>
                 </a>
               </div>
@@ -139,7 +139,7 @@ const jsonLd = {
                         const number = l.data.number.includes('.') ? l.data.number : l.data.number.padStart(2, '0');
                         const row = (
                           <>
-                            <span class="flex items-baseline gap-6">
+                            <span class="flex items-baseline gap-3 sm:gap-6">
                               <span class="w-6 shrink-0 font-mono text-xs font-bold">{number}</span>
                               <span class:list={['display text-lg tracking-tight', !ready && 'text-stone-400']}>
                                 <span class:list={[ready && 'toc-title']}>{l.data.title}</span>
@@ -161,7 +161,7 @@ const jsonLd = {
                               <a
                                 href={chapterUrl(l)}
                                 data-chapter-id={l.id}
-                                class="toc-row flex items-center justify-between py-2 text-stone-900 transition-colors hover:text-orange-700"
+                                class="toc-row flex items-center justify-between gap-3 py-2.5 text-stone-900 transition-colors hover:text-orange-700"
                               >
                                 {row}
                               </a>

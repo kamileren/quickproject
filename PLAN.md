@@ -250,6 +250,16 @@ Content:
 
 Left out on purpose: running Python in the browser, accounts and comments, dark mode.
 
+### Wave 3.6: quality of life, and the phone view
+
+- [x] 33o. Search window on every page, keyboard shortcuts, reading settings (text size, dark colours).
+- [x] 33p. Chapter page: resume at the section last read, links to sections and figures, a pull-up section list on phones, figures that fill the screen, print layout, "last updated" and "suggest an edit".
+- [x] 33q. Formulas: symbols explain themselves, and a formula can be copied as LaTeX.
+- [x] 33r. Study tools: exercises can be ticked off and have hints, a review page for missed checkpoints, a recap page, a prerequisite reminder.
+- [x] 33s. A map of how chapters depend on each other, a changelog page, a footer.
+- [x] 33t. Offline reading, an installable app manifest, export and import of progress.
+- [x] 33u. Phone pass: figure headers, the confusion grid, the map, tap targets, spacing.
+
 ### Wave 4: remaining models
 
 - [ ] 34. `trees` library.
