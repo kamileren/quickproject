@@ -327,6 +327,16 @@ body {
     border-bottom-style: solid;
     color: var(--accent-dark);
   }
+  .pop-trigger.is-reference {
+    font-style: normal;
+    cursor: pointer;
+  }
+  /* A word another page linked to: mark it so the reader finds it. */
+  .pop-trigger:target {
+    border-radius: 2px;
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
   .pop-trigger.is-symbol {
     font-family: 'KaTeX_Math', 'Times New Roman', serif;
     font-size: 1.1em;

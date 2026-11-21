@@ -29,3 +29,28 @@ export function chapterLabel(number: string): string {
 export function chapterUrl(lecture: Lecture): string {
   return `/${lecture.id}/`;
 }
+
+/** "Chapter 8: Nearest Neighbours" or "Toolkit 0.1: Vectors and Matrices". */
+export function chapterName(lecture: Lecture): string {
+  return `${chapterLabel(lecture.data.number)}: ${lecture.data.title}`;
+}
+
+let homes: Promise<Map<string, Lecture>> | undefined;
+
+/**
+ * Where each glossary term is introduced: the first published chapter, in
+ * book order, that wraps it in <Term>. Read from the chapter sources, so it
+ * never has to be kept up to date by hand.
+ */
+export function termHomes(): Promise<Map<string, Lecture>> {
+  homes ??= getReadyLectures().then((lectures) => {
+    const map = new Map<string, Lecture>();
+    for (const lecture of lectures) {
+      for (const [, id] of (lecture.body ?? '').matchAll(/<Term\s+id="([^"]+)"/g)) {
+        if (!map.has(id)) map.set(id, lecture);
+      }
+    }
+    return map;
+  });
+  return homes;
+}

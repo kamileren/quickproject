@@ -14,6 +14,7 @@ import Term from './popins/Term.astro';
 import Symbol from './popins/Symbol.astro';
 import Checkpoint from './popins/Checkpoint.astro';
 import Derivation from './popins/Derivation.astro';
+import Ref from './popins/Ref.astro';
 
 export const mdxComponents = {
   Definition,
@@ -28,4 +29,5 @@ export const mdxComponents = {
   Symbol,
   Checkpoint,
   Derivation,
+  Ref,
 };

@@ -11,4 +11,4 @@ const entry = await getEntry('notation', id);
 if (!entry) throw new Error(`<Symbol id="${id}">: no such entry in src/content/notation.yaml`);
 ---
 
-<Pop client:idle heading={entry.data.symbol} body={entry.data.meaning} symbol>{entry.data.symbol}</Pop>
+<Pop client:idle heading={entry.data.symbol} body={entry.data.meaning} links={[{ label: 'All notation', href: `/notation/#${id}` }]} symbol>{entry.data.symbol}</Pop>

@@ -1,0 +1,87 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
+import { chapterName, chapterUrl, SITE_NAME, termHomes } from '@/lib/book';
+
+const homes = await termHomes();
+const all = await getCollection('glossary');
+const names = new Map(all.map((e) => [e.id, e.data.term]));
+
+// Only terms a published chapter introduces, so every entry has somewhere to go.
+const entries = all
+  .filter((e) => homes.has(e.id))
+  .sort((a, b) => a.data.term.localeCompare(b.data.term, 'en', { sensitivity: 'base' }));
+
+const letters = [...new Set(entries.map((e) => e.data.term[0].toUpperCase()))];
+const description = `Every term the book defines, ${entries.length} of them, each in a sentence or two with a link to the chapter that introduces it.`;
+---
+
+<BaseLayout title={`Glossary — ${SITE_NAME}`} description={description}>
+  <main class="px-6 pt-16 pb-32">
+    <div class="mx-auto max-w-3xl">
+      <SiteNav current="glossary" />
+      <header class="mb-12">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Reference</div>
+        </div>
+        <h1 class="display mb-6 text-5xl leading-[1.05] sm:text-6xl">Glossary.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          {entries.length} terms, each in a sentence or two, with the chapter that introduces it.
+        </p>
+      </header>
+
+      <nav aria-label="Jump to a letter" class="mb-12 flex flex-wrap gap-x-3 gap-y-1 border-y border-stone-200 py-3 font-mono text-xs font-bold">
+        {letters.map((letter) => <a href={`#letter-${letter}`} class="px-1 text-stone-500 hover:text-orange-600">{letter}</a>)}
+      </nav>
+
+      {
+        letters.map((letter) => (
+          <section class="mb-10">
+            <h2 id={`letter-${letter}`} class="micro-label mb-4 text-sm text-orange-600">{letter}</h2>
+            <dl>
+              {entries
+                .filter((e) => e.data.term[0].toUpperCase() === letter)
+                .map((e) => {
+                  const home = homes.get(e.id)!;
+                  return (
+                    <div id={e.id} class="entry border-b border-stone-100 py-4">
+                      <dt class="display text-lg">{e.data.term}</dt>
+                      <dd class="mt-1 text-base leading-relaxed text-stone-700">{e.data.definition}</dd>
+                      <dd class="mt-1.5 font-sans text-xs text-stone-500">
+                        <a href={`${chapterUrl(home)}#term-${e.id}`} class="underline decoration-orange-300 underline-offset-2 hover:text-orange-700">
+                          {chapterName(home)}
+                        </a>
+                        {e.data.seeAlso.length > 0 && (
+                          <span>
+                            {' · See also '}
+                            {e.data.seeAlso.map((other, i) => (
+                              <>
+                                {i > 0 && ', '}
+                                <a href={`#${other}`} class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
+                                  {(names.get(other) ?? other).toLowerCase()}
+                                </a>
+                              </>
+                            ))}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  );
+                })}
+            </dl>
+          </section>
+        ))
+      }
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .entry:target {
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+    background: var(--accent-soft);
+  }
+</style>

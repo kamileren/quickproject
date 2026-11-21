@@ -41,10 +41,15 @@ const jsonLd = {
           {
             firstReady && (
               <div class="flex justify-center gap-4">
-                <a class="btn btn-primary" href={chapterUrl(firstReady)}>
-                  Start Reading <span aria-hidden="true">→</span>
+                <a id="start-link" class="btn btn-primary" href={chapterUrl(firstReady)}>
+                  <span id="start-text">Start Reading</span> <span aria-hidden="true">→</span>
                 </a>
               </div>
+              <p class="mt-6 font-sans text-xs text-stone-500">
+                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/glossary/">Glossary</a>
+                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
+                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/notation/">Notation</a>
+              </p>
             )
           }
         </div>
@@ -62,7 +67,7 @@ const jsonLd = {
           </p>
         </div>
 
-        <nav class="md:col-span-8" aria-label="Table of contents">
+        <nav id="contents" class="md:col-span-8" aria-label="Table of contents">
           <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
             Table of Contents
           </h2>
@@ -88,7 +93,7 @@ const jsonLd = {
                               </span>
                             </span>
                             <span class="flex items-center gap-3">
-                              <span class="text-[9px] font-bold tracking-widest uppercase">
+                              <span class="toc-status text-[9px] font-bold tracking-widest uppercase">
                                 {ready ? 'Read' : 'Soon'}
                               </span>
                               <span aria-hidden="true" class={ready ? 'text-orange-600' : 'text-stone-200'}>
@@ -102,6 +107,7 @@ const jsonLd = {
                             {ready ? (
                               <a
                                 href={chapterUrl(l)}
+                                data-chapter-id={l.id}
                                 class="toc-row flex items-center justify-between py-2 text-stone-900 transition-colors hover:text-orange-700"
                               >
                                 {row}
@@ -117,13 +123,58 @@ const jsonLd = {
               ))
             }
           </div>
+          <p id="progress-note" hidden class="mt-8 font-sans text-xs text-stone-500">
+            <span id="progress-count"></span> Progress is kept in this browser only.
+            <button id="progress-clear" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
+              Clear it
+            </button>
+          </p>
         </nav>
       </div>
     </div>
   </main>
 </BaseLayout>
 
+<script>
+  import { clearProgress, loadProgress } from '@/lib/progress';
+
+  // Show what this reader has finished, and offer to pick up where they stopped.
+  const progress = loadProgress();
+  const rows = [...document.querySelectorAll<HTMLAnchorElement>('a[data-chapter-id]')];
+  let done = 0;
+  for (const row of rows) {
+    if (!progress.read[row.dataset.chapterId ?? '']) continue;
+    done++;
+    const status = row.querySelector('.toc-status');
+    if (status) status.textContent = 'Done ✓';
+    row.classList.add('is-done');
+  }
+
+  const last = progress.last;
+  const lastRow = last && rows.find((r) => r.dataset.chapterId === last.id);
+  const start = document.getElementById('start-link') as HTMLAnchorElement | null;
+  const startText = document.getElementById('start-text');
+  if (last && lastRow && start && startText) {
+    start.href = lastRow.href;
+    startText.textContent = `Continue: ${last.title}`;
+  }
+
+  const note = document.getElementById('progress-note');
+  const count = document.getElementById('progress-count');
+  if (done > 0 && note && count) {
+    count.textContent = `You have finished ${done} of ${rows.length} chapters.`;
+    note.hidden = false;
+  }
+  document.getElementById('progress-clear')?.addEventListener('click', () => {
+    clearProgress();
+    location.reload();
+  });
+</script>
+
 <style>
+  .toc-row.is-done .toc-status {
+    color: var(--accent-dark);
+  }
   .toc-row .toc-title {
     text-decoration: underline;
     text-decoration-color: #fdba74;

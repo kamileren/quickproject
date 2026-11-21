@@ -1,7 +1,8 @@
 ---
 /** Jargon with a pop-in definition from the glossary. Use on first mention only. */
 import { getEntry } from 'astro:content';
-import Pop from './Pop';
+import Pop, { type PopLink } from './Pop';
+import { chapterName, chapterUrl, termHomes } from '@/lib/book';
 
 interface Props {
   id: string;
@@ -9,6 +10,18 @@ interface Props {
 const { id } = Astro.props;
 const entry = await getEntry('glossary', id);
 if (!entry) throw new Error(`<Term id="${id}">: no such entry in src/content/glossary.yaml`);
+
+const links: PopLink[] = [];
+const home = (await termHomes()).get(id);
+const isHome = home !== undefined && chapterUrl(home) === Astro.url.pathname;
+// In a later chapter, point back to where the term was first explained.
+if (home && !isHome) links.push({ lead: 'Introduced in', label: chapterName(home), href: `${chapterUrl(home)}#term-${id}` });
+for (const other of entry.data.seeAlso) {
+  const related = await getEntry('glossary', other);
+  if (!related) throw new Error(`glossary.yaml: "${id}" lists unknown seeAlso "${other}"`);
+  links.push({ lead: 'See also', label: related.data.term.toLowerCase(), href: `/glossary/#${other}` });
+}
+links.push({ label: 'Glossary', href: `/glossary/#${id}` });
 ---
 
-<Pop client:idle heading={entry.data.term} body={entry.data.definition}><slot /></Pop>
+<Pop client:idle heading={entry.data.term} body={entry.data.definition} links={links} anchor={isHome ? `term-${id}` : undefined}><slot /></Pop>

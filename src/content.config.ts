@@ -34,7 +34,12 @@ const parts = defineCollection({
 
 const glossary = defineCollection({
   loader: file('src/content/glossary.yaml'),
-  schema: z.object({ term: z.string(), definition: z.string() }),
+  schema: z.object({
+    term: z.string(),
+    definition: z.string(),
+    /** Ids of related terms, shown as links in the pop-in and the glossary. */
+    seeAlso: z.array(z.string()).default([]),
+  }),
 });
 
 const notation = defineCollection({

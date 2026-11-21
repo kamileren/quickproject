@@ -1,6 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
 import { chapterLabel, chapterUrl, SITE_NAME, type Lecture, type Part } from '@/lib/book';
 
 interface Props {
@@ -28,11 +29,10 @@ const jsonLd = {
 ---
 
 <BaseLayout title={`${title} — ${SITE_NAME}`} description={summary} jsonLd={jsonLd}>
+  <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600"></div>
   <main class="px-6 pt-16 pb-32">
     <div class="relative mx-auto max-w-3xl">
-      <a href="/" class="mb-10 inline-flex items-center gap-2 font-sans text-sm text-stone-500 transition-colors hover:text-orange-600">
-        <span aria-hidden="true">‹</span> Contents
-      </a>
+      <SiteNav />
 
       <header class="mb-16">
         <div class="mb-8 flex items-center gap-4">
@@ -76,13 +76,13 @@ const jsonLd = {
       {/* Section list: beside the text on very wide screens, above it otherwise. */}
       {
         sections.length > 0 && (
-          <nav aria-label="In this chapter" class="mb-12 min-[1500px]:absolute min-[1500px]:top-0 min-[1500px]:right-full min-[1500px]:mr-16 min-[1500px]:mb-0 min-[1500px]:h-full min-[1500px]:w-48">
-            <div class="min-[1500px]:sticky min-[1500px]:top-10">
+          <nav aria-label="In this chapter" class="mb-12 min-[1280px]:absolute min-[1280px]:top-0 min-[1280px]:right-full min-[1280px]:mr-10 min-[1280px]:mb-0 min-[1280px]:h-full min-[1280px]:w-44 min-[1500px]:mr-16 min-[1500px]:w-48">
+            <div class="min-[1280px]:sticky min-[1280px]:top-10">
               <div class="micro-label mb-3 text-stone-400">In this chapter</div>
-              <ol class="space-y-1.5 border-l border-stone-100 pl-4 font-sans text-[13px] leading-snug text-stone-500">
+              <ol id="section-list" class="space-y-1.5 border-l border-stone-100 font-sans text-[13px] leading-snug text-stone-500">
                 {sections.map((s, i) => (
                   <li>
-                    <a href={`#${s.slug}`} class="transition-colors hover:text-orange-600">
+                    <a href={`#${s.slug}`} class="-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600">
                       <span class="mr-1.5 font-mono text-[10px] text-stone-400">{number}.{i + 1}</span>
                       {s.text}
                     </a>
@@ -94,11 +94,11 @@ const jsonLd = {
         )
       }
 
-      <article class="book-prose" style={`--chapter: '${number}'`}>
+      <article class="book-prose" style={`--chapter: '${number}'`} data-chapter-id={lecture.id} data-chapter-title={title} data-chapter-label={chapterLabel(number)}>
         <slot />
       </article>
 
-      <nav aria-label="Chapters" class="mt-24 grid gap-4 border-t-2 border-stone-900 pt-8 font-sans sm:grid-cols-2">
+      <nav id="chapter-end" aria-label="Chapters" class="mt-24 grid gap-4 border-t-2 border-stone-900 pt-8 font-sans sm:grid-cols-2">
         {
           prev ? (
             <a href={chapterUrl(prev)} class="group block">
@@ -126,3 +126,63 @@ const jsonLd = {
     </div>
   </main>
 </BaseLayout>
+
+<style>
+  #section-list a[aria-current='true'] {
+    border-left-color: var(--accent);
+    color: var(--ink);
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  import { markRead, noteOpened } from '@/lib/progress';
+
+  const article = document.querySelector<HTMLElement>('article[data-chapter-id]');
+  if (article) {
+    const { chapterId = '', chapterTitle = '', chapterLabel = '' } = article.dataset;
+    noteOpened(chapterId, chapterTitle, chapterLabel);
+
+    // The chapter counts as read once its last lines have been on screen.
+    const end = document.getElementById('chapter-end');
+    if (end) {
+      const seen = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          markRead(chapterId);
+          seen.disconnect();
+        }
+      });
+      seen.observe(end);
+    }
+
+    // Thin bar at the top of the window: how far through the chapter the reader is.
+    const bar = document.getElementById('reading-bar');
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('#section-list a')];
+    const headings = links
+      .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+      .filter((h): h is HTMLElement => h !== null);
+
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const box = article.getBoundingClientRect();
+      const done = Math.min(1, Math.max(0, -box.top / Math.max(1, box.height - window.innerHeight)));
+      if (bar) bar.style.transform = `scaleX(${done})`;
+      // The current section is the last heading that has passed the top third of the window.
+      let current = -1;
+      headings.forEach((h, i) => {
+        if (h.getBoundingClientRect().top < window.innerHeight / 3) current = i;
+      });
+      links.forEach((a, i) => (i === current ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+    };
+    const onScroll = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    update();
+  }
+</script>

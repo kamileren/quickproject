@@ -1,4 +1,5 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
+import { chapterIdFromPath, saveAnswer, savedAnswer } from '@/lib/progress';
 
 export interface CheckpointOption {
   text: string;
@@ -13,10 +14,21 @@ interface CheckpointProps {
   options: CheckpointOption[];
 }
 
-/** A single multiple-choice question. The reader can keep trying. */
+/** A single multiple-choice question. The reader can keep trying, and the last answer is remembered. */
 export default function CheckpointIsland({ question, options }: CheckpointProps) {
   const [picked, setPicked] = useState<number | null>(null);
   const feedbackId = useId();
+
+  // Restored after the first paint, because the saved answer only exists in the browser.
+  useEffect(() => {
+    const saved = savedAnswer(chapterIdFromPath(location.pathname), question);
+    if (saved !== null && saved < options.length) setPicked(saved);
+  }, [question, options.length]);
+
+  const pick = (i: number) => {
+    setPicked(i);
+    saveAnswer(chapterIdFromPath(location.pathname), question, i);
+  };
   const chosen = picked === null ? null : options[picked];
 
   return (
@@ -37,7 +49,7 @@ export default function CheckpointIsland({ question, options }: CheckpointProps)
               type="button"
               aria-pressed={isPicked}
               aria-describedby={isPicked ? feedbackId : undefined}
-              onClick={() => setPicked(i)}
+              onClick={() => pick(i)}
               className={`flex cursor-pointer items-baseline gap-3 rounded border px-4 py-2.5 text-left text-[15px] leading-snug transition-colors ${tone}`}
             >
               <span className="font-mono text-[10px] font-bold opacity-60">{String.fromCharCode(65 + i)}</span>

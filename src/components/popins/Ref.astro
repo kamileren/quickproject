@@ -1,0 +1,37 @@
+---
+/**
+ * A mention of another chapter that reminds the reader what it covered.
+ *   <Ref to="generalization">the generalization chapter</Ref>
+ * If that chapter is not published yet, the words are shown as plain text.
+ */
+import { getEntry } from 'astro:content';
+import Pop from './Pop';
+import { chapterName, chapterUrl } from '@/lib/book';
+
+interface Props {
+  /** Chapter id: its file name without the number, e.g. "gradient-descent". */
+  to: string;
+  /** Replaces the chapter summary when a more specific reminder helps. */
+  recap?: string;
+}
+const { to, recap } = Astro.props;
+const target = await getEntry('lectures', to);
+if (!target) throw new Error(`<Ref to="${to}">: no such chapter`);
+const ready = target.data.status === 'ready';
+---
+
+{
+  ready ? (
+    <Pop
+      client:idle
+      reference
+      heading={chapterName(target)}
+      body={recap ?? target.data.summary}
+      links={[{ label: 'Open the chapter', href: chapterUrl(target) }]}
+    >
+      <slot />
+    </Pop>
+  ) : (
+    <slot />
+  )
+}

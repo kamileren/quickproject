@@ -4,15 +4,18 @@
 - id: feature
   term: Feature
   definition: One measured property of an example that the model is allowed to look at, such as hours studied.
+  seeAlso: [label]
 - id: label
   term: Label
   definition: The known correct answer for an example, such as the exam score. Also called the target.
+  seeAlso: [feature]
 - id: model
   term: Model
   definition: A rule with adjustable numbers that turns an input into a prediction. Learning means choosing those numbers.
 - id: parameter
   term: Parameter
   definition: One of the adjustable numbers inside a model. A line has two, its slope and its bias.
+  seeAlso: [hyperparameter]
 - id: slope
   term: Slope
   definition: How much the prediction changes when the input grows by one unit. Also called the weight.
@@ -28,6 +31,7 @@
 - id: mse
   term: Mean squared error
   definition: The average of the squared residuals. Squaring makes every miss positive and makes big misses count much more.
+  seeAlso: [rmse]
 - id: least-squares
   term: Least squares
   definition: Choosing the model that makes the mean squared error as small as possible.
@@ -37,6 +41,7 @@
 - id: rmse
   term: Root mean squared error
   definition: The square root of the mean squared error. It is in the same units as the thing being predicted.
+  seeAlso: [mse]
 - id: r-squared
   term: R squared
   definition: The share of the variation in the target that the model explains. 1 is perfect, 0 is no better than always guessing the average.
@@ -55,15 +60,19 @@
 - id: supervised
   term: Supervised learning
   definition: Learning from examples that come with the right answer attached, so the model can be corrected.
+  seeAlso: [unsupervised]
 - id: unsupervised
   term: Unsupervised learning
   definition: Learning from examples with no answers attached. The goal is to find structure, such as groups.
+  seeAlso: [supervised]
 - id: regression
   term: Regression
   definition: Predicting a number, such as a score or a price.
+  seeAlso: [classification]
 - id: classification
   term: Classification
   definition: Predicting a category, such as pass or fail.
+  seeAlso: [regression]
 - id: training
   term: Training
   definition: The process of adjusting the parameters of a model so that its predictions match the examples.
@@ -73,72 +82,90 @@
 - id: test-set
   term: Test set
   definition: Examples held back and never used for fitting, so they can show how the model does on data it has not seen.
+  seeAlso: [leakage]
 - id: gradient
   term: Gradient
   definition: The list of slopes of the loss, one per parameter. It points in the direction in which the loss grows fastest.
 - id: learning-rate
   term: Learning rate
   definition: The number that sets how far each step of gradient descent moves. Too small is slow, too large overshoots.
+  seeAlso: [learning-rate-decay]
 - id: gradient-descent
   term: Gradient descent
   definition: Repeatedly nudging the parameters a small step against the gradient, so the loss goes down.
+  seeAlso: [learning-rate, gradient]
 - id: converge
   term: Converge
   definition: To settle down. A run has converged when further steps no longer change the parameters or the loss noticeably.
+  seeAlso: [diverge]
 - id: diverge
   term: Diverge
   definition: To blow up. Each step makes the loss larger than the last, usually because the learning rate is too big.
+  seeAlso: [learning-rate]
 - id: epoch
   term: Epoch
   definition: One full pass through the training data.
+  seeAlso: [batch-size]
 - id: mini-batch
   term: Mini-batch
   definition: A small random handful of examples used to estimate the gradient cheaply for one step.
 - id: sgd
   term: Stochastic gradient descent
   definition: Gradient descent where each step uses a random mini-batch instead of the whole dataset. Noisier, but far cheaper per step.
+  seeAlso: [mini-batch]
 - id: convex
   term: Convex
   definition: Shaped like a single bowl. A convex loss has one lowest point and no other dips to get stuck in.
 - id: underfitting
   term: Underfitting
   definition: When a model is too simple to follow the real pattern. It does badly on the data it was fitted to and on new data alike.
+  seeAlso: [overfitting]
 - id: overfitting
   term: Overfitting
   definition: When a model follows the accidents of its training data instead of the real pattern. It looks excellent on that data and does badly on new data.
+  seeAlso: [underfitting, regularization]
 - id: noise
   term: Noise
   definition: The part of the data that no model could predict, such as luck on the day. It differs from one sample to the next.
 - id: training-set
   term: Training set
   definition: The examples used to fit the parameters of a model.
+  seeAlso: [validation-set, test-set]
 - id: validation-set
   term: Validation set
   definition: Examples held back from fitting and used to choose between models or settings. Not the same as the test set.
+  seeAlso: [cross-validation]
 - id: hyperparameter
   term: Hyperparameter
   definition: A setting you choose before training, such as the degree of a curve or the learning rate. The model does not learn it from the data.
+  seeAlso: [parameter]
 - id: leakage
   term: Data leakage
   definition: When information from the validation or test examples slips into training. It makes results look better than they will be in real use.
+  seeAlso: [test-set]
 - id: cross-validation
   term: Cross-validation
   definition: Splitting the data into several parts and taking turns to hold each part out, so every example is used for both fitting and checking.
+  seeAlso: [validation-set]
 - id: model-bias
   term: Bias (of a model)
   definition: Error from the model being too rigid to match the real pattern, however much data it sees. Not the same thing as the bias term b of a line.
+  seeAlso: [variance]
 - id: variance
   term: Variance (of a model)
   definition: How much the fitted model changes when it is trained on a different sample of data. Flexible models have more of it.
+  seeAlso: [model-bias]
 - id: regularization
   term: Regularization
   definition: Any change to training that discourages a model from fitting noise, usually a penalty on large weights.
 - id: ridge
   term: Ridge regression
   definition: Least squares with a penalty on the sum of squared weights. It shrinks every weight toward zero but rarely to exactly zero.
+  seeAlso: [lasso]
 - id: lasso
   term: Lasso
   definition: Least squares with a penalty on the sum of absolute weights. It pushes some weights to exactly zero, which removes those features.
+  seeAlso: [ridge, sparse]
 - id: feature-selection
   term: Feature selection
   definition: Deciding which features a model should use and which it should ignore.
@@ -148,12 +175,14 @@
 - id: standardize
   term: Standardize
   definition: Rescale a feature so that its average is 0 and its typical spread is 1. It puts features on a common footing.
+  seeAlso: [euclidean-distance]
 - id: logistic-regression
   term: Logistic regression
   definition: A model for yes/no questions. It computes a weighted sum of the features and squashes it into a probability between 0 and 1.
 - id: sigmoid
   term: Sigmoid
   definition: The S-shaped function that turns any number into a value between 0 and 1. Large positive inputs give nearly 1, large negative ones nearly 0.
+  seeAlso: [logistic-regression]
 - id: probability
   term: Probability
   definition: A number from 0 to 1 saying how likely something is. 0 means never, 1 means certain, 0.5 means a coin flip.
@@ -163,6 +192,7 @@
 - id: threshold
   term: Threshold
   definition: The cut-off probability above which a model answers yes. 0.5 is the usual default, but it is a choice.
+  seeAlso: [decision-boundary]
 - id: decision-boundary
   term: Decision boundary
   definition: The dividing line between the inputs a model labels one class and those it labels the other.
@@ -178,30 +208,38 @@
 - id: confusion-matrix
   term: Confusion matrix
   definition: A two-by-two table that counts predictions by what was predicted and what was true. It shows which kinds of mistake a model makes.
+  seeAlso: [precision, recall]
 - id: false-positive
   term: False positive
   definition: A no that the model called yes. A false alarm.
+  seeAlso: [false-negative]
 - id: false-negative
   term: False negative
   definition: A yes that the model called no. A miss.
+  seeAlso: [false-positive]
 - id: precision
   term: Precision
   definition: Of everything the model flagged as yes, the share that really was yes. High precision means few false alarms.
+  seeAlso: [recall, f1]
 - id: recall
   term: Recall
   definition: Of everything that really was yes, the share the model flagged. High recall means few misses. Also called sensitivity.
+  seeAlso: [precision, f1]
 - id: f1
   term: F1 score
   definition: A single number combining precision and recall. It is high only when both are high.
 - id: roc-curve
   term: ROC curve
   definition: A plot of the share of real yeses caught against the share of real noes wrongly flagged, for every possible threshold.
+  seeAlso: [auc]
 - id: auc
   term: AUC
   definition: Area under the ROC curve. It is the chance that the model scores a random yes above a random no. 1 is perfect, 0.5 is guessing.
+  seeAlso: [roc-curve]
 - id: knn
   term: k-nearest neighbours
   definition: A method that classifies a new point by finding the k most similar known points and taking a vote among them.
+  seeAlso: [curse-of-dimensionality]
 - id: euclidean-distance
   term: Euclidean distance
   definition: Ordinary straight-line distance. Square the difference in each feature, add them up, and take the square root.
@@ -217,15 +255,19 @@
 - id: prior
   term: Prior
   definition: How likely something is before looking at the evidence. For spam, the share of all messages that are spam.
+  seeAlso: [posterior]
 - id: posterior
   term: Posterior
   definition: How likely something is after taking the evidence into account. It is what Bayes' rule computes.
+  seeAlso: [prior, likelihood]
 - id: likelihood
   term: Likelihood
   definition: How probable the evidence is if a given answer were true, such as how often the word "free" turns up in spam.
+  seeAlso: [bayes-rule]
 - id: naive-bayes
   term: Naive Bayes
   definition: A classifier that applies Bayes' rule while pretending every feature is independent of the others. Simple, fast, and often good enough.
+  seeAlso: [independence]
 - id: independence
   term: Independence
   definition: Two things are independent when knowing one tells you nothing about the other. Words in a message are not, which is why the assumption is called naive.
@@ -235,6 +277,7 @@
 - id: margin
   term: Margin
   definition: The empty gap between a decision boundary and the closest training points on either side. A wider margin leaves more room for error.
+  seeAlso: [support-vector]
 - id: svm
   term: Support vector machine
   definition: A classifier that chooses the boundary with the widest possible margin between the classes.
@@ -244,9 +287,11 @@
 - id: soft-margin
   term: Soft margin
   definition: A margin that some points are allowed to cross, at a cost. It lets an SVM handle classes that overlap.
+  seeAlso: [margin]
 - id: kernel
   term: Kernel
   definition: A function that measures how similar two examples are. Using one lets a method that draws straight boundaries draw curved ones.
+  seeAlso: [rbf]
 - id: rbf
   term: RBF kernel
   definition: The most common kernel. It scores two points as similar when they are close together, with a setting for how quickly that similarity fades with distance.
@@ -259,6 +304,7 @@
 - id: dot-product
   term: Dot product
   definition: Multiply the matching entries of two vectors and add the results. It gives one number that is large when the vectors point the same way.
+  seeAlso: [vector]
 - id: matrix
   term: Matrix
   definition: A rectangular table of numbers. A dataset with one row per example and one column per feature is a matrix.
@@ -268,9 +314,11 @@
 - id: derivative
   term: Derivative
   definition: How fast the output of a function changes when its input changes a little. On a graph it is the steepness of the curve at a point.
+  seeAlso: [partial-derivative]
 - id: partial-derivative
   term: Partial derivative
   definition: The derivative with respect to one input while all the other inputs are held still.
+  seeAlso: [gradient]
 - id: chain-rule
   term: Chain rule
   definition: When one calculation feeds into another, the overall rate of change is the product of the rates of each step.
@@ -295,6 +343,7 @@
 - id: weight
   term: Weight
   definition: A learned number that says how strongly one input affects a neuron's output, and in which direction.
+  seeAlso: [parameter]
 - id: neural-network
   term: Neural network
   definition: A model made of layers of simple units called neurons, each feeding its output to the next layer.
@@ -316,27 +365,35 @@
 - id: relu
   term: ReLU
   definition: The rectified linear unit, the most common activation function. It turns negative numbers into zero and leaves positive numbers unchanged.
+  seeAlso: [activation-function]
 - id: forward-pass
   term: Forward pass
   definition: Running an input through the network from the first layer to the last to get its output.
+  seeAlso: [backward-pass]
 - id: softmax
   term: Softmax
   definition: A function that turns a list of scores into probabilities. Every result is positive, they add up to 1, and a higher score gets a larger share.
+  seeAlso: [logits]
 - id: logits
   term: Logits
   definition: The raw scores a network produces for each class, before softmax turns them into probabilities.
+  seeAlso: [softmax]
 - id: cross-entropy
   term: Cross-entropy
   definition: The usual loss for classification. It is minus the logarithm of the probability the model gave to the correct class.
+  seeAlso: [log-loss]
 - id: one-hot
   term: One-hot
   definition: A way of writing a class as a list of zeros with a single 1 in the position of that class.
+  seeAlso: [cross-entropy]
 - id: backpropagation
   term: Backpropagation
   definition: The method for finding how every weight in a network affects the loss. It applies the chain rule backward from the loss, one layer at a time.
+  seeAlso: [chain-rule]
 - id: backward-pass
   term: Backward pass
   definition: Sending the gradient of the loss back through the network, from the last layer to the first, so that each layer can work out the gradients of its own weights.
+  seeAlso: [forward-pass]
 - id: gradient-check
   term: Gradient check
   definition: Testing a backward pass by comparing its gradients with slopes measured directly, by nudging each weight a little.
@@ -352,27 +409,33 @@
 - id: momentum
   term: Momentum
   definition: Carrying part of the previous update into the next one. It builds up speed in directions that stay consistent and damps back-and-forth motion.
+  seeAlso: [adam]
 - id: adaptive-rate
   term: Adaptive learning rate
   definition: A separate step size for every weight, set automatically from the size of that weight's recent gradients.
 - id: adam
   term: Adam
   definition: An optimizer that combines momentum with a per-weight adaptive step size. It is the usual default for training neural networks.
+  seeAlso: [momentum, adaptive-rate]
 - id: weight-decay
   term: Weight penalty
   definition: An extra term in the loss that grows with the size of the weights, so the network prefers small ones. With squared weights it is called L2 regularization or weight decay.
+  seeAlso: [ridge]
 - id: dropout
   term: Dropout
   definition: Switching off a random share of neurons at every training step, so the network cannot rely on any single one. All neurons are used when predicting.
+  seeAlso: [regularization]
 - id: early-stopping
   term: Early stopping
   definition: Ending training when the loss on held-out data stops improving, and keeping the weights from that point.
+  seeAlso: [validation-set]
 - id: output-layer
   term: Output layer
   definition: The last layer of a network. Its size and activation are chosen to match the kind of answer wanted, such as a probability, one class out of several, or a number.
 - id: binary-cross-entropy
   term: Binary cross-entropy
   definition: The cross-entropy loss for a yes/no answer. It is the log loss from logistic regression under another name.
+  seeAlso: [log-loss]
 - id: pixel
   term: Pixel
   definition: One small square of an image. In a greyscale image each pixel is a single number giving its brightness.
@@ -385,3 +448,4 @@
 - id: batch-size
   term: Batch size
   definition: The number of examples used for each training step.
+  seeAlso: [mini-batch]

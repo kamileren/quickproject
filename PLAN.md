@@ -227,10 +227,10 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 
 Navigation and pop-ins:
 
-- [ ] 33a. Term and symbol pop-ins show where the term is introduced and link to the glossary. Generated glossary and notation pages.
-- [ ] 33b. `<Ref>` pop-in: a back-reference to another chapter with a short recap and a link.
-- [ ] 33c. Section list that stays beside the text and highlights the current section; a progress bar on small screens.
-- [ ] 33d. Reading progress saved in the browser: ticks on the contents page, "continue reading", remembered checkpoints.
+- [x] 33a. Term and symbol pop-ins show where the term is introduced and link to the glossary. Generated glossary and notation pages.
+- [x] 33b. `<Ref>` pop-in: a back-reference to another chapter with a short recap and a link.
+- [x] 33c. Section list that stays beside the text and highlights the current section; a progress bar on small screens.
+- [x] 33d. Reading progress saved in the browser: ticks on the contents page, "continue reading", remembered checkpoints.
 - [ ] 33e. Search (Pagefind).
 - [ ] 33f. Code blocks get a copy button; companion files link to GitHub and open in Colab.
 

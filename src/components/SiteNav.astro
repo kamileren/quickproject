@@ -1,0 +1,33 @@
+---
+/** The slim bar at the top of every page except the cover. */
+interface Props {
+  /** Which link is the current page. */
+  current?: 'glossary' | 'notation';
+}
+const { current } = Astro.props;
+const links = [
+  { id: 'contents', label: 'Contents', href: '/#contents' },
+  { id: 'glossary', label: 'Glossary', href: '/glossary/' },
+  { id: 'notation', label: 'Notation', href: '/notation/' },
+];
+---
+
+<nav aria-label="Site" class="mb-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 font-sans text-sm text-stone-500">
+  <a href="/" class="inline-flex items-center gap-2 transition-colors hover:text-orange-600">
+    <span aria-hidden="true">‹</span> The Book of Machine Learning
+  </a>
+  <span class="flex items-center gap-5">
+    {
+      links.map((link) => (
+        <a
+          href={link.href}
+          aria-current={current === link.id ? 'page' : undefined}
+          class:list={['transition-colors hover:text-orange-600', current === link.id && 'font-semibold text-stone-900']}
+        >
+          {link.label}
+        </a>
+      ))
+    }
+    <slot />
+  </span>
+</nav>
