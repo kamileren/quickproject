@@ -4,5 +4,153 @@ number: "0.3"
 part: toolkit
 order: 2
 summary: "Random variables, the normal curve, and Bayes' rule."
-status: draft
+question: "How do you reason carefully about things you cannot be sure of?"
+minutes: 12
+status: ready
 ---
+
+import DiceHistogram from '@/components/figures/t03/DiceHistogram';
+import NormalCurve from '@/components/figures/t03/NormalCurve';
+import ConditionalTable from '@/components/figures/t03/ConditionalTable';
+
+This is a toolkit chapter, and optional. Data is noisy and predictions are uncertain, so machine learning needs a language for uncertainty. That language is probability. This chapter covers the few pieces of it the book uses.
+
+## A number for uncertainty
+
+A <Term id="probability">probability</Term> is a number between 0 and 1 that says how likely something is. 0 means it never happens, 1 means it always does, and 0.5 means it happens half the time. The same numbers are often written as percentages.
+
+The most useful way to read a probability is as a long-run share. Saying a fair coin has probability 0.5 of heads is a claim about many flips: about half of them will be heads. It says very little about any single flip.
+
+Roll two dice and add them up. The total is a <Term id="random-variable">random variable</Term>: a quantity whose value is settled by chance. Some totals are likelier than others. There is only one way to make 2, and six ways to make 7.
+
+<Figure
+  title="Chance settles down in the long run"
+  caption="Dark bars show the share of your rolls that gave each total. Orange rings mark the true probabilities."
+  try="roll once a few times, then roll 10, and look at how ragged the bars are. Then press the 1,000 button several times."
+>
+  <DiceHistogram client:visible />
+</Figure>
+
+After ten rolls the bars look nothing like the rings. After a few thousand they match closely. That is why more data makes for better models: every estimate made from data is a share like these, and small samples are ragged.
+
+## Average and spread
+
+Two numbers summarise a random quantity well.
+
+The first is where it is centred. The <Term id="expected-value">expected value</Term> is the long-run average: what you would get by averaging over a great many repeats. For two dice it is 7.
+
+The second is how spread out it is. Take the distance of each value from the average, square it, and average those. That is the variance. Its square root, the <Term id="standard-deviation">standard deviation</Term>, is easier to read because it is back in the original units: roughly, how far a typical value sits from the average.
+
+<Example title="Eight quiz marks">
+
+The marks are 2, 4, 4, 4, 5, 5, 7, 9.
+
+1. Average: $(2 + 4 + 4 + 4 + 5 + 5 + 7 + 9) / 8 = 5$.
+2. Distances from 5: −3, −1, −1, −1, 0, 0, 2, 4.
+3. Squared: 9, 1, 1, 1, 0, 0, 4, 16. Their average is $32 / 8 = 4$. That is the variance.
+4. Standard deviation: $\sqrt{4} = 2$.
+
+A typical mark is about 2 away from the average of 5.
+
+</Example>
+
+<MarginNote>
+Squaring should feel familiar. Mean squared error, from the linear regression chapter, is the same calculation with "distance from the prediction" in place of "distance from the average".
+</MarginNote>
+
+## The bell curve
+
+Many quantities in the world pile up around an average and thin out symmetrically on both sides: heights, measurement errors, exam scores. The curve that describes this is the <Term id="normal-distribution">normal distribution</Term>, the bell curve. It is fixed entirely by two numbers, its average and its standard deviation.
+
+<Figure
+  title="Centre and spread"
+  caption="The height of the curve shows how common each score is. The shaded band covers the chosen number of standard deviations either side of the average."
+  try="change the spread and watch the curve get taller and narrower, or lower and wider. Then switch the shaded range between 1, 2 and 3."
+>
+  <NormalCurve client:visible />
+</Figure>
+
+Whatever the average and spread, the same shares always apply:
+
+| Within | Share of values |
+|---|---|
+| 1 standard deviation of the average | about 68% |
+| 2 standard deviations | about 95% |
+| 3 standard deviations | about 99.7% |
+
+So if exam scores average 67 with a standard deviation of 10, about two thirds of students score between 57 and 77, and almost nobody scores below 37.
+
+The bell curve matters to this book for a specific reason. The usual picture of noisy data is "the true pattern, plus bell-shaped noise". Under that picture, the model that makes the observed data most probable is exactly the one with the smallest squared error. That is the deeper justification for least squares.
+
+## When something is already known
+
+Probabilities change when you learn something. The chance that a message is spam is one number. The chance that it is spam *given that it contains the word "free"* is a different, larger number. A probability that takes known information into account is a <Term id="conditional-probability">conditional probability</Term>.
+
+Conditioning sounds abstract and is really just narrowing your attention. Here are the 34 messages from the Naive Bayes chapter, sorted two ways at once.
+
+<Figure
+  title="Conditioning is looking at one row or one column"
+  caption="Each cell counts messages. The dark cell is the one being asked about; greyed cells are ruled out by what is known."
+  try="choose 'given: it is spam' and read the answer. Then choose 'given: it contains free'. The dark cell is the same, but the answer is not."
+>
+  <ConditionalTable client:visible />
+</Figure>
+
+The two answers differ because they divide the same 9 messages by different totals:
+
+- Of the **14 spam messages**, 9 contain "free": 64%.
+- Of the **10 messages containing "free"**, 9 are spam: 90%.
+
+Confusing these two is one of the most common mistakes in reasoning with data. Converting one into the other is what Bayes' rule does, and the [Naive Bayes chapter](/naive-bayes/) builds a whole classifier on it.
+
+Two things are <Term id="independence">independent</Term> when knowing one tells you nothing about the other, so conditioning changes nothing. Two dice are independent. "Is spam" and "contains free" clearly are not.
+
+<Checkpoint
+  question="In a town, 90% of taxi drivers have a driving licence for over ten years, and 2% of all residents are taxi drivers. You meet someone who has had a licence for over ten years. Which statement is justified?"
+  options={[
+    { text: 'There is a 90% chance they are a taxi driver', why: 'That reverses the condition. 90% is the chance of a long-held licence given a taxi driver, not the other way round.' },
+    { text: 'They are probably not a taxi driver', correct: true, why: 'Taxi drivers are only 2% of residents, and many other people have long-held licences too. The 90% describes taxi drivers, not licence holders.' },
+    { text: 'Nothing can be said', why: 'Something can: taxi drivers are rare, so even strong evidence leaves the chance low. The exact number needs the share of non-drivers with long-held licences.' },
+  ]}
+/>
+
+## In code
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)                  # a seeded random generator
+
+# Two dice, rolled 100,000 times.
+totals = rng.integers(1, 7, 100_000) + rng.integers(1, 7, 100_000)
+print(np.mean(totals == 7))                     # 0.167  share of sevens
+print(totals.mean(), totals.std())              # 7.0  2.4  average and spread
+
+# Exam scores from a bell curve with average 67 and spread 10.
+scores = rng.normal(67, 10, 100_000)
+print(np.mean(np.abs(scores - 67) < 10))        # 0.68  within one standard deviation
+
+# Conditional probability is a share within a filtered subset.
+is_spam  = np.array([1] * 14 + [0] * 20)
+has_free = np.array([1] * 9 + [0] * 5 + [1] * 1 + [0] * 19)
+print(has_free[is_spam == 1].mean())            # 0.64  P(free | spam)
+print(is_spam[has_free == 1].mean())            # 0.90  P(spam | free)
+```
+
+<KeyTakeaways>
+
+- A **probability** is a long-run share between 0 and 1. Small samples are ragged; large ones settle.
+- The **expected value** says where a random quantity is centred; the **standard deviation** says how spread out it is.
+- The **normal distribution** is fixed by those two numbers. About 68% of values fall within one standard deviation.
+- A **conditional probability** narrows attention to the cases where something is known to be true.
+- "Chance of A given B" and "chance of B given A" are different numbers.
+
+</KeyTakeaways>
+
+<References>
+
+- D. Kunin and others, [Seeing Theory](https://seeing-theory.brown.edu), a visual introduction to probability and statistics.
+- M. P. Deisenroth, A. A. Faisal and C. S. Ong, *Mathematics for Machine Learning*, chapter 6. Free at [mml-book.github.io](https://mml-book.github.io).
+- K. P. Murphy, *Probabilistic Machine Learning: An Introduction*, chapter 2, [probml.github.io/pml-book](https://probml.github.io/pml-book/).
+
+</References>

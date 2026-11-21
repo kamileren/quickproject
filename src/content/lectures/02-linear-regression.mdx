@@ -213,7 +213,7 @@ $$
 \frac{\partial\,\text{MSE}}{\partial w} = -\frac{2}{n}\sum_i (x_i - \bar{x})\big((y_i - \bar{y}) - w (x_i - \bar{x})\big) = 0
 $$
 
-Solving that for $w$ gives the fraction above. If derivatives are new to you, the toolkit chapter on them covers everything used here.
+Solving that for $w$ gives the fraction above. If derivatives are new to you, the [toolkit chapter on derivatives](/derivatives-and-gradients/) covers everything used here.
 
 </Derivation>
 
@@ -308,7 +308,7 @@ The numbers match the ones we worked out, because `fit` is doing exactly the cal
 
 ### More than one feature
 
-Real problems have several features: hours studied, hours slept, previous grade. The model gets one weight per feature, $\hat{y} = w_1 x_1 + w_2 x_2 + \dots + w_d x_d + b$, and the "line" becomes a flat sheet in more dimensions. Stack the examples into a table $X$ with one row per student, and the best weights still have a closed form, called the normal equation:
+Real problems have several features: hours studied, hours slept, previous grade. The model gets one weight per feature, $\hat{y} = w_1 x_1 + w_2 x_2 + \dots + w_d x_d + b$, and the "line" becomes a flat sheet in more dimensions. Stack the examples into a table $X$ with one row per student (the [toolkit chapter on vectors and matrices](/vectors-and-matrices/) explains this notation), and the best weights still have a closed form, called the normal equation:
 
 $$
 w = (X^\top X)^{-1} X^\top y
@@ -318,7 +318,7 @@ It is the same idea as the two formulas above, written for any number of feature
 
 ### Why squares, really?
 
-Squaring is convenient, but there is a deeper reason. If the scores are a straight line plus random bell-shaped noise, then the least-squares line is also the most probable line given the data. The probability toolkit chapter has the background.
+Squaring is convenient, but there is a deeper reason. If the scores are a straight line plus random bell-shaped noise, then the least-squares line is also the most probable line given the data. The [probability toolkit chapter](/probability/) has the background.
 
 ### What the line assumes
 

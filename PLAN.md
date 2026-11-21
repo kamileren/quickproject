@@ -209,7 +209,7 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 - [x] 21. Chapter 10.
 - [x] 22. Toolkit 0.1.
 - [x] 23. Toolkit 0.2.
-- [ ] 24. Toolkit 0.3; link earlier chapters back to the toolkit. Owner reviews.
+- [x] 24. Toolkit 0.3; link earlier chapters back to the toolkit. Owner reviews.
 
 ### Wave 3: Part IV, from scratch
 

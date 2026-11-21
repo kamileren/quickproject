@@ -274,3 +274,18 @@
 - id: chain-rule
   term: Chain rule
   definition: When one calculation feeds into another, the overall rate of change is the product of the rates of each step.
+- id: random-variable
+  term: Random variable
+  definition: A quantity whose value is decided by chance, such as the total shown by two dice or the score a student will get.
+- id: expected-value
+  term: Expected value
+  definition: The long-run average of a random quantity. Each possible value is weighted by how likely it is.
+- id: standard-deviation
+  term: Standard deviation
+  definition: A measure of spread. Roughly, the typical distance of a value from the average. It is the square root of the variance.
+- id: normal-distribution
+  term: Normal distribution
+  definition: The bell-shaped curve. Values near the average are common and values far from it are rare, symmetrically on both sides.
+- id: conditional-probability
+  term: Conditional probability
+  definition: The probability of one thing given that another is known to be true, such as the chance a message is spam given that it contains "free".
