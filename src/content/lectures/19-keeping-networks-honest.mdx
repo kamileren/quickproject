@@ -4,5 +4,198 @@ number: "19"
 part: networks
 order: 21
 summary: "Weight penalties and dropout against overfitting."
-status: draft
+question: "The network scores 96% on its training data. Why is that not good news?"
+dataset: spiral
+minutes: 17
+status: ready
+prerequisites: [optimizers, generalization, regularization]
 ---
+
+import HonestSpiral from '@/components/figures/ch19/HonestSpiral';
+import DropoutSketch from '@/components/figures/ch19/DropoutSketch';
+
+With a good optimizer, a network can drive its training loss almost to zero. That power cuts both ways. A model that can fit anything can also fit the noise, and Part I showed where that leads. This chapter brings the lessons of the generalization and regularization chapters to neural networks, and adds one technique that is unique to them.
+
+## A network that memorises
+
+Give a network far more capacity than its data needs. Here are just 45 points on three spiral arms, and a network with 64 hidden neurons: 387 learnable numbers for 45 examples.
+
+<Figure
+  title="Forty-five points, 387 weights"
+  caption="Left: the training points and the regions the network assigns. Right: the loss on those points (dark) and on 450 new points from the same spirals (orange)."
+  try="press Train and watch the two loss curves separate. When it finishes, show the new points and look at how the regions treat them."
+>
+  <HonestSpiral client:visible />
+</Figure>
+
+The dark curve falls steadily toward zero, and the network ends up getting 96% of its training points right. The orange curve tells the real story. It falls for the first 50 steps or so, then turns and climbs for the rest of training. On new points the network gets 66%.
+
+This is <Term id="overfitting">overfitting</Term>, exactly as in Part I. The network has carved its regions tightly around the individual points it was shown, including their accidents. A new point from the same arm, a little to one side, lands in the wrong region.
+
+<MarginNote>
+Accuracy on new points barely changes while their loss triples. The network is not making many more mistakes. It is becoming far more confident about the mistakes it makes, which is what the loss measures and accuracy cannot see.
+</MarginNote>
+
+## A price on large weights
+
+The first remedy is one you already know. The regularization chapter added a penalty on the size of the weights to the loss, so that the model had to justify every large weight. The same <Term id="weight-decay">weight penalty</Term> works for a network.
+
+<Equation reads="loss = how badly it fits the data + λ × the sum of all squared weights">
+
+$$
+\text{loss} = \text{data loss} + \lambda \sum w^2
+$$
+
+</Equation>
+
+In the backward pass this adds $2\lambda w$ to each weight's gradient: a steady pull toward zero, proportional to the weight's size. A weight grows only if the data keeps pushing it harder than the penalty pulls it back. Sharp, twisted boundaries need large weights, so they become expensive.
+
+<Figure
+  title="Smaller weights, smoother regions"
+  caption="The same network and the same 45 points. Changing the penalty restarts training from the same initial weights."
+  try="set λ to 0.001 and train. Compare the shape of the regions, and the accuracy on new points, with the run without a penalty. Then try 0.1."
+>
+  <HonestSpiral client:visible control="l2" />
+</Figure>
+
+| Weight penalty λ | Right on training points | Right on new points | Loss on new points |
+|---|---|---|---|
+| off | 96% | 66% | 2.85 |
+| 0.001 | 96% | 77% | 1.37 |
+| 0.003 | 96% | 75% | 1.23 |
+| 0.1 | 58% | 47% | 1.02 |
+
+A modest penalty raises accuracy on new points from 66% to 77% without costing anything on the training points. The regions become broader and smoother, following the arms instead of the dots. Push the penalty too far and the weights cannot grow enough to bend the boundary at all: at 0.1 the network underfits both sets.
+
+## Dropout
+
+The second remedy has no counterpart in Part I. It is called <Term id="dropout">dropout</Term>, and the idea is disarmingly crude: during training, switch off a random selection of neurons at every step.
+
+<Figure
+  title="A different network at every step"
+  caption="Dark circles are active. Crossed circles are switched off for this training step."
+  try="press the button several times and watch the pattern change. Then raise the dropout rate."
+>
+  <DropoutSketch client:visible />
+</Figure>
+
+Why would damaging the network help it? Because of what the network has to do to cope. If any neuron might vanish on the next step, no neuron can afford to depend on one particular partner, and no single neuron can be the only one that knows something important. Useful knowledge has to be spread across many neurons, each of which works reasonably on its own. Narrow, fragile arrangements that happened to fit a few training points do not survive.
+
+Two details make it work in practice.
+
+- **The survivors are scaled up.** If 30% of a layer is switched off, the remaining values are multiplied by $1 / 0.7 \approx 1.43$, so the total signal reaching the next layer stays about the same.
+- **Dropout is for training only.** When the network is used to make predictions, every neuron is on and nothing is scaled. The network that answers is the full one.
+
+<Checkpoint
+  question="A network is trained with 50% dropout on a hidden layer. What happens in that layer when the finished network makes a prediction?"
+  options={[
+    { text: 'Half the neurons are switched off at random', why: 'That would make predictions random. Dropout is applied only during training.' },
+    { text: 'All neurons are active, with no scaling', correct: true, why: 'Scaling the survivors during training keeps the expected signal the same as when every neuron is on, so nothing needs adjusting at prediction time.' },
+    { text: 'All neurons are active and their outputs are doubled', why: 'The doubling happens during training, to make up for the missing half. At prediction time nothing is missing.' },
+  ]}
+/>
+
+## Dropout on the spiral
+
+Here is the same over-sized network, with dropout applied to its hidden layer.
+
+<Figure
+  title="Training with neurons missing"
+  caption="The loss curves are measured with every neuron on, which is how the network would be used."
+  try="set the dropout rate to 30% and train. Then try 60% and see what too much does."
+>
+  <HonestSpiral client:visible control="dropout" />
+</Figure>
+
+With 30% dropout, accuracy on new points rises from 66% to 73%, and the loss on them falls from 2.85 to 1.20. Accuracy on the training points drops to 89%: the network is no longer able to memorise them, which is the point. At 50% or more it struggles to learn the shape at all.
+
+A caution about how far to trust this. The experiment was repeated on 27 different small spiral datasets. Both remedies lowered the loss on new points in every one. The weight penalty also raised accuracy in 21 of them. Dropout raised accuracy in only 8. On a network this small, with so little data, dropout is the less reliable of the two. It earns its reputation on large networks with many layers, where there is much more for it to spread out.
+
+## Knowing when to stop
+
+Look again at the first figure of this chapter. The loss on new points was lowest early in training and got worse from then on. The network at step 50 was, in that sense, better than the finished one.
+
+<Term id="early-stopping">Early stopping</Term> uses this directly. Watch the loss on held-out data during training, and keep the weights from the moment it was lowest.
+
+<Figure
+  title="The best network was an early one"
+  caption="The dashed line marks the step at which the loss on new points was lowest so far."
+  try="train to the end and read where the lowest point was. Notice how much longer training carried on after it."
+>
+  <HonestSpiral client:visible markBest />
+</Figure>
+
+It costs nothing and it is almost always worth doing. One rule matters: the data used to decide when to stop has now influenced the model, so it counts as a validation set. A final, untouched test set is still needed for the honest number at the end.
+
+Underneath all three remedies is the oldest one: more data. Overfitting is a mismatch between how flexible a model is and how much evidence it has. The same network trained on 300 points, as in the last two chapters, reached 95% on new ones with no remedy at all.
+
+<Checkpoint
+  question="During training, the loss on the training set keeps falling while the loss on the validation set has been rising for 200 steps. What is happening, and what should you do?"
+  options={[
+    { text: 'The learning rate is too high; lower it', why: 'A learning rate that is too high makes the training loss itself unstable. Here the training loss is behaving well.' },
+    { text: 'The network is overfitting; keep the weights from when the validation loss was lowest', correct: true, why: 'Falling training loss with rising validation loss is the signature of overfitting. Early stopping keeps the best point; a weight penalty, dropout or more data address the cause.' },
+    { text: 'Nothing is wrong; train for longer', why: 'More training will widen the gap. The network is fitting details of the training set that do not carry over.' },
+  ]}
+/>
+
+## In code
+
+The dense layer gains an optional penalty, and dropout is a new layer with a `training` switch. The full file is `code/ch19_regularization.py`.
+
+```python
+class Layer_Dense:
+    def backward(self, dvalues):
+        self.dweights = self.inputs.T @ dvalues
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        if self.weight_regularizer_l2 > 0:
+            self.dweights += 2 * self.weight_regularizer_l2 * self.weights   # pull toward zero
+        self.dinputs = dvalues @ self.weights.T
+
+class Layer_Dropout:
+    def __init__(self, rate, rng):
+        self.keep = 1 - rate
+        self.rng = rng
+
+    def forward(self, inputs, training):
+        if not training:
+            self.output = inputs                       # prediction: every neuron takes part
+            return
+        # Dividing by the keep rate leaves the expected total unchanged.
+        self.mask = self.rng.binomial(1, self.keep, size=inputs.shape) / self.keep
+        self.output = inputs * self.mask
+
+    def backward(self, dvalues):
+        self.dinputs = dvalues * self.mask             # dropped neurons get no gradient
+```
+
+Run on its own random set of 45 points, the Python version scores 72% on new points with no remedy, 77% with a weight penalty of 0.001, and 73% with 30% dropout.
+
+<KeyTakeaways>
+
+- A large network on little data **memorises**: training loss falls while the loss on new data rises.
+- A **weight penalty** pulls every weight toward zero, so sharp, fragile boundaries become expensive.
+- **Dropout** switches off random neurons during training, forcing knowledge to be spread out. It is off at prediction time.
+- **Early stopping** keeps the weights from the point where held-out loss was lowest.
+- Every remedy has a "too much" that underfits, and none beats **more data**.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Penalising absolute values
+
+The lasso penalty from Part I, the sum of absolute weights, also works on networks. It drives many weights to exactly zero, which can make a network smaller, but it is used less often than the squared penalty because it tends to hurt accuracy more for the same amount of regularization.
+
+### More data without collecting any
+
+For images, new training examples can be manufactured from old ones: flip a picture, shift it a few pixels, change its brightness. The label stays the same and the network sees a slightly different input every time. This is called data augmentation, and for image models it is often the most effective regularizer of all.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 14 and 15, [nnfs.io](https://nnfs.io).
+- N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever and R. Salakhutdinov, [Dropout: a simple way to prevent neural networks from overfitting](https://jmlr.org/papers/v15/srivastava14a.html), *Journal of Machine Learning Research*, 2014.
+- S. J. D. Prince, *Understanding Deep Learning*, chapter 9. Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
+
+</References>

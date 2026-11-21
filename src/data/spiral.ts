@@ -41,3 +41,11 @@ export const spiralLabels = (points: readonly SpiralPoint[]): number[] => points
 export const spiralTrain: SpiralPoint[] = spiral(100, 3, 0);
 /** Fresh points from the same spirals, never used for training. */
 export const spiralTest: SpiralPoint[] = spiral(100, 3, 500);
+
+/**
+ * A deliberately small training set, for the chapter on overfitting: only 15
+ * points per arm. A network with thousands of weights can memorise it.
+ */
+export const spiralSmall: SpiralPoint[] = spiral(15, 3, 23, 0.3);
+/** Plenty of fresh points from the same spirals, to show how the memorised network really does. */
+export const spiralSmallTest: SpiralPoint[] = spiral(150, 3, 523, 0.3);

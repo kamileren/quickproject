@@ -28,6 +28,8 @@ export interface SpiralTrainer {
   steps: () => number;
   /** Loss on the training points, without dropout. */
   loss: () => number;
+  /** Loss on the held-out test points. */
+  testLoss: () => number;
   trainAccuracy: () => number;
   testAccuracy: () => number;
   /** Predicted class for each [x, y] point. */
@@ -58,6 +60,7 @@ export function createSpiralTrainer(optimizer: Optimizer, options: SpiralTrainer
     },
     steps: () => taken,
     loss: () => lossFor(network.forward(X), { kind: 'classes', labels }).loss,
+    testLoss: () => lossFor(network.forward(testX), { kind: 'classes', labels: testLabels }).loss,
     trainAccuracy: () => classAccuracy(network, X, labels),
     testAccuracy: () => classAccuracy(network, testX, testLabels),
     classify: (points) => argmaxRows(network.forward(points)),

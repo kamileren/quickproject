@@ -358,3 +358,12 @@
 - id: adam
   term: Adam
   definition: An optimizer that combines momentum with a per-weight adaptive step size. It is the usual default for training neural networks.
+- id: weight-decay
+  term: Weight penalty
+  definition: An extra term in the loss that grows with the size of the weights, so the network prefers small ones. With squared weights it is called L2 regularization or weight decay.
+- id: dropout
+  term: Dropout
+  definition: Switching off a random share of neurons at every training step, so the network cannot rely on any single one. All neurons are used when predicting.
+- id: early-stopping
+  term: Early stopping
+  definition: Ending training when the loss on held-out data stops improving, and keeping the weights from that point.

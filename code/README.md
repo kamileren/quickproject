@@ -10,6 +10,7 @@ chapter, so you can check the text against the code.
 | `ch16_loss.py` | 16. Scoring a Classifier | Softmax and the cross-entropy loss |
 | `ch17_backprop.py` | 17. Backpropagation | Backward methods, an SGD optimizer, and a full training loop on spiral data |
 | `ch18_optimizers.py` | 18. Optimizers | Learning-rate decay, momentum, AdaGrad, RMSProp and Adam, compared on the spiral |
+| `ch19_regularization.py` | 19. Keeping Networks Honest | A weight penalty in the dense layer, and a dropout layer |
 
 Run any of them with Python 3 and NumPy installed:
 
