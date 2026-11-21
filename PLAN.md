@@ -238,7 +238,7 @@ Figures:
 
 - [x] 33g. Reset button on every figure; drag handles work from the keyboard; hover read-outs on points.
 - [x] 33h. Page weight: region maps drawn on a canvas; KaTeX ships woff2 only.
-- [ ] 33i. A share image per chapter.
+- [x] 33i. A share image per chapter.
 
 Content:
 

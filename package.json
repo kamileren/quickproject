@@ -11,7 +11,8 @@
     "typecheck": "astro check",
     "test": "node scripts/run-vitest.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run check:content && npm run build",
-    "check:content": "node scripts/check-content.mjs && node scripts/make-notebooks.mjs --check",
+    "check:content": "node scripts/check-content.mjs && node scripts/make-notebooks.mjs --check && node scripts/make-og.mjs --check",
+    "og": "node scripts/make-og.mjs",
     "notebooks": "node scripts/make-notebooks.mjs"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.14.0",
     "pagefind": "^1.6.0",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.73.0",
     "vitest": "^5.1.1"
