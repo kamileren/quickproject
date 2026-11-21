@@ -172,3 +172,30 @@
 - id: separable
   term: Separable
   definition: Data in which one straight boundary divides the two classes with no mistakes at all.
+- id: imbalanced
+  term: Imbalanced data
+  definition: Data in which one class is much rarer than the other, such as 1 ill patient for every 9 healthy ones.
+- id: confusion-matrix
+  term: Confusion matrix
+  definition: A two-by-two table that counts predictions by what was predicted and what was true. It shows which kinds of mistake a model makes.
+- id: false-positive
+  term: False positive
+  definition: A no that the model called yes. A false alarm.
+- id: false-negative
+  term: False negative
+  definition: A yes that the model called no. A miss.
+- id: precision
+  term: Precision
+  definition: Of everything the model flagged as yes, the share that really was yes. High precision means few false alarms.
+- id: recall
+  term: Recall
+  definition: Of everything that really was yes, the share the model flagged. High recall means few misses. Also called sensitivity.
+- id: f1
+  term: F1 score
+  definition: A single number combining precision and recall. It is high only when both are high.
+- id: roc-curve
+  term: ROC curve
+  definition: A plot of the share of real yeses caught against the share of real noes wrongly flagged, for every possible threshold.
+- id: auc
+  term: AUC
+  definition: Area under the ROC curve. It is the chance that the model scores a random yes above a random no. 1 is perfect, 0.5 is guessing.
