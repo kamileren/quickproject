@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addReadingTime,
   chapterIdFromPath,
   clearProgress,
   loadProgress,
@@ -7,6 +8,8 @@ import {
   noteFirstTry,
   noteOpened,
   noteSection,
+  paced,
+  readerPace,
   resolveMissed,
   saveAnswer,
   savedAnswer,
@@ -26,7 +29,7 @@ function memoryStore(): Store & { data: Map<string, string> } {
 
 describe('reading progress', () => {
   it('starts empty', () => {
-    expect(loadProgress(memoryStore())).toEqual({ read: {}, last: undefined, answers: {}, exercises: {}, missed: {} });
+    expect(loadProgress(memoryStore())).toEqual({ read: {}, last: undefined, answers: {}, exercises: {}, missed: {}, seconds: {}, pace: {} });
   });
 
   it('remembers the open chapter and finished chapters', () => {
@@ -78,6 +81,38 @@ describe('reading progress', () => {
     expect(Object.keys(loadProgress(store).missed)).toEqual(['knn|one']);
     resolveMissed('knn|one', store);
     expect(loadProgress(store).missed['knn|one'].resolved).toBe(true);
+  });
+
+  it('learns the reader\'s pace from the chapters they finish', () => {
+    const store = memoryStore();
+    expect(readerPace(loadProgress(store))).toBe(1);
+
+    // A 10-minute chapter read in 15 minutes: pace 1.5.
+    addReadingTime('a', 15 * 60, store);
+    markRead('a', 1, store, 10);
+    expect(loadProgress(store).pace).toEqual({ a: 1.5 });
+    // One chapter is not enough to judge by.
+    expect(readerPace(loadProgress(store))).toBe(1);
+
+    // A 20-minute chapter read in 22 minutes: pace 1.1. The middle of 1.1 and 1.5 is 1.3.
+    addReadingTime('b', 22 * 60, store);
+    markRead('b', 2, store, 20);
+    expect(readerPace(loadProgress(store))).toBeCloseTo(1.3);
+    expect(paced(20, readerPace(loadProgress(store)))).toBe(26);
+
+    // Skimming to the end is not counted, and time stops adding up once a chapter is finished.
+    addReadingTime('c', 60, store);
+    markRead('c', 3, store, 20);
+    addReadingTime('a', 999, store);
+    const progress = loadProgress(store);
+    expect(Object.keys(progress.pace)).toEqual(['a', 'b']);
+    expect(progress.seconds.a).toBe(900);
+  });
+
+  it('keeps the pace within sensible bounds', () => {
+    const progress = { ...loadProgress(memoryStore()), pace: { a: 9, b: 8, c: 7 } };
+    expect(readerPace(progress)).toBe(2.5);
+    expect(readerPace({ ...progress, pace: { a: 0.1, b: 0.2 } })).toBe(0.5);
   });
 
   it('clears everything', () => {

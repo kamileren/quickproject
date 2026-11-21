@@ -47,6 +47,15 @@ const urlOf = (id: string) => {
 };
 const demoUrls = { fit: urlOf('linear-regression'), cutoff: urlOf('what-is-learning'), neighbours: urlOf('nearest-neighbours'), step: urlOf('gradient-descent') };
 const hasDemo = Object.values(demoUrls).some(Boolean);
+// Which cover figure suits a reader who is part-way through a given chapter.
+const demoFor = (l: (typeof lectures)[number]) => {
+  const exact: Record<string, string> = { 'what-is-learning': 'cutoff', 'linear-regression': 'fit', 'gradient-descent': 'step', 'nearest-neighbours': 'neighbours', 'derivatives-and-gradients': 'step' };
+  if (exact[l.id]) return exact[l.id];
+  if (l.data.part === 'classification') return 'neighbours';
+  if (l.data.part === 'networks') return 'step';
+  return 'fit';
+};
+const demoByChapter = Object.fromEntries(ready.map((l) => [l.id, demoFor(l)]));
 // One opening question is shown under the cover; the page script swaps in a different one on each visit.
 const questions = ready.filter((l) => l.data.question).map((l) => ({ text: l.data.question, url: chapterUrl(l), label: l.data.number.includes('.') ? `Toolkit ${l.data.number}` : `Chapter ${l.data.number}` }));
 
@@ -119,7 +128,7 @@ const jsonLd = {
         {
           hasDemo && (
             <div class="mx-auto mt-10 max-w-xl rounded-sm border-2 border-stone-900 p-4 sm:mt-14 sm:p-6">
-              <HeroDemo client:idle urls={demoUrls} />
+              <HeroDemo client:idle urls={demoUrls} byChapter={demoByChapter} />
             </div>
           )
         }
@@ -183,6 +192,7 @@ const jsonLd = {
               <div id="progress-bar" class="h-full w-0 rounded-full bg-orange-600 transition-[width] duration-500"></div>
             </div>
             <p id="progress-count" class="text-[13px] leading-relaxed text-stone-600"></p>
+            <p id="progress-checkpoints" hidden class="text-[13px] leading-relaxed text-stone-600"></p>
             <p class="mt-1 text-[13px]">
               <a id="review-link" hidden href="/review/" class="text-orange-700 underline decoration-orange-300 underline-offset-2 hover:text-orange-900"></a>
             </p>
@@ -282,11 +292,21 @@ const jsonLd = {
 </BaseLayout>
 
 <script>
-  import { clearProgress, loadProgress } from '@/lib/progress';
+  import { clearProgress, loadProgress, paced, readerPace } from '@/lib/progress';
 
   // Show what this reader has finished, and offer to pick up where they stopped.
   const progress = loadProgress();
   const rows = [...document.querySelectorAll<HTMLAnchorElement>('a[data-chapter-id]')];
+
+  // Reading times follow the reader's own pace once there are finished chapters to judge by.
+  const pace = readerPace(progress);
+  if (Math.abs(pace - 1) >= 0.15) {
+    for (const row of rows) {
+      const label = row.querySelector('.toc-min');
+      const minutes = Number(row.dataset.minutes ?? 0);
+      if (label && minutes > 0) label.textContent = `${paced(minutes, pace)} min`;
+    }
+  }
   let done = 0;
   for (const row of rows) {
     if (!progress.read[row.dataset.chapterId ?? '']) continue;
@@ -348,7 +368,7 @@ const jsonLd = {
     const finished = Boolean(progress.read[last.id]);
     if (welcome && !finished) {
       const minutes = Number(lastRow.dataset.minutes ?? 0);
-      const left = minutes > 0 ? Math.max(1, Math.round(minutes * (1 - (last.fraction ?? 0)))) : 0;
+      const left = minutes > 0 ? paced(minutes * (1 - (last.fraction ?? 0)), pace) : 0;
       welcome.href = resume;
       document.getElementById('welcome-title')!.textContent = `${last.label}: ${last.title}`;
       document.getElementById('welcome-detail')!.textContent =
@@ -370,6 +390,16 @@ const jsonLd = {
       `${done} of ${rows.length} chapters finished` + (exercisesDone > 0 ? `, ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'} done.` : '.');
   }
   if (fill) fill.style.width = `${(100 * done) / Math.max(1, rows.length)}%`;
+
+  // Checkpoints: how many were right on the first try.
+  const answered = Object.values(progress.answers).reduce((sum, a) => sum + Object.keys(a).length, 0);
+  const missedEver = Object.keys(progress.missed).length;
+  const checkpoints = document.getElementById('progress-checkpoints');
+  if (checkpoints && answered > 0) {
+    checkpoints.textContent = `${Math.max(0, answered - missedEver)} of ${answered} checkpoints right first time.`;
+    checkpoints.hidden = false;
+    if (panel) panel.hidden = false;
+  }
   const toReview = Object.values(progress.missed).filter((m) => !m.resolved).length;
   const review = document.getElementById('review-link');
   if (toReview > 0 && review) {

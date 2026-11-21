@@ -3,6 +3,7 @@ import { examPoints, EXAM_X, EXAM_Y } from '@/data/exam-scores';
 import { moonsTrain, toLabels, toRows, TOY_RANGE } from '@/data/toy2d';
 import { nearest } from '@/lib/knn';
 import { fitLine, lineMse, predict, type Line } from '@/lib/linear';
+import { loadProgress } from '@/lib/progress';
 import { Slider } from '../core/Controls';
 import { Band, COLORS, Dots, DragHandle, FnLine, Plot, Polyline, Segments, VRule } from '../core/Plot';
 
@@ -286,14 +287,25 @@ const DEMOS = [
 interface HeroDemoProps {
   /** Chapter address for each figure. Figures whose chapter is not published are left out. */
   urls: Partial<Record<(typeof DEMOS)[number]['id'], string>>;
+  /** Chapter id → the figure that suits a reader who is part-way through that chapter. */
+  byChapter?: Record<string, string>;
 }
 
-export default function HeroDemo({ urls }: HeroDemoProps) {
+export default function HeroDemo({ urls, byChapter = {} }: HeroDemoProps) {
   const demos = DEMOS.filter((d) => urls[d.id]);
   // The first figure is drawn on the server; the visit's own figure replaces it once the page is live.
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // A reader who is part-way through a chapter gets the figure that goes with it.
+    const progress = loadProgress();
+    const current = progress.last && !progress.read[progress.last.id] ? byChapter[progress.last.id] : undefined;
+    const fitting = demos.findIndex((d) => d.id === current);
+    if (fitting >= 0) {
+      setIndex(fitting);
+      return;
+    }
+    // Everyone else gets a different one on each visit.
     let next: number;
     try {
       next = (Number(localStorage.getItem(ROTATION_KEY) ?? -1) + 1) % demos.length;
@@ -302,7 +314,9 @@ export default function HeroDemo({ urls }: HeroDemoProps) {
       next = Math.floor(Math.random() * demos.length);
     }
     setIndex(next);
-  }, [demos.length]);
+    // Decided once, when the page becomes live.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const another = () => {
     const next = (index + 1) % demos.length;

@@ -59,6 +59,9 @@ const description = 'How the chapters of the book build on one another. Pick a c
         <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
           The chapters in reading order. Pick one to see what it builds on and what it opens up.
         </p>
+        <p class="mt-3 hidden font-sans text-xs text-stone-500 md:block">
+          With the keyboard: <kbd class="map-key">↑</kbd> <kbd class="map-key">↓</kbd> to move, <kbd class="map-key">Enter</kbd> twice to open.
+        </p>
       </header>
 
       <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_19rem] md:gap-12">
@@ -202,6 +205,18 @@ const description = 'How the chapters of the book build on one another. Pick a c
     stroke: var(--ink);
     stroke-width: 1.5;
   }
+  .map-key {
+    padding: 0.05rem 0.35rem;
+    border: 1px solid var(--rule);
+    border-radius: 0.2rem;
+    background: var(--wash);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink);
+  }
+  #book-map .map-row:focus-visible {
+    outline-offset: -2px;
+  }
   .legend-line {
     display: inline-block;
     width: 1.25rem;
@@ -212,7 +227,7 @@ const description = 'How the chapters of the book build on one another. Pick a c
 </style>
 
 <script>
-  import { loadProgress } from '@/lib/progress';
+  import { loadProgress, paced, readerPace } from '@/lib/progress';
 
   interface Detail {
     label: string;
@@ -231,6 +246,7 @@ const description = 'How the chapters of the book build on one another. Pick a c
   const panel = document.getElementById('map-detail')!;
   const progress = loadProgress();
   const read = progress.read;
+  const pace = readerPace(progress);
   const rows = new Map([...map.querySelectorAll<HTMLButtonElement>('.map-row')].map((r) => [r.dataset.id ?? '', r]));
 
   const baseState = (id: string) => (read[id] ? '✓' : data[id]?.ready ? '' : 'Soon');
@@ -300,7 +316,7 @@ const description = 'How the chapters of the book build on one another. Pick a c
 
     const titles = (ids: string[]) => ids.map((x) => data[x].title).join(', ');
     const unread = d.path.filter((x) => !read[x] && data[x].ready);
-    const minutes = unread.reduce((sum, x) => sum + data[x].minutes, 0);
+    const minutes = paced(unread.reduce((sum, x) => sum + data[x].minutes, 0), pace);
     const parts = [
       el('div', 'micro-label mb-1 text-orange-700', d.label + (read[id] ? ' · finished' : '')),
       el('h2', 'display text-xl leading-snug', d.title),
@@ -318,8 +334,15 @@ const description = 'How the chapters of the book build on one another. Pick a c
     }
     if (d.leads.length > 0) fact('Leads to', titles(d.leads), false);
     parts.push(facts);
+    // With chapters still to read on the way, the main button starts the route; the chapter itself is second.
+    const first = unread[0];
+    if (first) {
+      const route = el('a', 'btn btn-primary mt-4 w-full justify-center text-center', `Start the route: ${data[first].title} →`) as HTMLAnchorElement;
+      route.href = data[first].url;
+      parts.push(route);
+    }
     if (d.ready) {
-      const link = el('a', 'btn btn-primary mt-4 w-full justify-center', 'Open the chapter →') as HTMLAnchorElement;
+      const link = el('a', first ? 'btn btn-secondary mt-2 w-full justify-center' : 'btn btn-primary mt-4 w-full justify-center', first ? 'Open this chapter anyway' : 'Open the chapter →') as HTMLAnchorElement;
       link.href = d.url;
       parts.push(link);
     } else {
@@ -338,7 +361,24 @@ const description = 'How the chapters of the book build on one another. Pick a c
     panel.classList.remove('hidden');
   }
 
-  for (const [id, row] of rows) row.addEventListener('click', () => pick(id));
+  const order = [...rows.keys()];
+  for (const [id, row] of rows) {
+    row.addEventListener('click', () => {
+      // A second press on the picked chapter opens it.
+      if (picked === id && data[id].ready && matchMedia('(min-width: 768px)').matches) location.href = data[id].url;
+      else pick(id);
+    });
+    // Arrow keys walk the list and pick as they go; Home and End jump to the ends.
+    row.addEventListener('keydown', (e) => {
+      const at = order.indexOf(id);
+      const to = e.key === 'ArrowDown' ? at + 1 : e.key === 'ArrowUp' ? at - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? order.length - 1 : -1;
+      const target = rows.get(order[to]);
+      if (!target) return;
+      e.preventDefault();
+      target.focus();
+      pick(order[to]);
+    });
+  }
   // The curves follow the rows when the page reflows.
   addEventListener('resize', draw);
   draw();

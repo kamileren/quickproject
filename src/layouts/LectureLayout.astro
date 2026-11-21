@@ -90,7 +90,7 @@ const jsonLd = {
             minutes && (
               <div class="flex gap-2">
                 <dt class="font-bold tracking-widest uppercase">Reading time</dt>
-                <dd>{minutes} min</dd>
+                <dd id="reading-time" data-minutes={minutes}>{minutes} min</dd>
               </div>
             )
           }
@@ -172,11 +172,14 @@ const jsonLd = {
         )
       }
 
-      <article data-pagefind-body data-pagefind-meta={`kind:${chapterLabel(number)}`} class="book-prose" style={`--chapter: '${number}'`} data-chapter-id={lecture.id} data-chapter-title={title} data-chapter-label={chapterLabel(number)}>
+      <article data-pagefind-body data-pagefind-meta={`kind:${chapterLabel(number)}`} class="book-prose" style={`--chapter: '${number}'`} data-chapter-id={lecture.id} data-chapter-minutes={minutes} data-chapter-title={title} data-chapter-label={chapterLabel(number)}>
         <slot />
       </article>
 
-      <p class="mt-16 flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-stone-500" data-print-hide>
+      {/* What the reader did in this chapter. Filled in by the page script once they reach the end. */}
+      <section id="chapter-summary" hidden aria-label="Your work in this chapter" class="mt-16 rounded border-2 border-stone-900 p-5 font-sans sm:p-6" data-print-hide></section>
+
+      <p class="mt-10 flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-stone-500" data-print-hide>
         {updated && <span>Last updated <time datetime={updated}>{longDate(updated)}</time></span>}
         {editUrl && (
           <a href={editUrl} rel="noopener" class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">

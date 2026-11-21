@@ -18,3 +18,28 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 export function block(source: string, name: string): string | undefined {
   return source.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`))?.[1].trim();
 }
+
+export interface GlossaryTerm {
+  id: string;
+  term: string;
+  definition: string;
+}
+
+const plain = (text: string): string => text.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const escapeAttribute = (text: string): string => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+/**
+ * Turns bold words that name a glossary term into links to that entry, with
+ * the definition as the hover text. Matches the term or its simple plural.
+ */
+export function linkTerms(html: string, terms: readonly GlossaryTerm[]): string {
+  const byName = new Map<string, GlossaryTerm>();
+  for (const t of terms) {
+    byName.set(plain(t.term), t);
+    byName.set(plain(t.term) + 's', t);
+  }
+  return html.replace(/<strong>([^<]+)<\/strong>/g, (whole, inner: string) => {
+    const found = byName.get(plain(inner));
+    return found ? `<a class="recap-term" href="/glossary/#${found.id}" title="${escapeAttribute(found.definition)}">${whole}</a>` : whole;
+  });
+}

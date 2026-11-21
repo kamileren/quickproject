@@ -2,14 +2,20 @@
 /** Every chapter's takeaways on one page, for revising. */
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { chapterLabel, chapterUrl, getParts, getReadyLectures, SITE_NAME } from '@/lib/book';
-import { block, renderMarkdown } from '@/lib/recap';
+import { getCollection } from 'astro:content';
+import { block, linkTerms, renderMarkdown } from '@/lib/recap';
+import { termHomes } from '@/lib/book';
 
 const parts = await getParts();
 const lectures = await getReadyLectures();
+// Terms the glossary page lists, so the key points can link to them.
+const homes = await termHomes();
+const terms = (await getCollection('glossary')).filter((e) => homes.has(e.id)).map((e) => ({ id: e.id, term: e.data.term, definition: e.data.definition }));
+
 const cards = await Promise.all(
   lectures.map(async (l) => ({
     lecture: l,
-    takeaways: await renderMarkdown(block(l.body ?? '', 'KeyTakeaways') ?? ''),
+    takeaways: linkTerms(await renderMarkdown(block(l.body ?? '', 'KeyTakeaways') ?? ''), terms),
     skills: await renderMarkdown(block(l.body ?? '', 'NowYouCan') ?? ''),
   })),
 );
@@ -71,6 +77,13 @@ const description = 'The key points of every chapter on one page, for revising w
 </BaseLayout>
 
 <style is:global>
+  .recap-list a.recap-term {
+    text-decoration: underline dotted var(--accent);
+    text-underline-offset: 4px;
+  }
+  .recap-list a.recap-term:hover strong {
+    color: var(--accent-dark);
+  }
   .recap-list ul {
     list-style: none;
     padding: 0;

@@ -1,15 +1,71 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SITE_NAME } from '@/lib/book';
+import SearchBox from '@/components/SearchBox.astro';
+import { chapterLabel, chapterUrl, getReadyLectures, SITE_NAME } from '@/lib/book';
+
+// Everything a mistyped address could have meant.
+const places = [
+  ...(await getReadyLectures()).map((l) => ({ url: chapterUrl(l), title: l.data.title, label: chapterLabel(l.data.number) })),
+  { url: '/glossary/', title: 'Glossary', label: 'Reference' },
+  { url: '/notation/', title: 'Notation', label: 'Reference' },
+  { url: '/map/', title: 'Map', label: 'Reference' },
+  { url: '/recap/', title: 'Recap', label: 'Reference' },
+];
 ---
 
-<BaseLayout title={`Page not found — ${SITE_NAME}`} description="This page does not exist." noindex>
-  <main class="flex min-h-screen items-center justify-center px-6">
-    <div class="max-w-md text-center">
-      <div class="micro-label mb-6 tracking-[0.5em] text-orange-600">Error // 404</div>
-      <h1 class="display mb-6 text-6xl leading-none">This page is <span class="italic">missing.</span></h1>
-      <p class="mb-10 text-lg text-stone-500 italic">The chapter you are looking for has moved or is not written yet.</p>
-      <a class="btn btn-primary" href="/">Back to contents <span aria-hidden="true">→</span></a>
+<BaseLayout title={`Page not found — ${SITE_NAME}`} description="This page does not exist." noindex searchWindow={false}>
+  <main class="px-5 pt-16 pb-24 sm:px-6 sm:pt-24">
+    <div class="mx-auto max-w-xl">
+      <div class="micro-label mb-6 tracking-[0.4em] text-orange-700">Error // 404</div>
+      <h1 class="display mb-5 text-5xl leading-none sm:text-6xl">This page is <span class="italic">missing.</span></h1>
+      <p class="mb-8 text-lg text-stone-500 italic">It may have moved, or the chapter may not be written yet.</p>
+
+      <section id="suggestions" hidden class="mb-10">
+        <h2 class="micro-label mb-2 text-stone-900">Did you mean</h2>
+        <ul id="suggestion-list" class="border-t border-stone-200"></ul>
+      </section>
+
+      <h2 class="micro-label mb-3 text-stone-900">Or search the book</h2>
+      <SearchBox />
+
+      <p class="mt-10">
+        <a class="btn btn-primary" href="/#contents">All chapters <span aria-hidden="true">→</span></a>
+      </p>
     </div>
   </main>
+  <script is:inline type="application/json" id="places" set:html={JSON.stringify(places)} />
 </BaseLayout>
+
+<script>
+  import { closest } from '@/lib/closest';
+
+  const places = JSON.parse(document.getElementById('places')?.textContent ?? '[]') as { url: string; title: string; label: string }[];
+  const wanted = decodeURIComponent(location.pathname).replace(/^\/|\/$/g, '').split('/').pop() ?? '';
+  const found = closest(wanted, places.map((p) => ({ key: p.url.replace(/\//g, ''), value: p })), 3);
+  const list = document.getElementById('suggestion-list');
+  if (list && found.length > 0) {
+    for (const place of found) {
+      const item = document.createElement('li');
+      item.className = 'border-b border-stone-100';
+      const link = document.createElement('a');
+      link.href = place.url;
+      link.className = 'flex items-baseline justify-between gap-4 py-3 hover:text-orange-700';
+      const title = document.createElement('span');
+      title.className = 'display text-lg underline decoration-orange-300 decoration-2 underline-offset-4';
+      title.textContent = place.title;
+      const label = document.createElement('span');
+      label.className = 'shrink-0 font-mono text-[11px] text-stone-500';
+      label.textContent = place.label;
+      link.append(title, label);
+      item.append(link);
+      list.append(item);
+    }
+    document.getElementById('suggestions')!.hidden = false;
+  }
+  // Start the search off with the words from the address.
+  const box = document.querySelector<HTMLInputElement>('[data-search] input');
+  if (box && wanted && found.length === 0) {
+    box.value = wanted.replace(/[-_]+/g, ' ');
+    box.dispatchEvent(new Event('input'));
+  }
+</script>

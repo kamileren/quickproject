@@ -31,7 +31,7 @@ export default defineConfig({
   markdown: {
     // Maths needs remark/rehype plugins, so use the unified processor.
     processor: unified({ remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }),
-    shikiConfig: { theme: 'github-light' },
+    shikiConfig: { theme: 'github-light-high-contrast' },
   },
   vite: { plugins: [tailwindcss(), katexWoff2Only] },
 });

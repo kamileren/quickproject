@@ -269,6 +269,14 @@ Left out on purpose: running Python in the browser, accounts and comments, dark 
 - [x] 33z. A "with the figure" exercise in every chapter; five predict-first questions.
 - [x] Verified in a browser: all 79 figures in dark colours, printing, the offline cache, the sliding bar.
 
+### Wave 3.8: cover variations, a readable map, last polish
+
+- [x] Four rotating figures on the cover; returning readers get the one that fits their chapter.
+- [x] Map rebuilt as a named list with lines only for the picked chapter; keyboard control and a "start the route" button.
+- [x] Reading time follows the reader's pace; a summary at the end of each chapter; checkpoint results on the cover.
+- [x] Recap terms link to the glossary; the not-found page suggests the nearest chapter; higher-contrast code colours.
+- Left as it is at the owner's request: the favicon and app icon.
+
 ### Wave 4: remaining models
 
 - [ ] 34. `trees` library.

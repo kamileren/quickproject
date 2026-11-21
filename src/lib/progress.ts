@@ -26,6 +26,13 @@ export interface Progress {
   exercises: Record<string, number[]>;
   /** Checkpoints missed on the first try, by "chapter|question". */
   missed: Record<string, Missed>;
+  /** Chapter id → seconds spent actively reading it, counted until it is first finished. */
+  seconds: Record<string, number>;
+  /**
+   * Chapter id → time the reader took ÷ the chapter's estimate, recorded when it
+   * was finished. 1.5 means half as long again as estimated.
+   */
+  pace: Record<string, number>;
 }
 
 export interface Store {
@@ -35,7 +42,7 @@ export interface Store {
 }
 
 const KEY = 'book-of-ml:progress:v1';
-const empty = (): Progress => ({ read: {}, answers: {}, exercises: {}, missed: {} });
+const empty = (): Progress => ({ read: {}, answers: {}, exercises: {}, missed: {}, seconds: {}, pace: {} });
 
 function defaultStore(): Store | undefined {
   try {
@@ -57,6 +64,8 @@ function tidy(parsed: unknown): Progress {
     answers: isRecord(parsed.answers) ? (parsed.answers as Progress['answers']) : {},
     exercises: isRecord(parsed.exercises) ? (parsed.exercises as Progress['exercises']) : {},
     missed: isRecord(parsed.missed) ? (parsed.missed as Progress['missed']) : {},
+    seconds: isRecord(parsed.seconds) ? (parsed.seconds as Progress['seconds']) : {},
+    pace: isRecord(parsed.pace) ? (parsed.pace as Progress['pace']) : {},
   };
 }
 
@@ -105,13 +114,42 @@ export function noteSection(
   save(progress, store);
 }
 
-/** Records that the reader reached the end of a chapter. */
-export function markRead(id: string, now = Date.now(), store: Store | undefined = defaultStore()): void {
+/**
+ * Records that the reader reached the end of a chapter. Given the chapter's
+ * estimated minutes, it also records how the reader's own time compared.
+ */
+export function markRead(id: string, now = Date.now(), store: Store | undefined = defaultStore(), estimatedMinutes?: number): void {
   const progress = loadProgress(store);
   if (progress.read[id]) return;
   progress.read[id] = now;
+  const spent = (progress.seconds[id] ?? 0) / 60;
+  // Skimming to the end in a minute or two says nothing about reading speed, so it is not counted.
+  if (estimatedMinutes && spent >= estimatedMinutes * 0.3) progress.pace[id] = Math.round((spent / estimatedMinutes) * 100) / 100;
   save(progress, store);
 }
+
+/** Adds to the time spent actively reading a chapter that is not finished yet. */
+export function addReadingTime(id: string, seconds: number, store: Store | undefined = defaultStore()): void {
+  const progress = loadProgress(store);
+  if (progress.read[id]) return;
+  progress.seconds[id] = Math.round((progress.seconds[id] ?? 0) + seconds);
+  save(progress, store);
+}
+
+/**
+ * How this reader's time compares with the estimates: the middle value of the
+ * chapters they have finished, kept within sensible bounds. 1 until there are
+ * at least two chapters to judge by.
+ */
+export function readerPace(progress: Progress): number {
+  const ratios = Object.values(progress.pace).filter((r) => Number.isFinite(r) && r > 0).sort((a, b) => a - b);
+  if (ratios.length < 2) return 1;
+  const middle = ratios.length % 2 === 1 ? ratios[(ratios.length - 1) / 2] : (ratios[ratios.length / 2 - 1] + ratios[ratios.length / 2]) / 2;
+  return Math.min(2.5, Math.max(0.5, middle));
+}
+
+/** An estimate in minutes, adjusted to the reader's pace. */
+export const paced = (minutes: number, pace: number): number => Math.max(1, Math.round(minutes * pace));
 
 export function saveAnswer(id: string, question: string, option: number, store: Store | undefined = defaultStore()): void {
   const progress = loadProgress(store);

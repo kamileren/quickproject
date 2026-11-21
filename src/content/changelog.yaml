@@ -6,6 +6,9 @@
   items:
     - The map now lists the chapters by name. Pick one to see what to read first, what comes next, and how many minutes stand between you and it.
     - The cover shows one of four small figures, a different one each visit.
+    - Reading times adjust to your own pace once you have finished two chapters.
+    - The end of each chapter sums up your checkpoints and exercises there.
+    - Key terms on the recap page link to the glossary, and a mistyped address suggests the chapter you meant.
 - id: 2026-11-21-cover
   date: "2026-11-21"
   title: A cover you can play with
