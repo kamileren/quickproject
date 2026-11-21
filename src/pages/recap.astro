@@ -1,0 +1,116 @@
+---
+/** Every chapter's takeaways on one page, for revising. */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
+import { chapterLabel, chapterUrl, getParts, getReadyLectures, SITE_NAME } from '@/lib/book';
+import { block, renderMarkdown } from '@/lib/recap';
+
+const parts = await getParts();
+const lectures = await getReadyLectures();
+const cards = await Promise.all(
+  lectures.map(async (l) => ({
+    lecture: l,
+    takeaways: await renderMarkdown(block(l.body ?? '', 'KeyTakeaways') ?? ''),
+    skills: await renderMarkdown(block(l.body ?? '', 'NowYouCan') ?? ''),
+  })),
+);
+const description = 'The key points of every chapter on one page, for revising what you have read.';
+---
+
+<BaseLayout title={`Recap — ${SITE_NAME}`} description={description}>
+  <main class="px-6 pt-16 pb-32">
+    <div class="mx-auto max-w-3xl">
+      <SiteNav />
+      <header class="mb-12">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Reference</div>
+        </div>
+        <h1 class="display mb-6 text-5xl leading-[1.05] sm:text-6xl">Recap.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          The key points of every chapter, for revising. Read a card and ask yourself whether you could explain each line.
+        </p>
+        <label class="mt-6 flex cursor-pointer items-center gap-2 font-sans text-sm text-stone-600" data-print-hide>
+          <input id="only-read" type="checkbox" class="h-4 w-4 accent-orange-600" /> Only chapters I have finished
+        </label>
+      </header>
+
+      {
+        parts.map((part) => {
+          const own = cards.filter((c) => c.lecture.data.part === part.id);
+          return (
+            own.length > 0 && (
+              <section class="recap-part mb-14">
+                <h2 class="micro-label mb-5 text-sm text-orange-600">
+                  {part.data.label}: {part.data.title}
+                </h2>
+                {own.map(({ lecture, takeaways, skills }) => (
+                  <article class="recap-card mb-6 rounded border border-stone-200 p-5 sm:p-6" data-chapter-id={lecture.id}>
+                    <div class="micro-label mb-1 text-stone-400">{chapterLabel(lecture.data.number)}</div>
+                    <h3 class="display text-xl">
+                      <a href={chapterUrl(lecture)} class="underline decoration-orange-300 decoration-2 underline-offset-4 hover:text-orange-700">
+                        {lecture.data.title}
+                      </a>
+                    </h3>
+                    {lecture.data.question && <p class="mt-1 text-base text-stone-500 italic">{lecture.data.question}</p>}
+                    <div class="recap-list mt-4 text-[15px] leading-relaxed text-stone-800" set:html={takeaways} />
+                    {skills && (
+                      <details class="fold mt-4 border-t border-stone-100 pt-3">
+                        <summary class="micro-label text-stone-500">What you should be able to do</summary>
+                        <div class="recap-list mt-3 text-[15px] leading-relaxed text-stone-700" set:html={skills} />
+                      </details>
+                    )}
+                  </article>
+                ))}
+              </section>
+            )
+          );
+        })
+      }
+      <p id="recap-empty" hidden class="text-stone-500 italic">You have not finished a chapter yet. Untick the box to see them all.</p>
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .recap-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  .recap-list li {
+    position: relative;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+  }
+  .recap-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+  @media print {
+    .recap-card {
+      break-inside: avoid;
+    }
+  }
+</style>
+
+<script>
+  import { loadProgress } from '@/lib/progress';
+
+  const box = document.getElementById('only-read') as HTMLInputElement | null;
+  const read = loadProgress().read;
+  const apply = () => {
+    let shown = 0;
+    document.querySelectorAll<HTMLElement>('.recap-card').forEach((card) => {
+      card.hidden = Boolean(box?.checked) && !read[card.dataset.chapterId ?? ''];
+      if (!card.hidden) shown++;
+    });
+    document.querySelectorAll<HTMLElement>('.recap-part').forEach((part) => {
+      part.hidden = part.querySelectorAll('.recap-card:not([hidden])').length === 0;
+    });
+    const empty = document.getElementById('recap-empty');
+    if (empty) empty.hidden = shown > 0;
+  };
+  box?.addEventListener('change', apply);
+</script>

@@ -1,0 +1,37 @@
+# What changed in the book, newest first. Shown at /changelog/.
+# Add an entry whenever something a reader would notice is published.
+- id: 2026-11-21-reading
+  date: "2026-11-21"
+  title: Reading comfort and study tools
+  items:
+    - Search opens over any page with the / key, and there are keyboard shortcuts for moving around (press ? to see them).
+    - Reading settings for text size and dark colours.
+    - Exercises can be ticked off and have hints; missed checkpoint questions are collected on a review page.
+    - A recap page with every chapter's key points, and a map of how the chapters depend on each other.
+    - Pages you have opened stay readable without a connection, and chapters print cleanly.
+- id: 2026-11-21-exercises
+  date: "2026-11-21"
+  title: Exercises in every chapter
+  items:
+    - Every chapter now ends with four exercises and worked solutions, a list of what you can now do, and a common mistake to avoid.
+    - Glossary, notation and search pages. Terms link back to the chapter that introduces them.
+    - Reading progress is remembered in your browser.
+    - Pages with region maps load up to eight times faster.
+- id: 2026-11-21-networks
+  date: "2026-11-21"
+  title: "Part IV: Neural Networks"
+  items:
+    - Eight chapters that build a neural network from a single neuron up to a classifier for pictures of clothing.
+    - A short Python file for each chapter, which can be opened in Colab.
+- id: 2026-11-21-classification
+  date: "2026-11-21"
+  title: "Part II: Classification, and the Toolkit"
+  items:
+    - Five chapters on classification, from logistic regression to support vector machines.
+    - Three toolkit chapters covering the vectors, derivatives and probability the book uses.
+- id: 2026-11-18-rebuild
+  date: "2026-11-18"
+  title: The book is rebuilt
+  items:
+    - A new site with interactive figures in every section.
+    - "Part I: Learning from Data, in five chapters."

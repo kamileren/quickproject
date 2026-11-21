@@ -60,4 +60,9 @@ const datasets = defineCollection({
   schema: z.object({ name: z.string(), about: z.string() }),
 });
 
-export const collections = { lectures, parts, glossary, notation, datasets };
+const changelog = defineCollection({
+  loader: file('src/content/changelog.yaml'),
+  schema: z.object({ date: z.string(), title: z.string(), items: z.array(z.string()) }),
+});
+
+export const collections = { lectures, parts, glossary, notation, datasets, changelog };

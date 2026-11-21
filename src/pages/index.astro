@@ -71,7 +71,11 @@ const jsonLd = {
                 <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
                 <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/notation/">Notation</a>
                 <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/search/">Search</a>
+                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/search/" data-open="search-window">Search</a>
+                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
+                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/map/">Map</a>
+                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
+                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/recap/">Recap</a>
               </p>
             )
           }
@@ -172,12 +176,23 @@ const jsonLd = {
               ))
             }
           </div>
-          <p id="progress-note" hidden class="mt-8 font-sans text-xs text-stone-500">
-            <span id="progress-count"></span> Progress is kept in this browser only.
-            <button id="progress-clear" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
-              Clear it
-            </button>
-          </p>
+          <div class="mt-8 font-sans text-xs leading-6 text-stone-500">
+            <p id="progress-note" hidden>
+              <span id="progress-count"></span>
+              <a id="review-link" hidden href="/review/" class="underline decoration-orange-300 underline-offset-2 hover:text-orange-700"></a>
+            </p>
+            <p>
+              Progress is kept in this browser only.
+              <button id="progress-export" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">Save it to a file</button>
+              to move it to another device, or
+              <label class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
+                load a saved file<input id="progress-import" type="file" accept="application/json,.json" class="sr-only" />
+              </label>.
+              <button id="progress-clear" type="button" hidden class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
+                Clear progress
+              </button>
+            </p>
+          </div>
         </nav>
       </div>
     </div>
@@ -185,7 +200,7 @@ const jsonLd = {
 </BaseLayout>
 
 <script>
-  import { clearProgress, loadProgress } from '@/lib/progress';
+  import { clearProgress, exportProgress, importProgress, loadProgress } from '@/lib/progress';
 
   // Show what this reader has finished, and offer to pick up where they stopped.
   const progress = loadProgress();
@@ -204,19 +219,46 @@ const jsonLd = {
   const start = document.getElementById('start-link') as HTMLAnchorElement | null;
   const startText = document.getElementById('start-text');
   if (last && lastRow && start && startText) {
-    start.href = lastRow.href;
+    start.href = lastRow.href + (last.section ? `#${last.section}` : '');
     startText.textContent = `Continue: ${last.title}`;
   }
 
   const note = document.getElementById('progress-note');
   const count = document.getElementById('progress-count');
-  if (done > 0 && note && count) {
-    count.textContent = `You have finished ${done} of ${rows.length} chapters.`;
+  const exercisesDone = Object.values(progress.exercises).reduce((sum, list) => sum + list.length, 0);
+  if ((done > 0 || exercisesDone > 0) && note && count) {
+    count.textContent =
+      `You have finished ${done} of ${rows.length} chapters` + (exercisesDone > 0 ? ` and ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'}. ` : '. ');
     note.hidden = false;
   }
-  document.getElementById('progress-clear')?.addEventListener('click', () => {
+  const toReview = Object.values(progress.missed).filter((m) => !m.resolved).length;
+  const review = document.getElementById('review-link');
+  if (toReview > 0 && review && note) {
+    review.textContent = `${toReview} checkpoint ${toReview === 1 ? 'question' : 'questions'} to review`;
+    review.hidden = false;
+    note.hidden = false;
+  }
+
+  const clear = document.getElementById('progress-clear');
+  if (clear && (done > 0 || exercisesDone > 0 || last)) clear.hidden = false;
+  clear?.addEventListener('click', () => {
+    if (!confirm('Clear all reading progress saved in this browser?')) return;
     clearProgress();
     location.reload();
+  });
+
+  document.getElementById('progress-export')?.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([exportProgress()], { type: 'application/json' }));
+    link.download = 'book-of-ml-progress.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+  document.getElementById('progress-import')?.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (importProgress(await file.text())) location.reload();
+    else alert('That file is not a progress file saved from this book.');
   });
 </script>
 

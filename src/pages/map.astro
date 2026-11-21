@@ -1,0 +1,261 @@
+---
+/** One picture of how the chapters depend on each other. */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
+import { chapterLabel, chapterUrl, getLectures, getParts, SITE_NAME } from '@/lib/book';
+
+const parts = await getParts();
+const lectures = await getLectures();
+
+// Layout: one row per part, chapters left to right in book order.
+const BOX_W = 58;
+const BOX_H = 38;
+const GAP_X = 16;
+const ROW_H = 104;
+const LEFT = 16;
+const TOP = 30;
+
+const nodes = new Map(
+  parts.flatMap((part, row) =>
+    lectures
+      .filter((l) => l.data.part === part.id)
+      .map((l, col) => [l.id, { lecture: l, x: LEFT + col * (BOX_W + GAP_X), y: TOP + row * ROW_H, row }] as const),
+  ),
+);
+const width = LEFT * 2 + Math.max(...parts.map((p) => lectures.filter((l) => l.data.part === p.id).length)) * (BOX_W + GAP_X) - GAP_X;
+const height = TOP + parts.length * ROW_H - 30;
+
+const edges = [...nodes.values()].flatMap((to) =>
+  to.lecture.data.prerequisites.flatMap((id) => {
+    const from = nodes.get(id);
+    if (!from) return [];
+    const x1 = from.x + BOX_W / 2;
+    const x2 = to.x + BOX_W / 2;
+    let d: string;
+    if (from.row === to.row) {
+      // Same part: a low arc over the tops of the boxes, or a straight hop to the neighbour.
+      const lift = Math.abs(x2 - x1) <= BOX_W + GAP_X ? 0 : 18;
+      d = lift === 0 ? `M${from.x + BOX_W},${from.y + BOX_H / 2} L${to.x},${to.y + BOX_H / 2}` : `M${x1},${from.y} C${x1},${from.y - lift} ${x2},${to.y - lift} ${x2},${to.y}`;
+    } else {
+      const y1 = from.y + BOX_H;
+      const y2 = to.y;
+      const mid = (y1 + y2) / 2;
+      d = `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`;
+    }
+    return [{ d, from: id, to: to.lecture.id }];
+  }),
+);
+
+const details = Object.fromEntries(
+  [...nodes.values()].map(({ lecture }) => [
+    lecture.id,
+    {
+      label: chapterLabel(lecture.data.number),
+      title: lecture.data.title,
+      text: lecture.data.question ?? lecture.data.summary,
+      ready: lecture.data.status === 'ready',
+      url: chapterUrl(lecture),
+      needs: lecture.data.prerequisites.map((id) => nodes.get(id)?.lecture.data.title ?? id),
+    },
+  ]),
+);
+const description = 'How the chapters of the book build on one another, in one picture.';
+---
+
+<BaseLayout title={`Map — ${SITE_NAME}`} description={description}>
+  <main class="px-6 pt-16 pb-32">
+    <div class="mx-auto max-w-4xl">
+      <SiteNav />
+      <header class="mb-10">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Reference</div>
+        </div>
+        <h1 class="display mb-6 text-5xl leading-[1.05] sm:text-6xl">Map.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          Each box is a chapter and each line means "read this one first". Pick a chapter to see what it needs.
+        </p>
+      </header>
+
+      <div class="overflow-x-auto rounded border border-stone-200 bg-stone-50/50 p-2">
+        <svg id="book-map" viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Chapters and what each one builds on" style={`min-width: ${Math.round(width * 0.8)}px`} class="block w-full">
+          {
+            parts.map((part, row) => (
+              <text x={LEFT} y={TOP + row * ROW_H - 12} class="map-part">
+                {part.data.label.toUpperCase()} · {part.data.title.toUpperCase()}
+              </text>
+            ))
+          }
+          <g fill="none">{edges.map((e) => <path d={e.d} class="map-edge" data-from={e.from} data-to={e.to} />)}</g>
+          {
+            [...nodes.values()].map(({ lecture, x, y }) => (
+              <g
+                class:list={['map-node', lecture.data.status !== 'ready' && 'is-draft']}
+                data-id={lecture.id}
+                tabindex="0"
+                role="button"
+                aria-label={`${chapterLabel(lecture.data.number)}: ${lecture.data.title}`}
+              >
+                <rect x={x} y={y} width={BOX_W} height={BOX_H} rx="3" />
+                <text x={x + BOX_W / 2} y={y + BOX_H / 2 + 5} text-anchor="middle">
+                  {lecture.data.number}
+                </text>
+              </g>
+            ))
+          }
+        </svg>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-stone-500">
+        <span><span class="mr-1.5 inline-block h-3 w-3 border border-stone-900 bg-white align-[-2px]"></span>Published</span>
+        <span><span class="mr-1.5 inline-block h-3 w-3 border border-stone-900 bg-orange-600 align-[-2px]"></span>You have finished it</span>
+        <span><span class="mr-1.5 inline-block h-3 w-3 border border-dashed border-stone-400 bg-white align-[-2px]"></span>Coming soon</span>
+      </div>
+
+      <section id="map-detail" aria-live="polite" class="mt-8 min-h-40 rounded border-2 border-stone-900 p-6">
+        <p class="text-stone-500 italic">Pick a chapter in the map.</p>
+      </section>
+    </div>
+  </main>
+  <script is:inline type="application/json" id="map-data" set:html={JSON.stringify(details)} />
+</BaseLayout>
+
+<style is:global>
+  #book-map .map-part {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    fill: var(--accent);
+  }
+  #book-map .map-edge {
+    stroke: var(--faint);
+    stroke-width: 1.25;
+    transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s;
+  }
+  #book-map .map-node {
+    cursor: pointer;
+    outline: none;
+  }
+  #book-map .map-node rect {
+    fill: #fff;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    transition: fill 0.15s;
+  }
+  #book-map .map-node text {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--ink);
+    pointer-events: none;
+  }
+  #book-map .map-node.is-draft rect {
+    stroke: var(--faint);
+    stroke-dasharray: 4 3;
+  }
+  #book-map .map-node.is-draft text {
+    fill: var(--faint);
+  }
+  #book-map .map-node.is-done rect {
+    fill: var(--accent);
+  }
+  #book-map .map-node.is-done text {
+    fill: #fff;
+  }
+  #book-map .map-node:is(:hover, :focus-visible, .is-picked) rect {
+    stroke-width: 3;
+  }
+  #book-map .map-node.is-needed rect {
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+  /* With a chapter picked, its own lines stand out and the rest fade. */
+  #book-map.has-pick .map-edge {
+    opacity: 0.25;
+  }
+  #book-map.has-pick .map-edge.is-in {
+    opacity: 1;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+  }
+  #book-map.has-pick .map-edge.is-out {
+    opacity: 1;
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+</style>
+
+<script>
+  import { loadProgress } from '@/lib/progress';
+
+  interface Detail {
+    label: string;
+    title: string;
+    text: string;
+    ready: boolean;
+    url: string;
+    needs: string[];
+  }
+  const data = JSON.parse(document.getElementById('map-data')?.textContent ?? '{}') as Record<string, Detail>;
+  const map = document.getElementById('book-map')!;
+  const panel = document.getElementById('map-detail')!;
+  const read = loadProgress().read;
+  const nodes = [...map.querySelectorAll<SVGGElement>('.map-node')];
+  const edges = [...map.querySelectorAll<SVGPathElement>('.map-edge')];
+
+  nodes.forEach((n) => n.classList.toggle('is-done', Boolean(read[n.dataset.id ?? ''])));
+
+  const el = (tag: string, className: string, text?: string) => {
+    const node = document.createElement(tag);
+    node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  function pick(id: string): void {
+    const d = data[id];
+    if (!d) return;
+    map.classList.add('has-pick');
+    const needed = new Set<string>();
+    edges.forEach((e) => {
+      e.classList.toggle('is-in', e.dataset.to === id);
+      e.classList.toggle('is-out', e.dataset.from === id);
+      if (e.dataset.to === id) needed.add(e.dataset.from ?? '');
+    });
+    nodes.forEach((n) => {
+      n.classList.toggle('is-picked', n.dataset.id === id);
+      n.classList.toggle('is-needed', needed.has(n.dataset.id ?? ''));
+    });
+
+    const leads = edges.filter((e) => e.dataset.from === id).map((e) => data[e.dataset.to ?? '']?.title);
+    const lines = [
+      el('div', 'micro-label mb-1 text-orange-600', d.label + (read[id] ? ' · finished' : '')),
+      el('h2', 'display text-2xl', d.title),
+      el('p', 'mt-2 text-base leading-relaxed text-stone-600 italic', d.text),
+      el('p', 'mt-3 font-sans text-sm text-stone-600', d.needs.length > 0 ? `Read first: ${d.needs.join(', ')}.` : 'Needs nothing before it.'),
+    ];
+    if (leads.length > 0) lines.push(el('p', 'mt-1 font-sans text-sm text-stone-600', `Leads to: ${leads.join(', ')}.`));
+    if (d.ready) {
+      const link = el('a', 'btn btn-primary mt-5', 'Open the chapter →') as HTMLAnchorElement;
+      link.href = d.url;
+      lines.push(link);
+    } else {
+      lines.push(el('p', 'mt-4 font-mono text-[11px] tracking-widest text-stone-400 uppercase', 'Coming soon'));
+    }
+    panel.replaceChildren(...lines);
+  }
+
+  nodes.forEach((n) => {
+    const id = n.dataset.id ?? '';
+    n.addEventListener('click', () => pick(id));
+    n.addEventListener('focus', () => pick(id));
+    n.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && data[id]?.ready) location.href = data[id].url;
+    });
+  });
+
+  // Start on the chapter the reader had open, if any.
+  const last = loadProgress().last?.id;
+  if (last && data[last]) pick(last);
+</script>

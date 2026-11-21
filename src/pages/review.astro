@@ -1,0 +1,90 @@
+---
+/**
+ * Checkpoints the reader got wrong on the first try, asked again.
+ * The questions are kept in the reader's browser, so this page is filled in there.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SiteNav from '@/components/SiteNav.astro';
+import { SITE_NAME } from '@/lib/book';
+---
+
+<BaseLayout title={`Review — ${SITE_NAME}`} description="The checkpoint questions you missed, ready to try again." noindex>
+  <main class="px-6 pt-16 pb-32">
+    <div class="mx-auto max-w-3xl">
+      <SiteNav />
+      <header class="mb-12">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Practice</div>
+        </div>
+        <h1 class="display mb-6 text-5xl leading-[1.05] sm:text-6xl">Review.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          The checkpoint questions you got wrong the first time. Getting one right here clears it from the list.
+        </p>
+        <p id="review-status" class="mt-5 font-sans text-sm text-stone-600"></p>
+      </header>
+
+      <div id="review-list"></div>
+
+      <noscript><p class="text-stone-600">This page needs JavaScript, because your answers are kept in your own browser.</p></noscript>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { loadProgress, resolveMissed } from '@/lib/progress';
+
+  const list = document.getElementById('review-list')!;
+  const status = document.getElementById('review-status')!;
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text?: string) => {
+    const node = document.createElement(tag);
+    node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  function draw(): void {
+    const missed = Object.entries(loadProgress().missed);
+    const open = missed.filter(([, m]) => !m.resolved);
+    status.textContent =
+      missed.length === 0
+        ? 'Nothing here yet. Questions appear when a first answer to a checkpoint in a chapter is wrong.'
+        : open.length === 0
+          ? `All ${missed.length} cleared. Well done.`
+          : `${open.length} to go${missed.length > open.length ? `, ${missed.length - open.length} cleared` : ''}.`;
+
+    list.replaceChildren(
+      ...open.map(([key, m]) => {
+        const card = el('section', 'mb-8 rounded border border-stone-200 bg-stone-50/60 p-6');
+        const from = el('a', 'micro-label mb-3 inline-block text-orange-700 hover:text-orange-900', m.chapterTitle);
+        from.href = `/${m.chapter}/`;
+        const feedback = el('p', 'mt-4 min-h-6 text-sm leading-relaxed text-stone-600');
+        feedback.setAttribute('aria-live', 'polite');
+        const options = el('div', 'grid gap-2');
+        m.options.forEach((option, i) => {
+          const button = el('button', 'flex cursor-pointer items-baseline gap-3 rounded border border-stone-200 bg-white px-4 py-2.5 text-left font-serif text-[15px] leading-snug text-stone-700 hover:border-stone-400');
+          button.type = 'button';
+          button.append(el('span', 'font-mono text-[10px] font-bold opacity-60', String.fromCharCode(65 + i)), el('span', '', option.text));
+          button.addEventListener('click', () => {
+            options.querySelectorAll('button').forEach((b) => b.classList.remove('border-red-600!', 'border-stone-900!', 'bg-stone-900!', 'text-white!'));
+            const verdict = el('strong', option.correct ? 'text-orange-700' : 'text-red-600', option.correct ? 'Correct. ' : 'Not quite. ');
+            feedback.replaceChildren(verdict, option.why);
+            if (option.correct) {
+              button.classList.add('border-stone-900!', 'bg-stone-900!', 'text-white!');
+              resolveMissed(key);
+              options.querySelectorAll('button').forEach((b) => (b.disabled = true));
+              status.textContent = 'Cleared. It will be gone when you next open this page.';
+            } else {
+              button.classList.add('border-red-600!');
+            }
+          });
+          options.append(button);
+        });
+        card.append(from, el('p', 'mb-4 font-serif text-base leading-relaxed text-stone-800', m.question), options, feedback);
+        return card;
+      }),
+    );
+  }
+  draw();
+</script>
