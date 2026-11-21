@@ -4,5 +4,220 @@ number: "16"
 part: networks
 order: 18
 summary: "Softmax and cross-entropy: turning outputs into a loss."
-status: draft
+question: "A network outputs three numbers. How do we say how wrong they are?"
+minutes: 14
+status: ready
+prerequisites: [layers-and-activations, logistic-regression]
 ---
+
+import ScoreBoard from '@/components/figures/ch16/ScoreBoard';
+
+The network from the last chapter takes an input, passes it through its layers, and produces one number per class. Its weights are random, so the numbers are nonsense. Before we can improve them we need a precise way to say how bad they are. That takes two steps: turn the numbers into probabilities, then score the probabilities against the truth.
+
+The running example from here on is a network that looks at a picture of clothing and decides whether it shows a T-shirt, a trouser or a sneaker.
+
+## Three raw scores
+
+The output layer has three neurons, one per class. For one image it might produce:
+
+$$
+[\,2.0,\ \ 1.0,\ \ 0.1\,]
+$$
+
+These raw scores are called <Term id="logits">logits</Term>. Bigger means "more likely this class", so the network's answer here is the first class, T-shirt.
+
+But the scores are awkward to work with. They can be any size, positive or negative, and they do not add up to anything in particular. Is 2.0 against 1.0 a confident answer or a hesitant one? To judge the network, and to train it, we want a probability for each class: three numbers between 0 and 1 that add up to 1.
+
+## Softmax: scores into probabilities
+
+The function that does this is <Term id="softmax">softmax</Term>. It works in two moves.
+
+1. **Make every score positive** by raising $e$ to its power. Larger scores become much larger, and negative scores become small positive numbers.
+2. **Divide each by the total**, so that they add up to 1.
+
+<Equation reads="probability of class j = e to its score, divided by the sum of e to every score">
+
+$$
+p_j = \frac{e^{s_j}}{\sum_k e^{s_k}}
+$$
+
+</Equation>
+
+<Example title="Softmax by hand">
+
+For the scores $[2.0,\ 1.0,\ 0.1]$:
+
+| Class | Score | $e^{\text{score}}$ | Divided by the total, 11.21 |
+|---|---|---|---|
+| T-shirt | 2.0 | 7.39 | 65.9% |
+| Trouser | 1.0 | 2.72 | 24.2% |
+| Sneaker | 0.1 | 1.11 | 9.9% |
+
+</Example>
+
+<Figure
+  title="From scores to probabilities"
+  caption="Each row is one class. The bar shows the probability softmax assigns to it."
+  try="raise one score and watch the other two probabilities fall, although their scores did not change. Then add 3 to all three scores and see what happens."
+>
+  <ScoreBoard client:visible />
+</Figure>
+
+Two things are worth noticing. The probabilities compete: raising one score takes probability away from the others, because the total is fixed at 1. And only the *gaps* between scores matter. Adding the same amount to every score leaves the probabilities unchanged.
+
+<MarginNote>
+With two classes, softmax reduces to the sigmoid from the logistic regression chapter. Softmax is the same idea for any number of classes.
+</MarginNote>
+
+## Cross-entropy: scoring the probabilities
+
+Now we need a loss. Suppose the image really is a T-shirt. The network gave that class 65.9%. A perfect network would have given it 100%.
+
+The idea from the logistic regression chapter carries over unchanged: look at **the probability the network gave to the correct class**, and take minus its logarithm. This loss is called <Term id="cross-entropy">cross-entropy</Term>.
+
+<Equation reads="loss = minus the log of the probability given to the correct class">
+
+$$
+L = -\log\big(p_{\text{correct}}\big)
+$$
+
+</Equation>
+
+| Probability given to the correct class | 100% | 66% | 33% | 10% | 1% |
+|---|---|---|---|---|---|
+| Loss | 0 | 0.42 | 1.10 | 2.30 | 4.61 |
+
+The loss is zero only for complete confidence in the right answer. It grows slowly at first and then steeply, so a confident wrong answer is punished far more than a hesitant one. The probabilities given to the *wrong* classes do not appear in the formula at all. They matter only because softmax makes them eat into the share left for the correct one.
+
+<Figure
+  title="How much the network is charged"
+  caption="The orange bar is the correct class. The loss depends only on the length of that bar."
+  try="choose which class is correct and read the loss. Then drag the scores until the network is confidently wrong, and watch the loss climb."
+>
+  <ScoreBoard client:visible withTruth />
+</Figure>
+
+For a batch of images the loss is the average over the batch. One number then summarises how the network is doing on all of them.
+
+The correct class is often written as a list with a 1 in its position and 0 elsewhere, such as $[1, 0, 0]$ for T-shirt. That form is called <Term id="one-hot">one-hot</Term>, and it will be convenient in a moment.
+
+## Loss is not accuracy
+
+It is tempting to skip the loss and count correct answers. Accuracy is easier to understand, but it throws away information the loss keeps.
+
+<Example title="Same accuracy, different loss">
+
+Two networks each classify three images. Both get the first two right and the third wrong. Here is the probability each gave to the correct class:
+
+| | Image 1 | Image 2 | Image 3 | Accuracy | Mean loss |
+|---|---|---|---|---|---|
+| Network A | 90% | 80% | 40% | 2 of 3 | 0.415 |
+| Network B | 55% | 50% | 30% | 2 of 3 | 0.832 |
+
+Accuracy cannot tell them apart. The loss shows that A is sure when it is right and only narrowly wrong, while B is barely getting by.
+
+</Example>
+
+There is a second, more practical reason to train on the loss. Nudge a weight slightly and the accuracy usually does not change at all, because no answer flips. It moves in jumps. The loss moves smoothly with every nudge, so it always has a slope to follow. Accuracy is what we report. Loss is what we optimise.
+
+<Checkpoint
+  question="An untrained network with random weights gives three classes about a third each. What is its cross-entropy loss, roughly?"
+  options={[
+    { text: '0, because it has not made any confident mistakes', why: 'The loss is zero only when the correct class gets 100%. Here it gets about 33%.' },
+    { text: 'About 1.10, which is −log(1/3)', correct: true, why: 'Each correct class gets about a third, and −log(1/3) ≈ 1.10. Seeing this number at the start of training is a good sign the code is working.' },
+    { text: 'About 0.33', why: 'That is the probability, not the loss. The loss is minus its logarithm.' },
+  ]}
+/>
+
+## Which way should the scores move?
+
+To improve the network we need the slope of the loss with respect to each raw score. Softmax followed by a logarithm looks as if it should give a messy derivative. It gives one of the tidiest results in machine learning:
+
+<Equation reads="slope for each score = its probability minus the truth (1 for the correct class, 0 for the others)">
+
+$$
+\frac{\partial L}{\partial s_j} = p_j - y_j
+$$
+
+</Equation>
+
+Here $y$ is the one-hot truth. Read it class by class. For the correct class, $p - 1$ is negative: raising that score lowers the loss. For every wrong class, $p - 0$ is positive: lowering that score lowers the loss. The size of each push is how far the probability is from where it should be.
+
+<Figure
+  title="Prediction minus truth"
+  caption="The last column is the slope of the loss for each score. Positive means the score should come down."
+  try="make the network confidently right and watch all three numbers shrink toward zero. Then make it confidently wrong and see which score gets the biggest push."
+>
+  <ScoreBoard client:visible withGradient initialScores={[0.5, 2, 0.1]} />
+</Figure>
+
+You have seen "prediction minus truth" twice before, for linear regression and for logistic regression. It appears again here, and it is the starting signal for training a whole network. The next chapter takes these three numbers and passes them backward through every layer, to find out how each weight should change.
+
+<Checkpoint
+  question="For one image the probabilities are [0.7, 0.2, 0.1] and the correct class is the second. What is the gradient with respect to the three scores?"
+  options={[
+    { text: '[0.7, −0.8, 0.1]', correct: true, why: 'Probability minus one-hot truth: [0.7 − 0, 0.2 − 1, 0.1 − 0]. The correct class is pushed up, the others down.' },
+    { text: '[−0.3, 0.2, 0.1]', why: 'That subtracts 1 from the first class, as if it were the correct one. The correct class is the second.' },
+    { text: '[0.7, 0.2, 0.1]', why: 'That is the probabilities themselves. The truth has to be subtracted.' },
+  ]}
+/>
+
+## In code
+
+Two new classes join the network. The full file is `code/ch16_loss.py`.
+
+```python
+import numpy as np
+
+class Activation_Softmax:
+    def forward(self, inputs):
+        # Subtracting each row's largest score stops the exponential overflowing.
+        exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+        self.output = exp_values / np.sum(exp_values, axis=1, keepdims=True)
+
+class Loss_CategoricalCrossentropy:
+    def calculate(self, probabilities, y_true):
+        samples = len(probabilities)
+        clipped = np.clip(probabilities, 1e-7, 1 - 1e-7)        # never take log(0)
+        correct_confidences = clipped[range(samples), y_true]   # each row's correct class
+        return np.mean(-np.log(correct_confidences))
+
+softmax = Activation_Softmax()
+softmax.forward(np.array([[2.0, 1.0, 0.1]]))
+print(np.round(softmax.output, 3))                              # [[0.659 0.242 0.099]]
+
+loss_function = Loss_CategoricalCrossentropy()
+print(round(loss_function.calculate(softmax.output, [0]), 3))   # 0.417
+```
+
+Running the untrained two-layer network from the last chapter on 300 examples with three classes gives a loss of 1.099. That is $\log 3$, exactly what a network that knows nothing should score.
+
+<KeyTakeaways>
+
+- The output layer gives one raw score per class. **Softmax** turns them into probabilities that add up to 1.
+- **Cross-entropy** is minus the log of the probability given to the correct class.
+- **Loss** changes smoothly with the weights and is what we train on. **Accuracy** moves in jumps and is what we report.
+- The slope of the loss for each score is **probability minus truth**.
+- An untrained network on $k$ classes should score about $\log k$.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Why the exponential?
+
+Softmax needs to turn any number into a positive one while keeping the order, and many functions could do that. The exponential is chosen because it pairs with the logarithm in the loss: the two cancel, which is where the clean "probability minus truth" gradient comes from. With any other choice the derivative would be far messier.
+
+### Temperature
+
+Dividing every score by a number $T$ before softmax changes how sharp the probabilities are. A small $T$ makes the largest score dominate; a large $T$ flattens them toward equal shares. Language models use this setting, under the name temperature, to control how adventurous their choice of next word is.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 4 and 5, [nnfs.io](https://nnfs.io).
+- A. Karpathy and others, *CS231n notes: Linear classification*, [cs231n.github.io/linear-classify](https://cs231n.github.io/linear-classify/).
+- S. J. D. Prince, *Understanding Deep Learning*, chapter 5. Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
+
+</References>

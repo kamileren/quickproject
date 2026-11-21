@@ -319,3 +319,15 @@
 - id: forward-pass
   term: Forward pass
   definition: Running an input through the network from the first layer to the last to get its output.
+- id: softmax
+  term: Softmax
+  definition: A function that turns a list of scores into probabilities. Every result is positive, they add up to 1, and a higher score gets a larger share.
+- id: logits
+  term: Logits
+  definition: The raw scores a network produces for each class, before softmax turns them into probabilities.
+- id: cross-entropy
+  term: Cross-entropy
+  definition: The usual loss for classification. It is minus the logarithm of the probability the model gave to the correct class.
+- id: one-hot
+  term: One-hot
+  definition: A way of writing a class as a list of zeros with a single 1 in the position of that class.

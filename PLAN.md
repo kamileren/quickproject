@@ -216,7 +216,7 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 - [x] 25. `nn` library, spiral data, `code/` folder with the MIT notice. (The Fashion-MNIST subset is prepared with chapter 21.)
 - [x] 26. Chapter 14.
 - [x] 27. Chapter 15.
-- [ ] 28. Chapter 16.
+- [x] 28. Chapter 16.
 - [ ] 29. Chapter 17.
 - [ ] 30. Chapter 18.
 - [ ] 31. Chapter 19.
