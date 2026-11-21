@@ -148,3 +148,27 @@
 - id: standardize
   term: Standardize
   definition: Rescale a feature so that its average is 0 and its typical spread is 1. It puts features on a common footing.
+- id: logistic-regression
+  term: Logistic regression
+  definition: A model for yes/no questions. It computes a weighted sum of the features and squashes it into a probability between 0 and 1.
+- id: sigmoid
+  term: Sigmoid
+  definition: The S-shaped function that turns any number into a value between 0 and 1. Large positive inputs give nearly 1, large negative ones nearly 0.
+- id: probability
+  term: Probability
+  definition: A number from 0 to 1 saying how likely something is. 0 means never, 1 means certain, 0.5 means a coin flip.
+- id: log-loss
+  term: Log loss
+  definition: The loss used for probabilities. It is the negative logarithm of the probability the model gave to what actually happened. Also called cross-entropy.
+- id: threshold
+  term: Threshold
+  definition: The cut-off probability above which a model answers yes. 0.5 is the usual default, but it is a choice.
+- id: decision-boundary
+  term: Decision boundary
+  definition: The dividing line between the inputs a model labels one class and those it labels the other.
+- id: linear-classifier
+  term: Linear classifier
+  definition: A classifier whose decision boundary is straight, a point with one feature, a line with two, a flat sheet with more.
+- id: separable
+  term: Separable
+  definition: Data in which one straight boundary divides the two classes with no mistakes at all.

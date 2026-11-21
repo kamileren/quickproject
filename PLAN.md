@@ -201,8 +201,9 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 
 ### Wave 2: Part II and the toolkit
 
-- [ ] 16. Pass/fail and 2D toy datasets; `BoundaryCanvas`; `classify` library.
-- [ ] 17–21. Chapters 6, 7, 8, 9, 10.
+- [x] 16. Pass/fail and 2D toy datasets; `BoundaryCanvas`; `classify` library.
+- [x] 17. Chapter 6.
+- [ ] 18–21. Chapters 7, 8, 9, 10.
 - [ ] 22–24. Toolkit 0.1, 0.2, 0.3; link earlier chapters back to them. Owner reviews.
 
 ### Wave 3: Part IV, from scratch

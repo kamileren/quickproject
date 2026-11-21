@@ -4,5 +4,216 @@ number: "6"
 part: classification
 order: 8
 summary: "Predicting a yes or no answer as a probability."
-status: draft
+question: "A student studied for four and a half hours. How likely are they to pass?"
+dataset: pass-fail
+minutes: 20
+status: ready
+prerequisites: [linear-regression, gradient-descent]
 ---
+
+import LineVsCurve from '@/components/figures/ch06/LineVsCurve';
+import SigmoidExplorer from '@/components/figures/ch06/SigmoidExplorer';
+import LogLossCurve from '@/components/figures/ch06/LogLossCurve';
+import FitLogistic from '@/components/figures/ch06/FitLogistic';
+import Boundary2D from '@/components/figures/ch06/Boundary2D';
+
+Part I predicted numbers. This part predicts categories: pass or fail, spam or not, ill or healthy. The first model for the job is a small change to the one you already know, and it is the building block of every neural network later in the book.
+
+The data is the exam class again, all eighteen students this time, and for each one a single fact: did they pass?
+
+## A line is the wrong shape
+
+The obvious first move is to reuse linear regression. Write a pass as 1 and a fail as 0, and fit a straight line through those numbers. The height of the line can then be read as the chance of passing.
+
+<Figure
+  title="Fitting a yes/no answer"
+  caption="Each student sits at 1 if they passed and 0 if they failed."
+  try="read the straight line's predictions at 0 hours and at 9 hours. Then switch to the S-shaped curve."
+>
+  <LineVsCurve client:visible />
+</Figure>
+
+The line gives a student who did no studying a −13% chance of passing, and one who studied nine hours a 124% chance. Neither number means anything. A <Term id="probability">probability</Term> has to stay between 0 and 1, and a straight line never stops.
+
+What the data calls for is a curve that stays near 0 for a while, rises through the middle, and levels off near 1. The second option in the figure has that shape.
+
+## Squashing a line into a probability
+
+We do not need to give up the line. We keep it, and pass its output through a function that squashes any number into the range 0 to 1. That function is the <Term id="sigmoid">sigmoid</Term>, written $\sigma$:
+
+<Equation reads="chance of passing = sigmoid of (w × hours + b)">
+
+$$
+p = \sigma(w\,x + b) \qquad\text{where}\qquad \sigma(z) = \frac{1}{1 + e^{-z}}
+$$
+
+</Equation>
+
+The inside, $w x + b$, is the same line as in chapter 2. Call its value the score. The sigmoid turns the score into a probability:
+
+| Score $w x + b$ | −4 | −2 | 0 | 2 | 4 |
+|---|---|---|---|---|---|
+| Probability | 2% | 12% | 50% | 88% | 98% |
+
+A score of zero means "could go either way". Large positive scores mean "almost certainly yes", and large negative ones "almost certainly no". This model is called <Term id="logistic-regression">logistic regression</Term>. Despite the name, it is used for classification.
+
+<Figure
+  title="What the two numbers do"
+  caption="The curve is the sigmoid of w × hours + b. The dashed lines mark where it crosses 50%."
+  try="raise w and watch the rise get sharper. Then change b and watch the whole curve slide sideways. Try to make the curve agree with the dots."
+>
+  <SigmoidExplorer client:visible />
+</Figure>
+
+<MarginNote>
+The curve crosses 50% exactly where the score is zero, which is at x = −b / w.
+</MarginNote>
+
+## Scoring a probability
+
+To fit the curve we need a loss, and squared error is a poor fit for probabilities. Think about what a good prediction is here. If a student passed, the model should have given a high chance of passing. If they failed, a low one. So score the model by **the probability it gave to what actually happened**, and punish it more the smaller that was.
+
+The standard choice is the <Term id="log-loss">log loss</Term>: take that probability and compute its negative logarithm.
+
+| Model gave what happened a chance of | 90% | 50% | 10% | 1% |
+|---|---|---|---|---|
+| Loss | 0.11 | 0.69 | 2.30 | 4.61 |
+
+A confident, correct prediction costs almost nothing. A coin-flip costs 0.69. A confident, *wrong* prediction is punished severely, and the cost keeps growing without limit as the model becomes more sure of the wrong answer.
+
+<Figure
+  title="The cost of being confidently wrong"
+  caption="The curve is the loss for one student, for every probability the model might have predicted."
+  try="with 'passed' selected, drag the dot toward the left edge and watch the loss. Then switch to 'failed' and see the curve flip."
+>
+  <LogLossCurve client:visible />
+</Figure>
+
+For a whole dataset the loss is the average over all the students:
+
+$$
+L = -\frac{1}{n}\sum_{i=1}^{n}\Big[\,y_i \log p_i + (1 - y_i)\log(1 - p_i)\Big]
+$$
+
+The formula looks heavy, but it is only the table above written compactly. When $y_i = 1$ the second term vanishes and the loss is $-\log p_i$. When $y_i = 0$ the first vanishes and the loss is $-\log(1 - p_i)$.
+
+<Checkpoint
+  question="Two models predict for a student who passed. Model A said 60% chance of a pass; model B said 99%. A second student failed: A said 40%, B said 99%. Which model has the lower total log loss?"
+  options={[
+    { text: 'Model B, because it was more confident', why: 'B was superb on the first student and catastrophic on the second: giving 1% to what happened costs 4.61.' },
+    { text: 'Model A', correct: true, why: 'A gave 60% to what happened both times, costing 0.51 + 0.51. B costs 0.01 + 4.61. One confident mistake outweighs everything else.' },
+    { text: 'They tie', why: 'A totals about 1.02 and B about 4.62. Log loss punishes confident errors very heavily.' },
+  ]}
+/>
+
+## Fitting the curve
+
+Unlike the straight line, this model has no formula for the best $w$ and $b$. That is no obstacle, because chapter 3 gave us a method that needs only a loss and its slope. Start with $w = 0$ and $b = 0$, which predicts 50% for everyone and has a loss of 0.69, and walk downhill.
+
+The slopes turn out to be almost the same as for linear regression:
+
+$$
+\frac{\partial L}{\partial w} = \frac{1}{n}\sum_i (p_i - y_i)\,x_i
+\qquad
+\frac{\partial L}{\partial b} = \frac{1}{n}\sum_i (p_i - y_i)
+$$
+
+Again it is "prediction minus truth, times the input, averaged". The only difference is that the prediction $p_i$ now comes out of the sigmoid.
+
+<Figure
+  title="Gradient descent finds the curve"
+  caption="The orange curve is the current model. The dashed curve is where it is heading."
+  try="press Step a few times, then Run. Watch the loss fall from 0.693, and the 50% point settle."
+>
+  <FitLogistic client:visible />
+</Figure>
+
+The run settles on $w = 1.56$ and $b = -6.03$, with a loss of 0.259. That answers the opening question:
+
+$$
+p = \sigma(1.56 \times 4.5 - 6.03) = \sigma(0.99) \approx 0.73
+$$
+
+A student who studied four and a half hours has about a 73% chance of passing. The straight-line model could only say "pass". This one says how sure it is.
+
+## From probability to decision
+
+Often a probability is not enough and a decision is needed: admit or not, flag or not. The usual rule is to answer yes when the probability is at least 50%. That cut-off is called the <Term id="threshold">threshold</Term>.
+
+For our model, the probability reaches 50% at 3.85 hours. Students above that are predicted to pass, and the rule is right about 16 of the 18. The point where the answer flips is the <Term id="decision-boundary">decision boundary</Term>.
+
+With two features the same idea gives a boundary that is a line. Here are forty students with both their hours of study and their hours of sleep.
+
+<Figure
+  title="A boundary in two dimensions"
+  caption="The shading is the model's predicted chance of a pass. The dark line is where that chance equals the threshold."
+  try="move the threshold up to 80%, then down to 20%. Watch the line slide, and the two kinds of mistake trade places."
+>
+  <Boundary2D client:visible />
+</Figure>
+
+Two things are worth noticing. First, the boundary is always straight, however the threshold moves. Logistic regression is a <Term id="linear-classifier">linear classifier</Term>: it can only divide the plane with a straight cut. Second, moving the threshold never makes the model better or worse at telling the classes apart. It only changes which mistake it prefers to make. Choosing well between those mistakes is the subject of the next chapter.
+
+<Checkpoint
+  question="A model gives a patient a 30% chance of having a serious illness. With a threshold of 50% it answers 'healthy'. What is the best response?"
+  options={[
+    { text: 'Trust the answer, since 30% is below 50%', why: 'The 50% threshold is only a default. A missed illness may cost far more than an unnecessary test.' },
+    { text: 'Lower the threshold for this task', correct: true, why: 'When missing a yes is costly, flag cases at a lower probability. The threshold should reflect the cost of each kind of mistake.' },
+    { text: 'Retrain the model until it says more than 50%', why: 'The probability may be accurate. The decision rule is what needs changing, not the model.' },
+  ]}
+/>
+
+## In code
+
+```python
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+hours  = np.array([0.5, 1, 1.5, 2, 2.5, 3, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 8.5, 9])
+passed = np.array([0,   0, 0,   0, 0,   0, 1, 0,   1, 0,   1, 1,   1, 1,   1, 1, 1,   1])
+X = hours.reshape(-1, 1)
+
+# penalty=None fits plain logistic regression, with no regularization.
+model = LogisticRegression(penalty=None).fit(X, passed)
+print(model.coef_[0][0], model.intercept_[0])      # 1.56  -6.03
+
+print(model.predict_proba([[4.5]])[0, 1])          # 0.73: the chance of a pass
+print(model.predict([[4.5]]))                      # [1]: the decision at a 50% threshold
+print(model.score(X, passed))                      # 0.889: 16 of 18 right
+```
+
+`predict_proba` gives the probability; `predict` applies the 50% threshold for you. By default scikit-learn adds a ridge penalty to logistic regression, which is why it is switched off here to match the chapter.
+
+<KeyTakeaways>
+
+- For a yes/no question, predict a **probability**. A straight line cannot do that; a line passed through the **sigmoid** can.
+- **Log loss** scores the probability given to what actually happened, and punishes confident mistakes hardest.
+- There is no formula for the best weights, so the model is fitted by **gradient descent**. The gradient has the same form as for linear regression.
+- A **threshold** turns the probability into a decision. 50% is a default, not a law.
+- The decision boundary of logistic regression is always **straight**.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### When the classes separate perfectly
+
+If one cut-off divides the passes from the fails with no mistakes, the data is <Term id="separable">separable</Term>, and something odd happens. The model can always lower the loss a little more by making the curve steeper, so the weights grow without limit and training never settles. A small ridge penalty from the last chapter fixes it, which is one reason libraries apply one by default.
+
+### More than two classes
+
+For three or more categories the sigmoid is replaced by a function called softmax, which turns one score per class into probabilities that add up to 1. The loss is the same idea: minus the log of the probability given to the correct class. Softmax appears in the neural network part of the book.
+
+### What the weight means
+
+In linear regression a weight is "points per hour". Here the score $w x + b$ is the logarithm of the odds of passing, so each extra hour multiplies the odds by $e^{w}$. With $w = 1.56$ that is a factor of about 4.8 per hour.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, chapter 4. Free at [statlearning.com](https://www.statlearning.com).
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 16, [nnfs.io](https://nnfs.io).
+- Google, *Machine Learning Crash Course*: [Logistic regression](https://developers.google.com/machine-learning/crash-course/logistic-regression).
+
+</References>

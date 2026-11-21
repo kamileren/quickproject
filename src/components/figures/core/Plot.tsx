@@ -518,3 +518,39 @@ export function Bars({ bars, width = 0.6, fill = COLORS.ink, title }: BarsProps)
     </g>
   );
 }
+
+interface RegionsProps {
+  /** Opacity of the shading at a point of the plot, from 0 (none) to 1. */
+  opacity: (x: number, y: number) => number;
+  fill?: string;
+  cols?: number;
+  rows?: number;
+}
+
+/**
+ * Shades the plot cell by cell, e.g. to show which class a model predicts
+ * everywhere, or how confident it is. Draw it before the data points.
+ */
+export function Regions({ opacity, fill = COLORS.accent, cols = 40, rows = 28 }: RegionsProps) {
+  const { sx, sy, xDomain, yDomain } = usePlot();
+  const dx = (xDomain[1] - xDomain[0]) / cols;
+  const dy = (yDomain[1] - yDomain[0]) / rows;
+  const cells = [];
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const x = xDomain[0] + c * dx;
+      const y = yDomain[0] + r * dy;
+      const o = opacity(x + dx / 2, y + dy / 2);
+      if (o <= 0.004) continue;
+      cells.push(
+        <rect key={`${c}-${r}`} x={sx(x)} y={sy(y + dy)} width={sx(x + dx) - sx(x)} height={sy(y) - sy(y + dy)} fill={fill} opacity={Math.min(1, o)} />,
+      );
+    }
+  }
+  // crispEdges stops neighbouring cells blending into visible seams.
+  return (
+    <g aria-hidden="true" shapeRendering="crispEdges">
+      {cells}
+    </g>
+  );
+}
