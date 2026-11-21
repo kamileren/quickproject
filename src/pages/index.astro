@@ -77,8 +77,8 @@ const jsonLd = {
 ---
 
 <BaseLayout title={`${SITE_NAME}: A Free Interactive Textbook`} description={description} jsonLd={jsonLd} bar={false}>
-  <main class="relative px-5 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-32">
-    <div class="absolute top-2 right-2 flex font-sans text-stone-500 sm:top-4 sm:right-4" data-print-hide>
+  <main class="relative px-5 pt-12 pb-16 sm:px-6 sm:pt-20 sm:pb-32">
+    <div class="absolute top-4 right-4 hidden font-sans text-stone-500 md:flex" data-print-hide>
       <button type="button" data-open="settings-window" aria-label="Text size and colours" title="Text size and colours (t)" class="grid h-10 w-10 cursor-pointer place-items-center rounded font-serif text-base leading-none hover:bg-stone-100 hover:text-stone-900">
         <span aria-hidden="true">A<span class="text-xs">a</span></span>
       </button>
@@ -114,7 +114,7 @@ const jsonLd = {
                 </a>
               </div>
               <p class="mt-4 font-mono text-[10px] tracking-wider text-stone-500 uppercase">{stats.join(' · ')}</p>
-              <nav aria-label="Reference pages" class="mt-7 flex justify-center gap-x-6 font-sans text-sm text-stone-600">
+              <nav aria-label="Reference pages" class="mt-7 hidden justify-center gap-x-6 font-sans text-sm text-stone-600 md:flex">
                 {quickLinks.map((link) => (
                   <a href={link.href} data-open={link.open} class="py-1 underline decoration-orange-300 decoration-2 underline-offset-4 transition-colors hover:text-orange-700">
                     {link.label}

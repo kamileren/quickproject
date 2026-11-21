@@ -4,6 +4,7 @@ import 'katex/dist/katex.min.css';
 import { SITE_NAME } from '@/lib/book';
 import SiteChrome from '@/components/SiteChrome.astro';
 import SiteBar from '@/components/SiteBar.astro';
+import MobileTabs from '@/components/MobileTabs.astro';
 import { PREFS_KEY } from '@/lib/prefs';
 
 interface Props {
@@ -39,11 +40,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Book of ML" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/icon-180.png" />
-    <meta name="theme-color" content="#1c1917" />
+    <meta name="theme-color" content="#ffffff" />
     {/* Applies the reader's text size and colours before anything is drawn. Mirrors src/lib/prefs.ts. */}
     <script is:inline define:vars={{ PREFS_KEY }}>
       try {
@@ -80,6 +84,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <a href="#main" class="skip-link">Skip to the text</a>
     {bar && <SiteBar current={current} title={barTitle} sections={sections} prev={prevUrl} next={nextUrl} />}
     <div id="main"><slot /></div>
+    <MobileTabs reader={sections} prev={prevUrl} next={nextUrl} />
     <SiteChrome searchWindow={searchWindow} />
   </body>
 </html>

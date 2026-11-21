@@ -1,0 +1,70 @@
+---
+/**
+ * The bar at the bottom of the screen on a phone, as in a reading app.
+ * On most pages it switches between the main places. On a chapter it turns
+ * into the reader's controls: sections, previous, next.
+ * Wider screens never see it; they have the bar at the top.
+ */
+interface Props {
+  /** Chapter pages get the reader's controls. */
+  reader?: boolean;
+  prev?: string;
+  next?: string;
+}
+const { reader = false, prev, next } = Astro.props;
+const path = Astro.url.pathname;
+const at = (start: string) => (start === '/' ? path === '/' : path.startsWith(start));
+
+const icons = {
+  home: 'M3.5 9.5 11 3l7.5 6.5V18a1 1 0 0 1-1 1h-4v-5.5h-5V19h-4a1 1 0 0 1-1-1Z',
+  search: 'M10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm4.5-1.5L19 19',
+  map: 'M6 4v14M6 6h9l-2 2.5L15 11H6M16 18h.01',
+  glossary: 'M5 4h9a3 3 0 0 1 3 3v11H8a3 3 0 0 1-3-3Zm0 11a3 3 0 0 1 3-3h9M9 8h4',
+  more: 'M4 6h14M4 11h14M4 16h14',
+  sections: 'M4 6h1M8 6h10M4 11h1M8 11h10M4 16h1M8 16h10',
+  prev: 'M13.5 5 7.5 11l6 6',
+  next: 'M8.5 5l6 6-6 6',
+};
+
+type Tab = { label: string; icon: keyof typeof icons; href?: string; open?: string; current?: boolean; disabled?: boolean };
+const tabs: Tab[] = reader
+  ? [
+      { label: 'Contents', icon: 'home', href: '/#contents' },
+      { label: 'Sections', icon: 'sections', open: 'sections-window' },
+      { label: 'Previous', icon: 'prev', href: prev, disabled: !prev },
+      { label: 'Next', icon: 'next', href: next, disabled: !next },
+      { label: 'More', icon: 'more', open: 'menu-window' },
+    ]
+  : [
+      { label: 'Book', icon: 'home', href: '/', current: at('/') || at('/parts/') },
+      { label: 'Search', icon: 'search', href: '/search/', open: 'search-window', current: at('/search/') },
+      { label: 'Map', icon: 'map', href: '/map/', current: at('/map/') },
+      { label: 'Glossary', icon: 'glossary', href: '/glossary/', current: at('/glossary/') },
+      { label: 'More', icon: 'more', open: 'menu-window' },
+    ];
+---
+
+<nav id="mobile-tabs" aria-label="Main" class="mobile-tabs md:hidden" data-reader={reader ? '' : undefined} data-print-hide>
+  {
+    tabs.map((tab) => {
+      const inner = (
+        <>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d={icons[tab.icon]} />
+          </svg>
+          <span>{tab.label}</span>
+        </>
+      );
+      if (tab.disabled) return <span class="mobile-tab is-disabled" aria-hidden="true">{inner}</span>;
+      return tab.href ? (
+        <a href={tab.href} data-open={tab.open} class="mobile-tab" aria-current={tab.current ? 'page' : undefined}>
+          {inner}
+        </a>
+      ) : (
+        <button type="button" data-open={tab.open} class="mobile-tab">
+          {inner}
+        </button>
+      );
+    })
+  }
+</nav>
