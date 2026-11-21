@@ -4,5 +4,221 @@ number: "17"
 part: networks
 order: 19
 summary: "The chain rule, applied backward through a network."
-status: draft
+question: "The network is wrong. Which of its thousands of weights should change, and by how much?"
+dataset: spiral
+minutes: 19
+status: ready
+prerequisites: [scoring-a-classifier, gradient-descent, derivatives-and-gradients]
 ---
+
+import BackwardSteps from '@/components/figures/ch17/BackwardSteps';
+import GradCheck from '@/components/figures/ch17/GradCheck';
+import SpiralTraining from '@/components/figures/ch17/SpiralTraining';
+
+We have a network that produces outputs and a loss that says how wrong they are. This chapter supplies the missing piece that turns a network into something that learns. It is the most important algorithm in the book, and it is one idea you already know, used very carefully.
+
+## Who is to blame?
+
+Gradient descent needs one thing: for every weight, the slope of the loss with respect to that weight. Given the slopes, the update is the familiar "step against the gradient".
+
+For a line with two parameters the slopes were easy to write down. A network is harder. A weight in the first layer affects the loss only indirectly: it changes a neuron's output, which changes every neuron in the next layer, which changes the scores, which changes the loss. Working out its share of the blame looks daunting.
+
+There is a brute-force way. Nudge one weight slightly, run the whole network again, and see how much the loss moved. That works, but it needs one full run of the network *per weight*. A network with a million weights would need a million runs to take a single step.
+
+<Term id="backpropagation">Backpropagation</Term> gets every slope from one run forward and one run backward. It is the reason neural networks are practical at all.
+
+## One neuron, forwards then backwards
+
+Start with the smallest network there is: one input, one weight, one bias, a ReLU, and a squared-error loss. The input is 2 and the target is 5.
+
+The forward pass computes values, left to right. The <Term id="backward-pass">backward pass</Term> then computes gradients, right to left, using the chain rule from the [toolkit chapter on derivatives](/derivatives-and-gradients/): when calculations are chained, their rates multiply.
+
+<Figure
+  title="A forward pass and a backward pass"
+  caption="The top number in each box is its value. The 'grad' line underneath is the slope of the loss with respect to that value."
+  try="step through one whole round, reading the explanation at each step. Then apply the update and go round again, watching the loss."
+>
+  <BackwardSteps client:visible />
+</Figure>
+
+Here is the first round, written out. Forward:
+
+$$
+z = 0.5 \times 2 + 0.5 = 1.5 \qquad a = \text{ReLU}(1.5) = 1.5 \qquad L = (1.5 - 5)^2 = 12.25
+$$
+
+Backward, one step at a time:
+
+| Question | Local slope | Gradient so far |
+|---|---|---|
+| How does the loss change with the output $a$? | $2(a - 5) = -7$ | $-7$ |
+| How does $a$ change with $z$? | ReLU has slope 1, since $z > 0$ | $-7 \times 1 = -7$ |
+| How does $z$ change with the weight? | The input, 2 | $-7 \times 2 = -14$ |
+| How does $z$ change with the bias? | 1 | $-7 \times 1 = -7$ |
+
+Both gradients are negative, so both the weight and the bias should increase. With a learning rate of 0.05 the weight becomes $0.5 + 0.7 = 1.2$ and the bias $0.85$. The next forward pass gives a loss of 3.06, down from 12.25.
+
+## The rule at every step
+
+Look at what each step of the backward pass did. It took the gradient arriving from the right, multiplied it by one local slope, and passed the result to the left. That is the whole method:
+
+<Equation reads="gradient passed back = gradient received × the local slope of this step">
+
+$$
+\frac{\partial L}{\partial\,\text{input}} \;=\; \frac{\partial L}{\partial\,\text{output}} \;\times\; \frac{\partial\,\text{output}}{\partial\,\text{input}}
+$$
+
+</Equation>
+
+Each kind of step has its own simple local slope, and a network is built from only a few kinds.
+
+| Step | What it does going forward | What it does going backward |
+|---|---|---|
+| Add a bias | $z = s + b$ | Passes the gradient through unchanged |
+| Multiply by a weight | $s = w\,x$ | The weight receives gradient × $x$; the input receives gradient × $w$ |
+| ReLU | $a = \max(0, z)$ | Passes the gradient where $z > 0$, blocks it where $z \le 0$ |
+| Softmax with cross-entropy | scores → loss | Starts the whole process with probabilities − truth |
+
+Two details are worth pausing on. A weight's gradient is proportional to its *input*: a weight attached to an input of zero receives no blame, because it had no effect on this example. And a ReLU that was off, with a negative input, blocks the gradient entirely. Nothing behind it learns from this example.
+
+For a whole dense layer the same rules, written with matrices, are three lines:
+
+$$
+\frac{\partial L}{\partial W} = X^\top \, \frac{\partial L}{\partial Z}
+\qquad
+\frac{\partial L}{\partial b} = \text{sum of } \frac{\partial L}{\partial Z} \text{ over the batch}
+\qquad
+\frac{\partial L}{\partial X} = \frac{\partial L}{\partial Z}\, W^\top
+$$
+
+The first two are what the layer needs to update itself. The third is what it hands back to the layer before it, which uses it in exactly the same way. Each layer only needs to know its own inputs and the gradient arriving from the layer after it. That is why the method scales to networks of any depth.
+
+<Checkpoint
+  question="During a backward pass, a hidden ReLU neuron had a negative input on this example. What gradient do the weights feeding into it receive from this example?"
+  options={[
+    { text: 'A large one, to push the input positive', why: 'The ReLU has a slope of zero for negative inputs, so no gradient gets through it at all.' },
+    { text: 'Zero', correct: true, why: 'The ReLU blocks the gradient when its input was negative. The neuron was off for this example, so changing its weights slightly would not have changed the loss.' },
+    { text: 'The same as every other neuron in the layer', why: 'Each neuron receives its own gradient, and this one\'s is blocked by its ReLU.' },
+  ]}
+/>
+
+## Trust, but check
+
+Backward passes are easy to get subtly wrong, and a wrong gradient often still trains, just badly. Fortunately there is an independent way to find a gradient: the slow nudging method from the start of the chapter. Too slow for training, it is perfect for testing. Comparing the two is called a <Term id="gradient-check">gradient check</Term>.
+
+<Figure
+  title="Backpropagation against brute force"
+  caption="A tiny network with 21 learnable numbers. One backward pass produced a gradient for all of them."
+  try="click different weights and compare the two numbers. Then make the nudge very large and watch the nudged estimate drift away."
+>
+  <GradCheck client:visible />
+</Figure>
+
+The two agree to several decimal places for every weight. The nudge needs two runs of the network for each number checked; the backward pass produced all 21 at once. On a network with millions of weights, that difference is the difference between seconds and years.
+
+Every network in this book is checked this way before it is used. So is the library that draws these figures.
+
+## The training loop
+
+Everything is now in place. Training is four steps, repeated:
+
+1. **Forward pass**: run a batch through the network.
+2. **Loss**: measure how wrong the outputs are.
+3. **Backward pass**: find the gradient of the loss for every weight.
+4. **Update**: move every weight a small step against its gradient.
+
+This cycle is the <Term id="training-loop">training loop</Term>. One pass through all the training data is one <Term id="epoch">epoch</Term>.
+
+For a real test we need data no straight line can handle. Here are 300 points in three classes, arranged in interleaved spiral arms. The network has 2 inputs, one hidden layer of 32 ReLU neurons, and 3 outputs: 195 learnable numbers.
+
+<Figure
+  title="A network learning the spiral"
+  caption="Left: the three classes, and the region the network currently assigns to each. Right: the loss after each batch of training steps."
+  try="press Step a few times to see single updates, then Train. Watch the coloured regions begin to follow the arms."
+>
+  <SpiralTraining client:visible />
+</Figure>
+
+It works, and it is slow. After 2,000 steps the loss has fallen from 1.17 to about 0.79 and the network gets 62% of the points right, up from a third. The regions are starting to curl around the arms, but the loss spends long stretches barely moving.
+
+The network is learning, driven by nothing but the four steps above. The slowness is not a flaw in backpropagation, which is giving exact gradients. It is a flaw in how we are using them: always the same step size, in whatever direction the gradient happens to point. The next chapter fixes that, and the same network will reach 99%.
+
+<Checkpoint
+  question="Put the four steps of the training loop in the right order."
+  options={[
+    { text: 'Backward pass, forward pass, update, loss', why: 'The backward pass needs the loss, and the loss needs the outputs of a forward pass.' },
+    { text: 'Forward pass, loss, backward pass, update', correct: true, why: 'Compute the outputs, measure the error, send the error backward to get gradients, then use the gradients to adjust the weights.' },
+    { text: 'Forward pass, update, loss, backward pass', why: 'The update uses gradients, which only exist after the backward pass.' },
+  ]}
+/>
+
+## In code
+
+Each layer gains a `backward` method that mirrors its `forward`. The full file, `code/ch17_backprop.py`, trains this network on spiral data.
+
+```python
+class Layer_Dense:
+    def forward(self, inputs):
+        self.inputs = inputs                               # remembered for the backward pass
+        self.output = inputs @ self.weights + self.biases
+
+    def backward(self, dvalues):
+        self.dweights = self.inputs.T @ dvalues            # each weight: its input times the gradient
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        self.dinputs = dvalues @ self.weights.T            # handed back to the previous layer
+
+class Activation_ReLU:
+    def backward(self, dvalues):
+        self.dinputs = dvalues.copy()
+        self.dinputs[self.inputs <= 0] = 0                 # blocked where the input was negative
+
+for epoch in range(10001):
+    dense1.forward(X)                                      # forward pass
+    activation1.forward(dense1.output)
+    dense2.forward(activation1.output)
+    loss = loss_activation.forward(dense2.output, y)       # loss
+
+    loss_activation.backward(y)                            # backward pass, last layer first
+    dense2.backward(loss_activation.dinputs)
+    activation1.backward(dense2.dinputs)
+    dense1.backward(activation1.dinputs)
+
+    optimizer.update_params(dense1)                        # update
+    optimizer.update_params(dense2)
+```
+
+Run for 10,000 epochs with plain gradient descent, the Python version climbs from a loss of 1.099 and 36% accuracy to a loss of 0.134 and 95%.
+
+<KeyTakeaways>
+
+- Training needs the slope of the loss for **every weight**. Nudging each weight in turn is far too slow.
+- **Backpropagation** gets all the slopes from one forward pass and one backward pass.
+- At each step: **gradient passed back = gradient received × local slope**. That is the chain rule.
+- A weight's gradient is proportional to its input, and a ReLU that was off blocks the gradient.
+- The **training loop** is forward, loss, backward, update. Check a new backward pass against nudging.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Why "backward"?
+
+The gradient of the loss with respect to a layer's output is needed by every weight in that layer and by everything before it. Starting at the loss and working backward computes each of these shared quantities exactly once and reuses it. Going forward from each weight would recompute the same later steps again and again.
+
+### Automatic differentiation
+
+Libraries such as PyTorch and JAX do not ask you to write backward methods. They record every operation of the forward pass and replay the record backward, applying each step's local slope automatically. It is the same algorithm as in this chapter, generalised to any calculation built from known pieces.
+
+### Vanishing gradients
+
+The gradient reaching the first layer is a product of one local slope per layer. If those slopes are mostly smaller than 1, as they are for saturated sigmoids, the product shrinks toward zero and the early layers barely learn. This problem held deep networks back for years. ReLU, whose slope is exactly 1 when it is on, is a large part of what solved it.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 7 to 9, [nnfs.io](https://nnfs.io).
+- A. Karpathy and others, *CS231n notes: Backpropagation, intuitions*, [cs231n.github.io/optimization-2](https://cs231n.github.io/optimization-2/).
+- C. Olah, [Calculus on computational graphs: backpropagation](https://colah.github.io/posts/2015-08-Backprop/).
+
+</References>

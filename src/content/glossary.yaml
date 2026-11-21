@@ -331,3 +331,15 @@
 - id: one-hot
   term: One-hot
   definition: A way of writing a class as a list of zeros with a single 1 in the position of that class.
+- id: backpropagation
+  term: Backpropagation
+  definition: The method for finding how every weight in a network affects the loss. It applies the chain rule backward from the loss, one layer at a time.
+- id: backward-pass
+  term: Backward pass
+  definition: Sending the gradient of the loss back through the network, from the last layer to the first, so that each layer can work out the gradients of its own weights.
+- id: gradient-check
+  term: Gradient check
+  definition: Testing a backward pass by comparing its gradients with slopes measured directly, by nudging each weight a little.
+- id: training-loop
+  term: Training loop
+  definition: The cycle that trains a network. Forward pass, measure the loss, backward pass, update the weights, and repeat.
