@@ -307,3 +307,15 @@
 - id: batch
   term: Batch
   definition: A group of examples passed through a model together, as the rows of one matrix.
+- id: hidden-layer
+  term: Hidden layer
+  definition: A layer between the input and the output of a network. Its values are never seen directly; the network decides what they should mean.
+- id: activation-function
+  term: Activation function
+  definition: A simple function applied to each neuron's output before it is passed on. It is what lets a network represent curves and not only straight lines.
+- id: relu
+  term: ReLU
+  definition: The rectified linear unit, the most common activation function. It turns negative numbers into zero and leaves positive numbers unchanged.
+- id: forward-pass
+  term: Forward pass
+  definition: Running an input through the network from the first layer to the last to get its output.

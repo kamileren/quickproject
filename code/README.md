@@ -6,6 +6,7 @@ chapter, so you can check the text against the code.
 | File | Chapter | What it adds |
 |---|---|---|
 | `ch14_neuron.py` | 14. A Single Neuron | A neuron, a layer of neurons, a batch of examples |
+| `ch15_activations.py` | 15. Layers and Activations | The ReLU activation, and a two-layer forward pass |
 
 Run any of them with Python 3 and NumPy installed:
 

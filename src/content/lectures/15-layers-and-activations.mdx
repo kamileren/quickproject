@@ -4,5 +4,209 @@ number: "15"
 part: networks
 order: 17
 summary: "Stacking neurons, and why they need to bend."
-status: draft
+question: "If one neuron can only draw a straight line, how does a network draw anything else?"
+dataset: moons
+minutes: 17
+status: ready
+prerequisites: [a-single-neuron]
 ---
+
+import LinearCollapse from '@/components/figures/ch15/LinearCollapse';
+import ReluHinge from '@/components/figures/ch15/ReluHinge';
+import BendsFitCurve from '@/components/figures/ch15/BendsFitCurve';
+import ActivationGallery from '@/components/figures/ch15/ActivationGallery';
+import MoonsNet from '@/components/figures/ch15/MoonsNet';
+
+The last chapter ended with a limit: a neuron draws one straight line, and a layer of neurons draws several. This chapter removes the limit with a single small addition, and it is worth seeing first why the obvious fix does not work.
+
+## Stacking layers
+
+The obvious fix is to stack layers. Feed the outputs of one layer into another as its inputs, and that one into a third.
+
+A layer that sits between the inputs and the final output is called a <Term id="hidden-layer">hidden layer</Term>. "Hidden" only means that nobody tells it what its values should be. The data fixes the inputs and the correct outputs. What happens in between is left for the network to work out during training.
+
+Running an input through every layer in turn, from first to last, is called a <Term id="forward-pass">forward pass</Term>. That much is easy. The question is whether stacking buys us anything.
+
+## Two straight lines make a straight line
+
+Take the smallest possible stack: one neuron feeding another. The first computes $h = w_1 x + b_1$, and the second computes $w_2 h + b_2$.
+
+<Figure
+  title="Two neurons, still one line"
+  caption="The dashed line is the value after the first neuron. The solid line is the final output."
+  try="move all four sliders as wildly as you like and try to make the solid line bend."
+>
+  <LinearCollapse client:visible />
+</Figure>
+
+It cannot be done. Substituting one formula into the other shows why:
+
+$$
+w_2\,(w_1 x + b_1) + b_2 \;=\; \underbrace{(w_2 w_1)}_{\text{one weight}}\,x \;+\; \underbrace{(w_2 b_1 + b_2)}_{\text{one bias}}
+$$
+
+Two neurons in a row are exactly one neuron with a different weight and bias. The same holds for whole layers, and for any number of them: a stack of a hundred linear layers computes nothing that a single layer could not. All that depth, and no gain.
+
+<Checkpoint
+  question="A network has 50 dense layers with no activation functions. On data that needs a curved boundary, how will it compare with logistic regression?"
+  options={[
+    { text: 'Far better, because it is so much deeper', why: 'Without activations, every layer is a linear step, and linear steps combine into one linear step.' },
+    { text: 'About the same: both can only draw a straight boundary', correct: true, why: 'Fifty linear layers collapse into a single linear layer. The network has many more weights but no more expressive power.' },
+    { text: 'Worse, because depth always hurts', why: 'Depth is not the problem. The missing ingredient is something between the layers that is not a straight line.' },
+  ]}
+/>
+
+## A bend: the ReLU
+
+To stop layers collapsing into one, something that is *not* a straight line has to go between them. That something is an <Term id="activation-function">activation function</Term>, applied to each neuron's output before it is passed on.
+
+The most widely used is almost embarrassingly simple. The <Term id="relu">ReLU</Term>, short for rectified linear unit, replaces negative numbers with zero and leaves positive numbers alone.
+
+<Equation reads="keep the value if it is positive, otherwise output zero">
+
+$$
+\text{ReLU}(z) = \max(0,\ z)
+$$
+
+</Equation>
+
+Put a ReLU after a neuron and its straight line is cut off at zero. The result is a hinge: flat on one side of a kink, sloped on the other.
+
+<Figure
+  title="One neuron with a ReLU makes a hinge"
+  caption="The dashed line is the neuron before the ReLU. The solid line is after the ReLU and one output weight."
+  try="use the bias to slide the kink left and right. Use the weight to change the slope, and make it negative to flip which side is flat. Then make the output weight negative."
+>
+  <ReluHinge client:visible />
+</Figure>
+
+Three numbers give full control of the hinge. The weight and bias decide where the kink is, at $x = -b / w$. The sign of the weight decides which side is flat. The output weight decides how steeply the other side rises, or falls.
+
+A single hinge is not impressive. Its value is as a building block.
+
+## Many bends make any curve
+
+Add several hinges together and the sum is a line with several bends. Each hidden neuron contributes one bend. With enough of them, placed well, the sum can follow any curve as closely as you like.
+
+Recall the sleep data from the generalization chapter, where scores rise with sleep and then fall. A straight line could not follow it. Here is the same shape, approximated by a hidden layer of ReLU neurons.
+
+<Figure
+  title="A curve from straight pieces"
+  caption="The dashed curve is the target. The orange line is the sum of the hinges. For clarity the kinks are spaced evenly and each hinge's slope is then chosen by least squares; a trained network would place the kinks itself."
+  try="step the number of hidden neurons from 1 up to 12. Watch the largest gap shrink, and look at how the faint single hinges add up."
+>
+  <BendsFitCurve client:visible />
+</Figure>
+
+One neuron gives a straight line that misses by 21 points at its worst. Two give a single bend and a gap of 5.5. With eight the gap is down to a third of a point, and the pieces are hard to tell from a smooth curve.
+
+This is the central fact about neural networks. A hidden layer with a simple non-linear activation can approximate any reasonable function, given enough neurons. The network does not need to be told the shape in advance, as polynomial regression did. It builds the shape out of bends.
+
+## Other activation functions
+
+ReLU is the default, but it is one of a family. Any function with a bend will stop layers collapsing. The choices differ in how they behave during training.
+
+<Figure
+  title="Four activation functions"
+  caption="The solid line is the function. The dashed line is its slope, which is what training uses."
+  try="switch between the four and compare their slopes far from zero. Then look at the step function's slope."
+>
+  <ActivationGallery client:visible />
+</Figure>
+
+| Function | Output range | Where it is used |
+|---|---|---|
+| ReLU | 0 and up | Hidden layers, by default |
+| Sigmoid | 0 to 1 | The output of a yes/no network |
+| Tanh | −1 to 1 | Hidden layers of some older and recurrent networks |
+| Step | 0 or 1 | Historical. It cannot be trained by gradient descent |
+
+The slope is what matters most. Training works by following slopes downhill, so an activation whose slope is zero gives the weights before it nothing to follow. The step function has a slope of zero everywhere, which rules it out. Sigmoid and tanh flatten out for large inputs, which slows learning in deep networks. ReLU keeps a slope of 1 for every positive input, and that is the main reason it took over.
+
+<MarginNote>
+The sigmoid is the same function that turned a score into a probability in the logistic regression chapter. Logistic regression is a single neuron with a sigmoid activation.
+</MarginNote>
+
+## Bending a boundary
+
+The same idea works with two inputs. Each hidden ReLU neuron contributes one straight crease across the plane, and the output layer combines the creases into a boundary with corners.
+
+Here are two interlocking crescents, a shape no straight line can separate. The network has one hidden layer, and it is trained from scratch every time you change a setting.
+
+<Figure
+  title="Enough neurons to separate the crescents"
+  caption="Shaded areas are classified as the filled kind. The network is 2 inputs → hidden neurons → 2 outputs."
+  try="with ReLU on, raise the hidden neurons from 1 to 3 and watch the boundary fold. Then switch the activation off and move the slider again."
+>
+  <MoonsNet client:visible />
+</Figure>
+
+With ReLU, one or two hidden neurons manage 93%. Three are enough to fold the boundary around both crescents and get all 100 points right, and 99% of 300 new ones.
+
+Without an activation, the network scores 91% whether it has one hidden neuron or twelve, and its boundary is always a straight line. That is the collapse from earlier in the chapter, seen in two dimensions. The extra neurons are there and doing nothing.
+
+<Checkpoint
+  question="A network with ReLU hidden layers is underfitting: its boundary is too simple for the data. Which change gives it more ability to bend?"
+  options={[
+    { text: 'Remove the activation functions to simplify it', why: 'That would collapse the network into a single linear layer, with a straight boundary and even less ability to bend.' },
+    { text: 'Add more hidden neurons or another hidden layer', correct: true, why: 'Each ReLU neuron adds one more crease the boundary can use, and extra layers let creases combine into more complex shapes.' },
+    { text: 'Replace ReLU with the step function', why: 'The step function has zero slope everywhere, so the network could no longer be trained by gradient descent.' },
+  ]}
+/>
+
+## In code
+
+The activation is a class with one method, and the network is the three objects called in order. The full file is `code/ch15_activations.py`.
+
+```python
+import numpy as np
+
+class Activation_ReLU:
+    def forward(self, inputs):
+        self.output = np.maximum(0, inputs)      # negatives become zero
+
+rng = np.random.default_rng(0)
+batch = rng.standard_normal((5, 2))              # 5 examples, 2 features
+
+hidden = Layer_Dense(2, 8, rng)                  # Layer_Dense is from the last chapter
+activation = Activation_ReLU()
+output = Layer_Dense(8, 3, rng)
+
+hidden.forward(batch)                            # the forward pass:
+activation.forward(hidden.output)                #   layer, activation,
+output.forward(activation.output)                #   layer
+
+print(hidden.output.shape, output.output.shape)  # (5, 8) (5, 3)
+```
+
+The output is three numbers per example, and at this point they are meaningless: the weights are random. The network has the right shape and no knowledge. The next chapter gives it a way to measure how wrong those three numbers are, which is the first step toward fixing them.
+
+<KeyTakeaways>
+
+- Stacking linear layers gains nothing: any number of them **collapse into one**.
+- An **activation function** between layers prevents the collapse. It must not be a straight line.
+- **ReLU** keeps positives and zeroes negatives. One ReLU neuron makes a hinge with one bend.
+- A hidden layer adds up many bends, and with enough of them can approximate **any curve**.
+- Activations are judged by their **slopes**, because slopes are what training follows.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Wide or deep?
+
+One hidden layer can approximate any function in principle, but it may need an impractical number of neurons. Several layers can build complicated shapes out of simpler ones: creases in the first layer, combinations of creases in the second, and so on. In practice, depth turns out to be a far more economical way to get expressive power than width.
+
+### Dead neurons
+
+A ReLU neuron whose input is negative for every example outputs zero for all of them, has a slope of zero, and so receives no correction during training. It is stuck. Variants such as leaky ReLU, which gives negative inputs a small slope instead of none, were designed to avoid this.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 3 and 4, [nnfs.io](https://nnfs.io).
+- M. Nielsen, *Neural Networks and Deep Learning*, chapter 4: [a visual proof that neural nets can compute any function](http://neuralnetworksanddeeplearning.com/chap4.html).
+- D. Smilkov and S. Carter, [TensorFlow Playground](https://playground.tensorflow.org), for experimenting with hidden layers in the browser.
+
+</References>
