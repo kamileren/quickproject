@@ -202,6 +202,12 @@ Use `SVC(kernel="linear")` or the faster `LinearSVC` for a straight boundary. Be
 
 A boundary has $w = [1,\ 1]$ and $b = -5$. How wide is its street? For each of the points (4, 3), (2, 2.5) and (1, 1), work out the score $w \cdot x + b$ and say where the point lies.
 
+<Hint>
+
+The street is $2 / \lVert w \rVert$ wide. A score beyond 1 or −1 is outside the street.
+
+</Hint>
+
 <Solution>
 
 The length of $w$ is $\sqrt{2}$, so the street is $2 / \sqrt{2} \approx 1.41$ wide.
@@ -220,6 +226,12 @@ The sign of the score gives the class. Whether its size is above 1 says whether 
 
 An SVM is trained on 100 points that a line separates cleanly, and 4 of them turn out to be support vectors. How many points could you delete without changing the boundary at all? What happens if you delete one of the 4?
 
+<Hint>
+
+Only the points on the edge of the street hold the boundary in place.
+
+</Hint>
+
 <Solution>
 
 All 96 points that are not support vectors could be deleted and the boundary would stay exactly where it is. They sit behind the edges of the street and play no part in fixing it.
@@ -236,6 +248,12 @@ This is very different from logistic regression, where every point contributes t
 
 The RBF kernel scores the similarity of two points as $e^{-\gamma d^2}$, where $d$ is the distance between them. Work it out for points 1 apart and 2 apart, first with $\gamma = 1$ and then with $\gamma = 0.1$. What does γ control?
 
+<Hint>
+
+Square the distance, multiply by γ, and take $e$ to the power of minus that.
+
+</Hint>
+
 <Solution>
 
 With $\gamma = 1$: at distance 1, $e^{-1} \approx 0.37$. At distance 2, $e^{-4} \approx 0.02$.
@@ -251,6 +269,12 @@ With $\gamma = 0.1$: at distance 1, $e^{-0.1} \approx 0.90$. At distance 2, $e^{
 <Exercise kind="think">
 
 You train an SVM with a very small C and another with a very large C on noisy data. Which is more likely to underfit, and which to overfit? How does C relate to the λ of ridge regression?
+
+<Hint>
+
+C is the price of a point intruding into the street. Ask what a very cheap or very expensive intrusion leads to.
+
+</Hint>
 
 <Solution>
 

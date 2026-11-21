@@ -36,8 +36,8 @@ Static site built with Astro, MDX and React islands. The full plan and progress 
 4. Write four to seven `##` sections. Each one: a question, an example, the idea, the maths, something to try.
 5. Add one `<Pitfall title="...">` (a mistake people really make) before the "In code" section.
 6. End with, in this order: `<KeyTakeaways>`, `<NowYouCan>` (skills, each starting with a verb), `<Exercises>`
-   holding three to five `<Exercise kind="by hand | with the figure | in code | think">` blocks each ending in a
-   `<Solution>`, an optional `<GoingFurther>`, `<References>`, and a `<NextUp>` paragraph that leads into the
+   holding three to five `<Exercise kind="by hand | with the figure | in code | think">` blocks each ending in an
+   optional one-line `<Hint>` and a `<Solution>`, an optional `<GoingFurther>`, `<References>`, and a `<NextUp>` paragraph that leads into the
    next chapter.
 7. Set `status: ready`, run `npm run og` to draw the chapter's share picture, then `npm run check`.
 

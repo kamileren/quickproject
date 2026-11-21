@@ -236,6 +236,12 @@ Running the untrained two-layer network from the last chapter on 300 examples wi
 
 Apply softmax to the scores $[0,\ 0,\ 0]$. Then apply it to $[2,\ 0]$ and compare the first probability with the sigmoid of 2.
 
+<Hint>
+
+Take $e$ to the power of each score, then divide each by their total.
+
+</Hint>
+
 <Solution>
 
 For $[0,\ 0,\ 0]$ every exponential is 1 and the total is 3, so each probability is $1/3$. Equal scores mean equal probabilities.
@@ -251,6 +257,12 @@ The sigmoid of 2 is also 0.88. With two classes, softmax depends only on the dif
 <Exercise kind="by hand">
 
 A network gives the probabilities $[0.1,\ 0.7,\ 0.2]$. What is the loss if the correct class is the second? What if it is the first? For the second case, write down the gradient for the three scores.
+
+<Hint>
+
+The loss is minus the logarithm of the probability of the correct class. The gradient is probabilities minus the one-hot truth.
+
+</Hint>
 
 <Solution>
 
@@ -268,6 +280,12 @@ The gradient in that case is the probabilities minus the truth $[1,\ 0,\ 0]$, wh
 
 What happens to the softmax probabilities if you add 5 to every score? What happens if you double every score?
 
+<Hint>
+
+Write out the softmax with $e^{s + 5} = e^{s} \times e^{5}$ and see what cancels.
+
+</Hint>
+
 <Solution>
 
 **Adding 5 changes nothing.** Every exponential is multiplied by the same factor, $e^5$, and so is their total. The factor cancels when you divide. Only the differences between scores matter.
@@ -281,6 +299,12 @@ What happens to the softmax probabilities if you add 5 to every score? What happ
 <Exercise kind="think">
 
 You build a network for 10 classes. Before any training, roughly what should its loss be? If the first loss you see is 8, what does that suggest?
+
+<Hint>
+
+With no training, each of the 10 classes gets about the same probability.
+
+</Hint>
 
 <Solution>
 

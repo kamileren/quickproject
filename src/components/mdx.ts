@@ -17,6 +17,7 @@ import NextUp from './prose/NextUp.astro';
 import Exercises from './practice/Exercises.astro';
 import Exercise from './practice/Exercise.astro';
 import Solution from './practice/Solution.astro';
+import Hint from './practice/Hint.astro';
 import Term from './popins/Term.astro';
 import Symbol from './popins/Symbol.astro';
 import Checkpoint from './popins/Checkpoint.astro';
@@ -39,6 +40,7 @@ export const mdxComponents = {
   Exercises,
   Exercise,
   Solution,
+  Hint,
   Term,
   Symbol,
   Checkpoint,

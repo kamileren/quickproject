@@ -212,6 +212,12 @@ The output is three numbers per example, and at this point they are meaningless:
 
 Apply the ReLU to each of these numbers: −2, 0, 3.5 and −0.1.
 
+<Hint>
+
+ReLU keeps positive numbers and turns everything else into zero.
+
+</Hint>
+
 <Solution>
 
 ReLU keeps positive numbers and replaces everything else with zero: the results are 0, 0, 3.5 and 0.
@@ -223,6 +229,12 @@ ReLU keeps positive numbers and replaces everything else with zero: the results 
 <Exercise kind="by hand">
 
 A first layer computes $h = 2x + 1$. A second layer computes $y = 3h - 4$. There is no activation between them. Write $y$ directly in terms of $x$. What does that tell you?
+
+<Hint>
+
+Put the first formula into the second and simplify.
+
+</Hint>
 
 <Solution>
 
@@ -237,6 +249,12 @@ The two layers together are one straight line, with a weight of 6 and a bias of 
 <Exercise kind="by hand">
 
 A small network computes $f(x) = \text{ReLU}(x) - 2\,\text{ReLU}(x - 1) + \text{ReLU}(x - 2)$. Work out $f$ at $x = 0$, 1, 2 and 3, and describe the shape.
+
+<Hint>
+
+Each ReLU is zero until its own kink (at 0, 1 and 2) and a straight line after it.
+
+</Hint>
 
 <Solution>
 
@@ -254,6 +272,12 @@ The function is zero up to 0, rises to a peak of 1 at $x = 1$, falls back to zer
 <Exercise kind="think">
 
 The step function outputs 1 for positive inputs and 0 otherwise. It is not a straight line, so it prevents layers from collapsing. Why is it still a poor activation for a network trained by gradient descent?
+
+<Hint>
+
+Gradient descent needs to know how the output changes when a weight changes a little. What is the slope of a step?
+
+</Hint>
 
 <Solution>
 

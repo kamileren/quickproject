@@ -227,6 +227,12 @@ print(model.score(X, passed))                      # 0.889: 16 of 18 right
 
 Work out the sigmoid of 0, of 2 and of −2. What do the last two answers add up to, and why?
 
+<Hint>
+
+The sigmoid is $1 / (1 + e^{-z})$. Note that $e^{2} \approx 7.39$.
+
+</Hint>
+
 <Solution>
 
 $\sigma(0) = 1 / (1 + 1) = 0.5$.
@@ -245,6 +251,12 @@ The last two add up to 1. The sigmoid is symmetric: a score of $-z$ gives the pr
 
 The fitted model is $w = 1.56$, $b = -6.03$. With a threshold of 50%, how many hours of study put a student exactly on the boundary? Where does the boundary move if the threshold is raised to 73%?
 
+<Hint>
+
+A probability of 50% means the score $wx + b$ is zero. The chapter worked out which hours give 73%.
+
+</Hint>
+
 <Solution>
 
 A probability of 50% means a score of zero: $1.56x - 6.03 = 0$, so $x = 6.03 / 1.56 \approx 3.87$ hours. Students above that are predicted to pass.
@@ -258,6 +270,12 @@ The chapter worked out that 4.5 hours gives a probability of 73%. So with a thre
 <Exercise kind="by hand">
 
 A model makes three predictions. It gives a student who passed a 90% chance of passing, another student who passed a 60% chance, and a student who failed a 20% chance of passing. What is the log loss of each prediction, and the average? How does that compare with a model that says 50% for everyone?
+
+<Hint>
+
+Take minus the logarithm of the probability given to what actually happened. For the student who failed, that is 0.8.
+
+</Hint>
 
 <Solution>
 
@@ -276,6 +294,12 @@ The average is about 0.28. A model that always says 50% scores $-\ln(0.5) \appro
 <Exercise kind="by hand">
 
 With $w = 1.56$, each extra hour multiplies the odds of passing by $e^{1.56} \approx 4.76$. At 3.87 hours the odds are even, 1 to 1. What are the odds, and the probability, one hour later?
+
+<Hint>
+
+Odds of 4.76 to 1 mean 4.76 passes for every fail. Turn that into a share of the total.
+
+</Hint>
 
 <Solution>
 

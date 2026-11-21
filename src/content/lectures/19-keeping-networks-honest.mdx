@@ -211,6 +211,12 @@ Run on its own random set of 45 points, the Python version scores 72% on new poi
 
 A layer outputs $[2,\ 4,\ 6,\ 8]$. Dropout at a rate of 50% happens to switch off the second and third neurons. What does the layer pass on, after scaling? Compare the average before and after.
 
+<Hint>
+
+The values that are kept are divided by the share that is kept.
+
+</Hint>
+
 <Solution>
 
 The kept values are divided by the share that is kept, 0.5, which doubles them. The layer passes on $[4,\ 0,\ 0,\ 16]$.
@@ -226,6 +232,12 @@ That is the purpose of the scaling. The next layer learned its weights while see
 <Exercise kind="by hand">
 
 A layer has the weights $[3,\ -4,\ 0.5]$ and a penalty strength of $\lambda = 0.01$. What does the penalty add to the loss? What does it add to the gradient of each weight?
+
+<Hint>
+
+The penalty is λ times the sum of the squared weights. Its gradient for each weight is $2\lambda w$.
+
+</Hint>
 
 <Solution>
 
@@ -243,6 +255,12 @@ Gradient descent subtracts the gradient, so the weight of 3 is pulled down, the 
 
 During training, the loss on held-out data at the end of each epoch is 0.90, 0.61, 0.48, 0.45, 0.47, 0.52 and 0.60. The training loss falls throughout. Which epoch's weights should you keep? Why should you not stop the moment the held-out loss first rises?
 
+<Hint>
+
+Find the epoch with the lowest held-out loss. Then think about how noisy that number is.
+
+</Hint>
+
 <Solution>
 
 Keep the weights from epoch 4, where the held-out loss was lowest at 0.45. After that the network keeps improving on its training data and gets worse on everything else.
@@ -256,6 +274,12 @@ Held-out loss is noisy, and it often wobbles upward for an epoch before continui
 <Exercise kind="think">
 
 A network is right about 96% of its training examples and 70% of new ones. List four things you could try, starting with the one most likely to help.
+
+<Hint>
+
+The cause is too little data for the size of the network. Which remedy goes at the cause most directly?
+
+</Hint>
 
 <Solution>
 

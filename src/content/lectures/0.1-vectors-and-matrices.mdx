@@ -192,6 +192,12 @@ print(X @ w)                        # [17 34 40 61]   every prediction at once
 
 Let $a = [2,\ -1,\ 3]$ and $b = [1,\ 4,\ 0]$. Work out $a + b$, then $3a$, then $a \cdot b$.
 
+<Hint>
+
+Add and stretch entry by entry. For the dot product, multiply matching entries, then add the three results.
+
+</Hint>
+
 <Solution>
 
 Adding goes entry by entry: $a + b = [3,\ 3,\ 3]$.
@@ -208,6 +214,12 @@ The dot product multiplies matching entries and adds: $2 \times 1 + (-1) \times 
 
 Check that $[3,\ 4]$ and $[-4,\ 3]$ have a dot product of zero. Then find a vector whose dot product with $[2,\ 5]$ is zero. What do such pairs look like when drawn as arrows?
 
+<Hint>
+
+Try swapping the two entries and changing the sign of one of them.
+
+</Hint>
+
 <Solution>
 
 $3 \times (-4) + 4 \times 3 = -12 + 12 = 0$.
@@ -223,6 +235,12 @@ A dot product of zero means the arrows are at right angles. In the second figure
 <Exercise kind="by hand">
 
 Three students have features (hours studied, hours slept) of $[4,\ 7]$, $[2,\ 8]$ and $[6,\ 5]$. A model uses weights $w = [5,\ 2]$ and a bias of 10. What score does it predict for each student? What are the shapes of the matrix, the weight vector and the result?
+
+<Hint>
+
+Each prediction is one dot product of a row with the weights, plus the bias.
+
+</Hint>
 
 <Solution>
 
@@ -241,6 +259,12 @@ The matrix is (3 × 2), the weights are (2), and the result is (3): one predicti
 <Exercise kind="in code">
 
 Put the three students from the previous exercise into a NumPy array `X` and the weights into `w`. Compute the predictions with `X @ w + 10`. Then try `w @ X` and explain what happens.
+
+<Hint>
+
+Write the two shapes next to each other and compare the inside numbers.
+
+</Hint>
 
 <Solution>
 

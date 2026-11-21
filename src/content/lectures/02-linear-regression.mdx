@@ -325,6 +325,12 @@ The numbers match the ones we worked out, because `fit` is doing exactly the cal
 
 Three points: (0, 1), (2, 2) and (4, 6). Use the formula to find the best line. Then work out its three residuals, its MSE and its RMSE.
 
+<Hint>
+
+Start with the two averages. The slope is the sum of products of distances, divided by the sum of squared x distances.
+
+</Hint>
+
 <Solution>
 
 The averages are $\bar{x} = 2$ and $\bar{y} = 3$.
@@ -343,6 +349,12 @@ Notice that the residuals add up to zero. That is always true for the best line.
 
 For the same three points, work out R². Start with the MSE of the lazy model that predicts the average for everyone.
 
+<Hint>
+
+R² is 1 minus the line's MSE divided by the lazy model's MSE.
+
+</Hint>
+
 <Solution>
 
 The lazy model predicts 3 every time. Its misses are −2, −1 and 3, which squared are 4, 1 and 9. Its MSE is $14 / 3 \approx 4.67$.
@@ -359,6 +371,12 @@ The line removes about 89% of the squared error that the lazy model makes.
 
 The best line for the twelve students is $w = 5.31$, $b = 42.44$. What does it predict for 4.5 hours of study? For 20 hours? What is wrong with the second answer?
 
+<Hint>
+
+Put each number of hours into $wx + b$. Then look at the range of hours in the data.
+
+</Hint>
+
 <Solution>
 
 For 4.5 hours: $5.31 \times 4.5 + 42.44 \approx 66.3$ points.
@@ -374,6 +392,12 @@ Nobody in the data studied for more than 9 hours, so the line has no evidence ab
 <Exercise kind="in code">
 
 Fit a line to the twelve students with NumPy and check that you get the numbers from the chapter. Hours: 1, 1.5, 2, 3, 3.5, 4, 5, 5.5, 6, 7, 8, 9. Scores: 48, 53, 50, 60, 57, 66, 68, 75, 71, 82, 83, 91.
+
+<Hint>
+
+`np.polyfit(hours, scores, 1)` returns the slope and then the bias.
+
+</Hint>
 
 <Solution>
 

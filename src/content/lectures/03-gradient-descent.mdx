@@ -238,6 +238,12 @@ The slope matches the formula from the last chapter. The bias is 67 rather than 
 
 The loss is $L(w) = (w - 3)^2$, whose steepness is $2(w - 3)$. Start at $w = 0$ with a learning rate of 0.1 and take three steps. How does the distance from the best value change with each step?
 
+<Hint>
+
+Each step is: new $w$ = old $w$ minus 0.1 times $2(w - 3)$.
+
+</Hint>
+
 <Solution>
 
 Each step is $w \leftarrow w - 0.1 \times 2(w - 3)$.
@@ -255,6 +261,12 @@ The distance from 3 goes 3, 2.4, 1.92, 1.536. Each step multiplies it by 0.8. Th
 <Exercise kind="by hand">
 
 Same loss, same start, but a learning rate of 1.1. Take three steps. Then say which learning rate would reach the lowest point in a single step.
+
+<Hint>
+
+Use the same rule with 1.1. For the last part, find the rate that makes the step land exactly on 3.
+
+</Hint>
 
 <Solution>
 
@@ -274,6 +286,12 @@ In general each step multiplies the distance by $1 - 2\eta$. A learning rate of 
 
 A model $\hat{y} = wx + b$ starts at $w = 1$, $b = 0$. There is one example: $x = 2$, $y = 10$. The loss is $(\hat{y} - y)^2$. Take one gradient step with a learning rate of 0.01, and check that the loss went down.
 
+<Hint>
+
+The steepness for $w$ is $2(\hat{y} - y)x$ and for $b$ it is $2(\hat{y} - y)$. Update both from the old values.
+
+</Hint>
+
 <Solution>
 
 The prediction is $1 \times 2 + 0 = 2$, so $\hat{y} - y = -8$ and the loss is 64.
@@ -291,6 +309,12 @@ The new prediction is $1.32 \times 2 + 0.16 = 2.8$, and the new loss is $(2.8 - 
 <Exercise kind="in code">
 
 Write gradient descent for a line through the three points (0, 1), (2, 2) and (4, 6), starting from $w = 0$, $b = 0$ with a learning rate of 0.05. Check that it arrives at the best line, $w = 1.25$ and $b = 0.5$. Then change the learning rate to 0.2 and run it again.
+
+<Hint>
+
+Inside the loop: compute the misses, then both steepnesses as averages, then update $w$ and $b$.
+
+</Hint>
 
 <Solution>
 

@@ -230,6 +230,12 @@ In the training loop, the single line that updated the weights is the only thing
 
 A run uses a starting learning rate of 1 and a decay of 0.1. What is the learning rate at step 0, at step 10 and at step 90?
 
+<Hint>
+
+Current rate = starting rate ÷ (1 + decay × steps so far).
+
+</Hint>
+
 <Solution>
 
 The rule is: current rate = starting rate ÷ (1 + decay × steps so far).
@@ -248,6 +254,12 @@ The rate halves in the first ten steps and then takes another eighty to fall to 
 
 With momentum, each update is 0.9 times the previous update, minus the learning rate times the gradient. The learning rate is 0.1. First suppose the gradient is 1 at every step: what are the first three updates, and what do they approach? Then suppose the gradient alternates between 1 and −1: what are the first three updates?
 
+<Hint>
+
+Compute each update from the one before: 0.9 times the previous update, minus 0.1 times the gradient.
+
+</Hint>
+
 <Solution>
 
 **Steady gradient.** The updates are $-0.1$, then $0.9 \times (-0.1) - 0.1 = -0.19$, then $0.9 \times (-0.19) - 0.1 = -0.271$. They keep growing and approach $-0.1 / (1 - 0.9) = -1$. In a direction where the gradient always agrees with itself, momentum ends up moving ten times as fast as a plain step.
@@ -264,6 +276,12 @@ That is the whole benefit: fast along the valley, calm across it.
 
 The valley in this chapter is $f(x, y) = 0.05x^2 + y^2$. With plain gradient descent, each step multiplies $y$ by $(1 - 2\eta)$ and $x$ by $(1 - 0.1\eta)$. Use this to explain why the run diverges just above a learning rate of 1, and why it is slow even at 0.9.
 
+<Hint>
+
+A value multiplied by a number larger than 1 in size grows. One multiplied by 0.91 shrinks slowly.
+
+</Hint>
+
 <Solution>
 
 **The limit.** The size of $y$ grows whenever $1 - 2\eta$ is below −1, which happens as soon as $\eta$ is above 1. The steep direction sets the limit.
@@ -279,6 +297,12 @@ One rate has to serve two directions with very different steepness. Momentum and
 <Exercise kind="think">
 
 Two weights have gradients that are steadily 100 and 0.01. With plain gradient descent and a learning rate of 0.01, how far does each move in one step? Roughly how far does each move in one step of Adam with the same learning rate? What does that tell you about when Adam helps?
+
+<Hint>
+
+Plain gradient descent moves a weight by the rate times its gradient. Adam first divides the gradient by its typical size.
+
+</Hint>
 
 <Solution>
 

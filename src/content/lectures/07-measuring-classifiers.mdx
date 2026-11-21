@@ -191,6 +191,12 @@ Note that scikit-learn puts the negative class first, so the matrix reads cleare
 
 At a threshold of 0.50 the screening model catches 17 of the 20 ill patients and raises 15 false alarms among the 180 healthy ones. Fill in the four cells of the confusion matrix, then work out accuracy, precision, recall and F1.
 
+<Hint>
+
+True negatives are the healthy patients who were not flagged: 180 minus the false alarms.
+
+</Hint>
+
 <Solution>
 
 True positives 17, false negatives 3, false positives 15, true negatives $180 - 15 = 165$.
@@ -210,6 +216,12 @@ About half of the flags are false alarms, and three ill patients in twenty are m
 
 For the same 200 patients, work out accuracy, precision and recall for a model that flags everyone, and for a model that flags no one.
 
+<Hint>
+
+For each model, fill in the four cells first. One of the measures ends up as 0 divided by 0.
+
+</Hint>
+
 <Solution>
 
 **Flags everyone.** All 20 ill patients are caught, so recall is 100%. Of the 200 flags, 20 are right, so precision is 10%. Accuracy is also 10%.
@@ -226,6 +238,12 @@ The two extremes show why one number is never enough. Each of them is perfect on
 
 A false alarm costs 1 (a follow-up test) and a missed illness costs 20. Threshold A gives 15 false alarms and 3 misses. Threshold B gives 40 false alarms and 1 miss. Which is cheaper? Which has the higher accuracy?
 
+<Hint>
+
+Multiply each kind of mistake by its cost and add. For accuracy, count the mistakes of both kinds together.
+
+</Hint>
+
 <Solution>
 
 Cost of A: $15 \times 1 + 3 \times 20 = 75$. Cost of B: $40 \times 1 + 1 \times 20 = 60$. **B is cheaper.**
@@ -241,6 +259,12 @@ Accuracy counts every mistake the same. When a miss is twenty times worse than a
 <Exercise kind="think">
 
 What does an AUC of 0.5 tell you about a model? What about an AUC of 0.3, and what would you do with such a model?
+
+<Hint>
+
+AUC is the chance that a random positive case gets a higher score than a random negative one.
+
+</Hint>
 
 <Solution>
 

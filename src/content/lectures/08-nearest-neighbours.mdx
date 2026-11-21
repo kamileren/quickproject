@@ -195,6 +195,12 @@ print(search.score(X_test, y_test))     # accuracy on the held-out test set
 
 Five known points: A (1, 1) filled, B (2, 1) filled, C (4, 3) hollow, D (5, 4) hollow and E (3, 3) hollow. Classify the new point (2, 2) with k = 1, with k = 3 and with k = 5.
 
+<Hint>
+
+Work out the five distances from (2, 2) and sort them. Then let the nearest k vote.
+
+</Hint>
+
 <Solution>
 
 Distances from (2, 2): B is 1 away. A is $\sqrt{2} \approx 1.41$. E is also $\sqrt{2} \approx 1.41$. C is $\sqrt{5} \approx 2.24$. D is $\sqrt{13} \approx 3.61$.
@@ -213,6 +219,12 @@ With k equal to the number of known points, every prediction is simply the more 
 
 Three people, described by income in dollars and age in years: P (30,000 and 25), Q (30,500 and 60) and R (32,000 and 26). Using the raw numbers, who is nearer to P? Now divide incomes by 1,000 and ages by 15, roughly their typical spreads, and answer again.
 
+<Hint>
+
+Distance is the square root of the summed squared differences. Notice which column dominates before rescaling.
+
+</Hint>
+
 <Solution>
 
 **Raw numbers.** P to Q: $\sqrt{500^2 + 35^2} \approx 501$. P to R: $\sqrt{2000^2 + 1^2} \approx 2000$. Q looks four times nearer, although Q is 35 years older than P and R is almost the same age.
@@ -229,6 +241,12 @@ With raw numbers the age column was invisible, only because dollars are small un
 
 Why does k-NN with k = 1 always make zero mistakes on the points it has stored? Why is that not good news?
 
+<Hint>
+
+Ask which stored point is nearest to a stored point.
+
+</Hint>
+
 <Solution>
 
 Ask it about a stored point and the nearest stored point is that point itself, at distance zero. It answers with that point's own label, which is correct by definition.
@@ -242,6 +260,12 @@ It is not good news because it says nothing about new points. A stored point tha
 <Exercise kind="in code">
 
 Write k-NN in NumPy: a function that takes the known points, their labels, a new point and k, and returns the predicted label. Check it against your answers to the first exercise.
+
+<Hint>
+
+`np.argsort(distances)[:k]` gives the positions of the k nearest points.
+
+</Hint>
 
 <Solution>
 

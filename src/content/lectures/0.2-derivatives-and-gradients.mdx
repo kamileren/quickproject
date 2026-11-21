@@ -217,6 +217,12 @@ Libraries such as PyTorch do not nudge. They apply the rules and the chain rule 
 
 For $f(x) = x^2$, estimate the slope at $x = 3$ with a nudge of 0.1, then with a nudge of 0.01. What value are the estimates heading towards, and what does the rule give?
 
+<Hint>
+
+Work out $f(3 + \text{nudge}) - f(3)$ and divide by the nudge.
+
+</Hint>
+
 <Solution>
 
 With a nudge of 0.1: $(3.1^2 - 3^2) / 0.1 = (9.61 - 9) / 0.1 = 6.1$.
@@ -233,6 +239,12 @@ The estimates are closing in on 6. The rule says the derivative of $x^2$ is $2x$
 
 Where is the lowest point of $f(x) = x^2 - 6x + 10$, and how low is it?
 
+<Hint>
+
+At a lowest point the derivative is zero. The derivative of $x^2 - 6x + 10$ is $2x - 6$.
+
+</Hint>
+
 <Solution>
 
 At a lowest point the derivative is zero. The derivative is $2x - 6$, which is zero at $x = 3$. There, $f(3) = 9 - 18 + 10 = 1$.
@@ -247,6 +259,12 @@ So the lowest point is at $x = 3$, where the function equals 1. To the left of 3
 
 Let $f(w, b) = w^2 + 3b^2$. Find the gradient at $w = 2$, $b = 1$. If you wanted to make $f$ smaller, in which direction would you move?
 
+<Hint>
+
+Find each partial derivative by treating the other input as a fixed number. The gradient points uphill.
+
+</Hint>
+
 <Solution>
 
 Treat the other input as a fixed number each time. The partial derivative with respect to $w$ is $2w$, and with respect to $b$ it is $6b$. At the point (2, 1) the gradient is $[4,\ 6]$.
@@ -260,6 +278,12 @@ The gradient points uphill, so to make $f$ smaller move the opposite way, along 
 <Exercise kind="by hand">
 
 Let $y = (3x + 1)^2$. Use the chain rule to find how fast $y$ changes with $x$ at $x = 1$. Check your answer by nudging $x$ to 1.001.
+
+<Hint>
+
+Name the inside $u = 3x + 1$. Find how fast $u$ changes with $x$, how fast $y$ changes with $u$, and multiply.
+
+</Hint>
 
 <Solution>
 

@@ -232,6 +232,12 @@ Run for 10,000 epochs with plain gradient descent, the Python version climbs fro
 
 One neuron with a ReLU: the input is 3, the weight is 1, the bias is −1, and the target is 4. The loss is the squared error. Do the forward pass, then the backward pass, then update the weight and bias with a learning rate of 0.02. What is the loss after the update?
 
+<Hint>
+
+Forward: $z$, then $a$, then the loss. Backward: start with $2(a - 4)$ and multiply by each local slope in turn.
+
+</Hint>
+
 <Solution>
 
 **Forward.** $z = 1 \times 3 - 1 = 2$. The ReLU leaves it at $a = 2$. The loss is $(2 - 4)^2 = 4$.
@@ -249,6 +255,12 @@ One neuron with a ReLU: the input is 3, the weight is 1, the bias is −1, and t
 <Exercise kind="by hand">
 
 Two neurons in a chain, with no biases. The first computes $h = \text{ReLU}(w_1 x)$ and the second computes $y = w_2 h$. With $x = 1$, $w_1 = 2$, $w_2 = 3$ and a target of 0, the loss is $y^2$. Find the gradient for $w_2$, then for $w_1$.
+
+<Hint>
+
+Start with how the loss changes with $y$, which is $2y$. A weight's local slope is the input it multiplies.
+
+</Hint>
 
 <Solution>
 
@@ -270,6 +282,12 @@ Both gradients are positive, so both weights should decrease, which makes sense:
 
 A network has 10,000 weights. To find the gradient by nudging each weight in turn, how many forward passes are needed for one update? How many passes does backpropagation need?
 
+<Hint>
+
+Nudging needs one extra forward pass for every weight.
+
+</Hint>
+
 <Solution>
 
 Nudging needs one forward pass to measure the loss as it stands, and one more for each weight: 10,001 forward passes. If each weight is nudged both up and down for a better estimate, it is 20,000.
@@ -283,6 +301,12 @@ Backpropagation needs one forward pass and one backward pass, and the backward p
 <Exercise kind="in code">
 
 Check the chapter's worked example with code. The neuron computes $a = \text{ReLU}(wx + b)$ with $x = 2$, $b = 0.5$ and a target of 5, and backpropagation gave a gradient of −14 for the weight at $w = 0.5$. Estimate the same gradient by nudging.
+
+<Hint>
+
+Write the loss as a function of $w$. Evaluate it just above and just below 0.5, subtract, and divide by the gap.
+
+</Hint>
 
 <Solution>
 

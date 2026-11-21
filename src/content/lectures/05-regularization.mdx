@@ -194,6 +194,12 @@ Libraries scale the penalty slightly differently from one another, so the best `
 
 Two models have the same mean squared error, 10. Model A has weights $[2,\ 2]$ and model B has weights $[0,\ 3]$. With $\lambda = 1$, which model does ridge prefer, and which does lasso prefer?
 
+<Hint>
+
+Ridge adds the sum of squared weights to the error. Lasso adds the sum of their sizes.
+
+</Hint>
+
 <Solution>
 
 Ridge adds the squared weights. A: $4 + 4 = 8$, a loss of 18. B: $0 + 9 = 9$, a loss of 19. **Ridge prefers A.**
@@ -209,6 +215,12 @@ Squaring punishes one large weight more than two medium ones, so ridge likes the
 <Exercise kind="by hand">
 
 A model has a single weight. Without a penalty the best value is 4, and the loss is $(w - 4)^2$. Add a ridge penalty, giving $(w - 4)^2 + \lambda w^2$. Find the best $w$ for $\lambda = 0$, 1 and 3. Does it ever reach zero?
+
+<Hint>
+
+Set the derivative to zero: $2(w - 4) + 2\lambda w = 0$, and solve for $w$.
+
+</Hint>
 
 <Solution>
 
@@ -228,6 +240,12 @@ The weight shrinks towards zero as λ grows, and it never gets there. However la
 
 Now use a lasso penalty on the same model: $(w - 4)^2 + \lambda w$, for $w$ at or above zero. Find the best $w$ for $\lambda = 2$, 8 and 10.
 
+<Hint>
+
+Set the derivative to zero as before. If the answer is negative, the best allowed value is 0.
+
+</Hint>
+
 <Solution>
 
 Set the derivative to zero: $2(w - 4) + \lambda = 0$, which gives $w = 4 - \lambda / 2$.
@@ -245,6 +263,12 @@ The weight falls in a straight line and hits zero at $\lambda = 8$. From there o
 <Exercise kind="think">
 
 You fit a ridge model for a range of λ values, from very small to very large. Sketch, in words, what happens to the training error and to the validation error along the way. Where is the best λ?
+
+<Hint>
+
+At $\lambda = 0$ the model fits the training data as closely as it can. Think about what each increase takes away.
+
+</Hint>
 
 <Solution>
 

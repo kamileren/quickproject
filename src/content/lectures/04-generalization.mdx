@@ -210,6 +210,12 @@ Three models were trained on the same data. Their errors are:
 
 Which model underfits, which overfits, and which would you choose?
 
+<Hint>
+
+Compare the two columns. Both high means too simple. A large gap means the model has fitted noise.
+
+</Hint>
+
 <Solution>
 
 **A underfits.** Both errors are high and close together. The model is too simple to follow the pattern, so it is equally poor on old and new data.
@@ -226,6 +232,12 @@ Which model underfits, which overfits, and which would you choose?
 
 You have 20 examples and run 5-fold cross-validation. In each round, how many examples are trained on and how many are held out? How many models are trained in total, and how many times is each example held out? What would the answers be if every fold held just one example?
 
+<Hint>
+
+Five folds of equal size. Each fold takes one turn at being held out.
+
+</Hint>
+
 <Solution>
 
 Five folds of 4 examples each. Every round trains on 16 and holds out 4. Five models are trained, and each example is held out exactly once.
@@ -240,6 +252,12 @@ With one example per fold there are 20 folds. Every round trains on 19 and holds
 
 A friend trains 50 different models, measures each on the test set, and reports the best score, 91% accurate. What is wrong with that number, and what should they have done?
 
+<Hint>
+
+Ask whether the test set was still unseen data after it had been used to pick a winner.
+
+</Hint>
+
 <Solution>
 
 The test set was used to choose among 50 models, so it is no longer unseen data. Some of those models scored well partly by luck on those particular examples, and picking the best one picks the luckiest. On fresh data the chosen model will probably score below 91%.
@@ -253,6 +271,12 @@ They should have compared the 50 models on a validation set, or by cross-validat
 <Exercise kind="in code">
 
 Make 15 noisy training points from a sine curve, and 200 new points the same way. Fit curves of degree 1, 3 and 9 to the training points, and print the error of each on both sets.
+
+<Hint>
+
+`np.polyfit` fits the curve and `np.polyval` evaluates it. Compute the mean squared error on each set.
+
+</Hint>
 
 <Solution>
 

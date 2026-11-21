@@ -203,6 +203,12 @@ The class at the end is the first piece of the network we will keep building. It
 
 A neuron has weights $[0.5,\ 2,\ -1]$ and a bias of 1. What does it output for the inputs $[3,\ -1,\ 2]$?
 
+<Hint>
+
+Multiply each input by its weight, add the three products, then add the bias.
+
+</Hint>
+
 <Solution>
 
 Multiply each input by its weight, add them up, and add the bias:
@@ -216,6 +222,12 @@ $0.5 \times 3 + 2 \times (-1) + (-1) \times 2 + 1 = 1.5 - 2 - 2 + 1 = -1.5$
 <Exercise kind="by hand">
 
 A layer of three neurons reads the inputs $[1,\ 2]$. The neurons have weights $[1,\ -1]$, $[0.5,\ 0.5]$ and $[-2,\ 1]$, and biases 0, 1 and 3. What are the three outputs?
+
+<Hint>
+
+Do the previous exercise three times, once for each neuron.
+
+</Hint>
 
 <Solution>
 
@@ -235,6 +247,12 @@ The layer turns two numbers into three. As a matrix calculation, a (3 × 2) tabl
 
 A neuron has weights $[1,\ 1]$ and a bias of −3, and answers "yes" when its output is above zero. Describe its decision boundary. Then explain why no single neuron can answer "yes" for the inputs (0, 1) and (1, 0) but "no" for (0, 0) and (1, 1).
 
+<Hint>
+
+The boundary is where the output is exactly zero. For the second part, draw the four points.
+
+</Hint>
+
 <Solution>
 
 The output is zero where $x_1 + x_2 = 3$. That is a straight line through (3, 0) and (0, 3). Points above and to the right of it get "yes".
@@ -248,6 +266,12 @@ For the second part, plot the four points. The two "yes" points sit on one diago
 <Exercise kind="in code">
 
 Make a batch of 4 examples with 3 features each, and pass it through a layer of 5 neurons using NumPy. What shapes do the weights, the biases and the output have?
+
+<Hint>
+
+The weights need one row per input and one column per neuron.
+
+</Hint>
 
 <Solution>
 

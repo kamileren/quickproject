@@ -167,6 +167,12 @@ print(is_spam[has_free == 1].mean())            # 0.90  P(spam | free)
 
 Eight quiz scores are 2, 4, 4, 4, 5, 5, 7 and 9. Find the average, then the standard deviation (divide by the number of values).
 
+<Hint>
+
+Find the average first. Then average the squared distances from it, and take the square root.
+
+</Hint>
+
 <Solution>
 
 The scores add up to 40, so the average is $40 / 8 = 5$.
@@ -182,6 +188,12 @@ A typical score is about 2 points away from 5.
 <Exercise kind="by hand">
 
 Exam scores follow a bell curve with an average of 70 and a standard deviation of 8. Roughly what share of students score between 62 and 78? Between 54 and 86? Above 86?
+
+<Hint>
+
+Count how many standard deviations each end of the range is from 70.
+
+</Hint>
 
 <Solution>
 
@@ -199,6 +211,12 @@ That leaves about 5% outside the range 54 to 86, split evenly between the two ta
 
 Out of 100 emails, 30 are spam. The word "free" appears in 18 of the spam emails and in 7 of the others. What is the chance that a spam email contains "free"? What is the chance that an email containing "free" is spam?
 
+<Hint>
+
+The top of both fractions is the same 18 emails. Decide which group goes on the bottom each time.
+
+</Hint>
+
 <Solution>
 
 Given spam, look only at the 30 spam emails: $18 / 30 = 0.6$.
@@ -214,6 +232,12 @@ The same 18 emails sit on top of both fractions. The answers differ because the 
 <Exercise kind="in code">
 
 Simulate rolling a die 10 times and work out the share of sixes. Run it several times. Then do the same with 10,000 rolls. What changes?
+
+<Hint>
+
+`rng.integers(1, 7, size=n)` gives n rolls. `(rolls == 6).mean()` gives the share of sixes.
+
+</Hint>
 
 <Solution>
 

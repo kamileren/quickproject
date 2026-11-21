@@ -209,6 +209,12 @@ print(model.predict_proba(["free prize"])[0, 1])       # 0.97: chance of spam
 
 A test catches 90% of the people who have an illness and wrongly flags 5% of the people who do not. One person in a hundred has the illness. Someone tests positive. How likely is it that they are ill? Work it out by imagining 10,000 people.
 
+<Hint>
+
+Of 10,000 people, how many are ill and test positive? How many are healthy and test positive?
+
+</Hint>
+
 <Solution>
 
 Of 10,000 people, 100 are ill and 9,900 are healthy.
@@ -227,6 +233,12 @@ A positive result raised the chance from 1% to about 15%. That is a big change, 
 <Exercise kind="by hand">
 
 An inbox has 10 spam messages and 20 normal ones. The spam messages contain 100 words in total, with "prize" appearing 6 times and "meeting" once. The normal messages contain 200 words, with "prize" appearing once and "meeting" 10 times. Classify the message "prize meeting" without smoothing.
+
+<Hint>
+
+For each class, multiply the prior by the share of each word. Then compare the two products.
+
+</Hint>
 
 <Solution>
 
@@ -249,6 +261,12 @@ Spam has the larger score. As a probability, $0.0002 / (0.0002 + 0.000167) \appr
 
 In the same inbox the word "lottery" appears 3 times in spam and never in normal messages. The inbox uses 50 different words. What share does "lottery" get in each class without smoothing, and with it? Why does the difference matter?
 
+<Hint>
+
+Smoothing adds 1 to the count on top and the number of different words to the total underneath.
+
+</Hint>
+
 <Solution>
 
 **Without smoothing.** Spam: $3 / 100 = 0.03$. Normal: $0 / 200 = 0$.
@@ -264,6 +282,12 @@ Without smoothing, the zero wipes out the whole product for the normal class. An
 <Exercise kind="think">
 
 Naive Bayes assumes the words in a message are independent of each other given the class. Give an example where that is plainly false, and say what effect it has on the model's output.
+
+<Hint>
+
+Think of two words that tend to turn up together in spam.
+
+</Hint>
 
 <Solution>
 

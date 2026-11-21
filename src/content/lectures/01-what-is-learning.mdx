@@ -182,6 +182,12 @@ For each task, name some features, name the label, and say whether it is regress
 3. Forecasting tomorrow's highest temperature.
 4. Recognising which of three species a flower belongs to.
 
+<Hint>
+
+Ask what you would know before the answer (features) and what the answer is (label). A number means regression.
+
+</Hint>
+
 <Solution>
 
 1. Features: floor area, number of bedrooms, location, age. Label: the sale price. A number, so **regression**.
@@ -199,6 +205,12 @@ Your features may differ. What matters is that they are things you would know be
 
 Six students studied for 1, 2, 3, 4, 5 and 6 hours. Their results were fail, fail, pass, fail, pass, pass. Using a rule of the form "pass if hours are at least t", which threshold makes the fewest mistakes? Can any threshold be right about all six?
 
+<Hint>
+
+There are only seven places to put the threshold. Count the mistakes for each.
+
+</Hint>
+
 <Solution>
 
 Try each gap in turn. A threshold between 2 and 3 predicts a pass for the students with 3, 4, 5 and 6 hours, and is wrong only about the student with 4 hours. A threshold between 4 and 5 predicts a pass for 5 and 6 hours, and is wrong only about the student with 3 hours. Both make one mistake. Every other threshold makes two or more.
@@ -213,6 +225,12 @@ No threshold is perfect, because a pass at 3 hours comes before a fail at 4 hour
 
 A model is right about 100% of the examples it was trained on and 60% of a set of new examples. What has probably happened, and which number describes how good the model is?
 
+<Hint>
+
+Which of the two numbers was measured on data the model had never seen?
+
+</Hint>
+
 <Solution>
 
 The model has fitted its training examples very closely, including details that are particular to those examples and do not hold in general. It has partly memorised them.
@@ -226,6 +244,12 @@ The number that describes the model is 60%, because that is how it behaves on da
 <Exercise kind="think">
 
 Give one task where writing the rules by hand is the better choice, and say why.
+
+<Hint>
+
+Think of a task where someone has already written the exact rule down.
+
+</Hint>
 
 <Solution>
 

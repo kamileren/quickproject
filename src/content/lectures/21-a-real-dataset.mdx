@@ -186,6 +186,12 @@ Running it prints the table in the training figure: 84.6% after the first epoch 
 
 The network has 784 inputs, two hidden layers of 64 neurons and 10 outputs. How many weights and biases does it have in total?
 
+<Hint>
+
+Each layer has (inputs × neurons) weights, plus one bias for each neuron.
+
+</Hint>
+
 <Solution>
 
 Each layer has one weight for every pair of input and neuron, plus one bias per neuron.
@@ -204,6 +210,12 @@ That makes 55,050 numbers. More than nine tenths of them are in the first layer,
 
 There are 60,000 training images and the batch size is 128. How many steps are in one epoch, and how many images are in the last batch? How many updates does the network receive in five epochs?
 
+<Hint>
+
+Divide 60,000 by 128. The remainder forms a last, smaller batch.
+
+</Hint>
+
 <Solution>
 
 $60{,}000 / 128 = 468.75$, so there are 468 full batches and one smaller one: 469 steps.
@@ -220,6 +232,12 @@ Five epochs give $5 \times 469 = 2{,}345$ updates. On the spiral, one update use
 
 Pixels are scaled by subtracting 127.5 and dividing by 127.5. What do the pixel values 0, 255 and 51 become? Why must an image given to the finished network be scaled the same way?
 
+<Hint>
+
+Apply (pixel − 127.5) ÷ 127.5 to each value.
+
+</Hint>
+
 <Solution>
 
 - 0 becomes $-127.5 / 127.5 = -1$
@@ -235,6 +253,12 @@ The network's weights were learned for inputs between −1 and 1. Hand it a raw 
 <Exercise kind="think">
 
 The confusion matrix shows that shirts are often mistaken for T-shirts, pullovers and coats, while trousers are almost never mistaken for anything. Why might that be? Would changing a threshold help? What would?
+
+<Hint>
+
+Think about how the outlines of those four garments compare at 28 by 28 pixels.
+
+</Hint>
 
 <Solution>
 

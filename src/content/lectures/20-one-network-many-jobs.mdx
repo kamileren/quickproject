@@ -196,6 +196,12 @@ For each task, say how many outputs the network needs, what activation goes on t
 4. Tagging a photo with any of "beach", "people" and "night", in any combination.
 5. Locating an object in an image by its x and y coordinates.
 
+<Hint>
+
+Decide first whether the answer is a number, a yes or no, one class of several, or several yes-or-no answers at once.
+
+</Hint>
+
 <Solution>
 
 1. **One output, no activation,** mean squared error. It is a number.
@@ -211,6 +217,12 @@ For each task, say how many outputs the network needs, what activation goes on t
 <Exercise kind="by hand">
 
 A yes-or-no network outputs a probability of 0.8. What is the binary cross-entropy if the true answer is yes? What if it is no? In each case, what is the gradient for the score that went into the sigmoid?
+
+<Hint>
+
+The loss is minus the logarithm of the probability given to the true answer. The gradient is probability minus truth.
+
+</Hint>
 
 <Solution>
 
@@ -228,6 +240,12 @@ The same "prediction minus truth" appears as for softmax. The more wrong the net
 
 A network predicts $[2.5,\ 0,\ 2]$ for three examples whose targets are $[3,\ -0.5,\ 2]$. What is the mean squared error? What is its gradient for each prediction?
 
+<Hint>
+
+Square each miss and average. The gradient for each prediction is 2 times its miss, divided by 3.
+
+</Hint>
+
 <Solution>
 
 The misses (prediction minus target) are $-0.5$, $0.5$ and $0$. Squared, they are 0.25, 0.25 and 0. The mean is $0.5 / 3 \approx 0.167$.
@@ -243,6 +261,12 @@ The first prediction is too low and should rise. The second is too high and shou
 <Exercise kind="think">
 
 A network has no hidden layers and one output with a sigmoid, trained with binary cross-entropy. Which model from earlier in the book is it? What does adding a hidden layer with ReLU change?
+
+<Hint>
+
+Write down what a single neuron followed by a sigmoid computes, and compare it with chapter 6.
+
+</Hint>
 
 <Solution>
 
