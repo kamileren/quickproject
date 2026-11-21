@@ -102,6 +102,18 @@ The first two are what the layer needs to update itself. The third is what it ha
   ]}
 />
 
+<Example title="A neuron that was switched off">
+
+Take the same tiny network, but start with a weight of −0.5. The input is 2, the bias is 0.5 and the target is 5.
+
+**Forward.** $z = -0.5 \times 2 + 0.5 = -0.5$. The ReLU turns that into $a = 0$, and the loss is $(0 - 5)^2 = 25$.
+
+**Backward.** The loss changes with $a$ at a rate of $2(0 - 5) = -10$. Then comes the ReLU. Its input was negative, so its local slope is 0, and the gradient passed back is $-10 \times 0 = 0$. The weight and the bias both receive a gradient of 0.
+
+The loss is large and the update is nothing. The neuron was off for this input, so no small change to its weight would alter the output, and backpropagation correctly reports that. If a neuron is off for every example in the data it can never recover. Such neurons are called dead, and they are one reason to keep starting weights small and learning rates moderate.
+
+</Example>
+
 ## Trust, but check
 
 Backward passes are easy to get subtly wrong, and a wrong gradient often still trains, just badly. Fortunately there is an independent way to find a gradient: the slow nudging method from the start of the chapter. Too slow for training, it is perfect for testing. Comparing the two is called a <Term id="gradient-check">gradient check</Term>.
@@ -152,6 +164,12 @@ The network is learning, driven by nothing but the four steps above. The slownes
   ]}
 />
 
+<Pitfall title="Updating weights before the backward pass has finished">
+
+Every gradient must be worked out with the weights that were used in the forward pass. If you update a layer's weights as soon as its gradient is known, the layers behind it receive a gradient that was passed back through the new weights and no longer matches the loss that was measured. The network usually still trains, only worse, which makes the mistake hard to spot. Finish the whole backward pass first. Then update every layer.
+
+</Pitfall>
+
 ## In code
 
 Each layer gains a `backward` method that mirrors its `forward`. The full file, <CodeFile file="ch17_backprop.py" />, trains this network on spiral data.
@@ -199,6 +217,93 @@ Run for 10,000 epochs with plain gradient descent, the Python version climbs fro
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Carry out a forward and a backward pass through a small network by hand.
+- State the rule that every backward step follows.
+- Explain why a ReLU that was off passes no gradient.
+- Check a backward pass against nudging, and write the four steps of the training loop.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+One neuron with a ReLU: the input is 3, the weight is 1, the bias is −1, and the target is 4. The loss is the squared error. Do the forward pass, then the backward pass, then update the weight and bias with a learning rate of 0.02. What is the loss after the update?
+
+<Solution>
+
+**Forward.** $z = 1 \times 3 - 1 = 2$. The ReLU leaves it at $a = 2$. The loss is $(2 - 4)^2 = 4$.
+
+**Backward.** The loss changes with $a$ at $2(2 - 4) = -4$. The ReLU was on, so its slope is 1 and the gradient stays $-4$. For the weight, multiply by the input: $-4 \times 3 = -12$. For the bias, multiply by 1: $-4$.
+
+**Update.** $w = 1 + 0.02 \times 12 = 1.24$ and $b = -1 + 0.02 \times 4 = -0.92$.
+
+**Check.** The new output is $1.24 \times 3 - 0.92 = 2.8$, and the loss is $(2.8 - 4)^2 = 1.44$, down from 4.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Two neurons in a chain, with no biases. The first computes $h = \text{ReLU}(w_1 x)$ and the second computes $y = w_2 h$. With $x = 1$, $w_1 = 2$, $w_2 = 3$ and a target of 0, the loss is $y^2$. Find the gradient for $w_2$, then for $w_1$.
+
+<Solution>
+
+**Forward.** $h = \text{ReLU}(2) = 2$, $y = 3 \times 2 = 6$, and the loss is 36.
+
+**Backward.** The loss changes with $y$ at $2y = 12$.
+
+For $w_2$: its local slope is its input, $h = 2$. The gradient is $12 \times 2 = 24$.
+
+To go further back, find how the loss changes with $h$: the local slope is $w_2 = 3$, so $12 \times 3 = 36$. The ReLU was on, so the gradient stays 36. For $w_1$ the local slope is its input, $x = 1$, giving $36 \times 1 = 36$.
+
+Both gradients are positive, so both weights should decrease, which makes sense: the output is 6 and the target is 0. Notice that the gradient for $w_1$ had to pass through $w_2$ on the way. That is why the old value of $w_2$ must be kept until the backward pass is finished.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+A network has 10,000 weights. To find the gradient by nudging each weight in turn, how many forward passes are needed for one update? How many passes does backpropagation need?
+
+<Solution>
+
+Nudging needs one forward pass to measure the loss as it stands, and one more for each weight: 10,001 forward passes. If each weight is nudged both up and down for a better estimate, it is 20,000.
+
+Backpropagation needs one forward pass and one backward pass, and the backward pass costs about as much as the forward one. That is a saving of several thousand times here. For a modern network with billions of weights, it is the difference between possible and impossible.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="in code">
+
+Check the chapter's worked example with code. The neuron computes $a = \text{ReLU}(wx + b)$ with $x = 2$, $b = 0.5$ and a target of 5, and backpropagation gave a gradient of −14 for the weight at $w = 0.5$. Estimate the same gradient by nudging.
+
+<Solution>
+
+```python
+def loss(w, b=0.5, x=2, target=5):
+    a = max(0, w * x + b)       # ReLU
+    return (a - target) ** 2
+
+h = 1e-5
+estimate = (loss(0.5 + h) - loss(0.5 - h)) / (2 * h)
+print(round(estimate, 4))       # -14.0
+```
+
+Nudging the weight up and down by a tiny amount and dividing gives −14, the same as the chain rule. When the two agree to several decimal places, the backward pass is right.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Why "backward"?
@@ -222,3 +327,9 @@ The gradient reaching the first layer is a product of one local slope per layer.
 - C. Olah, [Calculus on computational graphs: backpropagation](https://colah.github.io/posts/2015-08-Backprop/).
 
 </References>
+
+<NextUp>
+
+The training loop works, and on the spiral it is slow and stops short. The gradients are exact, so the weakness must be in how they are used. The next chapter keeps backpropagation as it is and replaces the plain update rule with better ones.
+
+</NextUp>

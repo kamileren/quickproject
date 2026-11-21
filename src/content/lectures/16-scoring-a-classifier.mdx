@@ -12,7 +12,7 @@ prerequisites: [layers-and-activations, logistic-regression]
 
 import ScoreBoard from '@/components/figures/ch16/ScoreBoard';
 
-The network from the last chapter takes an input, passes it through its layers, and produces one number per class. Its weights are random, so the numbers are nonsense. Before we can improve them we need a precise way to say how bad they are. That takes two steps: turn the numbers into probabilities, then score the probabilities against the truth.
+The network from <Ref to="layers-and-activations">the last chapter</Ref> takes an input, passes it through its layers, and produces one number per class. Its weights are random, so the numbers are nonsense. Before we can improve them we need a precise way to say how bad they are. That takes two steps: turn the numbers into probabilities, then score the probabilities against the truth.
 
 The running example from here on is a network that looks at a picture of clothing and decides whether it shows a T-shirt, a trouser or a sneaker.
 
@@ -66,7 +66,7 @@ For the scores $[2.0,\ 1.0,\ 0.1]$:
 Two things are worth noticing. The probabilities compete: raising one score takes probability away from the others, because the total is fixed at 1. And only the *gaps* between scores matter. Adding the same amount to every score leaves the probabilities unchanged.
 
 <MarginNote>
-With two classes, softmax reduces to the sigmoid from the logistic regression chapter. Softmax is the same idea for any number of classes.
+With two classes, softmax reduces to the sigmoid from <Ref to="logistic-regression">the logistic regression chapter</Ref>. Softmax is the same idea for any number of classes.
 </MarginNote>
 
 ## Cross-entropy: scoring the probabilities
@@ -143,6 +143,19 @@ $$
 
 Here $y$ is the one-hot truth. Read it class by class. For the correct class, $p - 1$ is negative: raising that score lowers the loss. For every wrong class, $p - 0$ is positive: lowering that score lowers the loss. The size of each push is how far the probability is from where it should be.
 
+<Example title="From scores to gradient, start to finish">
+
+A network gives one example the scores $[1,\ 3,\ 0.5]$. The correct class is the first.
+
+1. **Exponentials:** $e^{1} \approx 2.72$, $e^{3} \approx 20.09$ and $e^{0.5} \approx 1.65$. They add up to 24.45.
+2. **Probabilities:** divide each by the total, giving $[0.11,\ 0.82,\ 0.07]$.
+3. **Loss:** the correct class got 0.11, so the loss is $-\ln(0.11) \approx 2.20$. That is high, because the network put most of its belief on the wrong class.
+4. **Gradient:** subtract the truth $[1,\ 0,\ 0]$, giving $[-0.89,\ 0.82,\ 0.07]$.
+
+The first score should rise, and it gets the biggest push. The second should fall by nearly as much. The third is barely touched, because the network was already giving it almost no probability.
+
+</Example>
+
 <Figure
   title="Prediction minus truth"
   caption="The last column is the slope of the loss for each score. Positive means the score should come down."
@@ -161,6 +174,12 @@ You have seen "prediction minus truth" twice before, for linear regression and f
     { text: '[0.7, 0.2, 0.1]', why: 'That is the probabilities themselves. The truth has to be subtracted.' },
   ]}
 />
+
+<Pitfall title="Applying softmax twice">
+
+In most libraries the loss function for classification applies the softmax itself, for the sake of numerical accuracy, and expects raw scores as its input. If your network already ends in a softmax, the probabilities get squashed a second time. Nothing crashes. The loss simply comes out higher than it should be and the network learns slowly, because a softmax of numbers between 0 and 1 can never be confident. Check what your loss function expects, and give it scores or probabilities accordingly.
+
+</Pitfall>
 
 ## In code
 
@@ -202,6 +221,79 @@ Running the untrained two-layer network from the last chapter on 300 examples wi
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Turn a set of scores into probabilities with softmax, by hand.
+- Work out the cross-entropy loss for one example.
+- Explain why a network is trained on loss and judged on accuracy.
+- Write down the gradient of the loss for each score.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Apply softmax to the scores $[0,\ 0,\ 0]$. Then apply it to $[2,\ 0]$ and compare the first probability with the sigmoid of 2.
+
+<Solution>
+
+For $[0,\ 0,\ 0]$ every exponential is 1 and the total is 3, so each probability is $1/3$. Equal scores mean equal probabilities.
+
+For $[2,\ 0]$ the exponentials are 7.39 and 1, with a total of 8.39. The probabilities are $[0.88,\ 0.12]$.
+
+The sigmoid of 2 is also 0.88. With two classes, softmax depends only on the difference between the two scores and gives exactly what the sigmoid gives for that difference.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A network gives the probabilities $[0.1,\ 0.7,\ 0.2]$. What is the loss if the correct class is the second? What if it is the first? For the second case, write down the gradient for the three scores.
+
+<Solution>
+
+If the second class is correct, the loss is $-\ln(0.7) \approx 0.36$.
+
+If the first class is correct, the loss is $-\ln(0.1) \approx 2.30$, more than six times as much.
+
+The gradient in that case is the probabilities minus the truth $[1,\ 0,\ 0]$, which is $[-0.9,\ 0.7,\ 0.2]$. The first score should go up a lot, the second should come down a lot, and the third should come down a little.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+What happens to the softmax probabilities if you add 5 to every score? What happens if you double every score?
+
+<Solution>
+
+**Adding 5 changes nothing.** Every exponential is multiplied by the same factor, $e^5$, and so is their total. The factor cancels when you divide. Only the differences between scores matter.
+
+**Doubling makes the output sharper.** The differences between scores double, so the largest score takes an even bigger share. Scores of $[1,\ 3,\ 0.5]$ give the leader 82%. Doubled, $[2,\ 6,\ 1]$ give it about 98%. This is why the size of a network's weights affects how confident it is, and one reason large weights and overconfidence go together.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+You build a network for 10 classes. Before any training, roughly what should its loss be? If the first loss you see is 8, what does that suggest?
+
+<Solution>
+
+An untrained network with small random weights gives every class about the same probability, $1/10$. The loss is then $-\ln(0.1) = \ln 10 \approx 2.30$.
+
+A loss of 8 means the correct class is getting a probability of about $e^{-8}$, roughly 0.0003. The network is confidently wrong before it has learned anything. The usual cause is starting weights that are far too large, which produce huge scores. It can also mean the labels do not line up with the outputs. Checking the first loss against $\ln k$ costs nothing and catches both.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Why the exponential?
@@ -221,3 +313,9 @@ Dividing every score by a number $T$ before softmax changes how sharp the probab
 - S. J. D. Prince, *Understanding Deep Learning*, chapter 5. Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
 
 </References>
+
+<NextUp>
+
+The network now knows how wrong it is, and which way each of its output scores should move. The weights that produced those scores are several layers back. The next chapter carries the message backwards to every one of them.
+
+</NextUp>

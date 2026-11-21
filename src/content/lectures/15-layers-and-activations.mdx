@@ -17,7 +17,7 @@ import BendsFitCurve from '@/components/figures/ch15/BendsFitCurve';
 import ActivationGallery from '@/components/figures/ch15/ActivationGallery';
 import MoonsNet from '@/components/figures/ch15/MoonsNet';
 
-The last chapter ended with a limit: a neuron draws one straight line, and a layer of neurons draws several. This chapter removes the limit with a single small addition, and it is worth seeing first why the obvious fix does not work.
+<Ref to="a-single-neuron">The last chapter</Ref> ended with a limit: a neuron draws one straight line, and a layer of neurons draws several. This chapter removes the limit with a single small addition, and it is worth seeing first why the obvious fix does not work.
 
 ## Stacking layers
 
@@ -88,7 +88,7 @@ A single hinge is not impressive. Its value is as a building block.
 
 Add several hinges together and the sum is a line with several bends. Each hidden neuron contributes one bend. With enough of them, placed well, the sum can follow any curve as closely as you like.
 
-Recall the sleep data from the generalization chapter, where scores rise with sleep and then fall. A straight line could not follow it. Here is the same shape, approximated by a hidden layer of ReLU neurons.
+Recall the sleep data from <Ref to="generalization">the generalization chapter</Ref>, where scores rise with sleep and then fall. A straight line could not follow it. Here is the same shape, approximated by a hidden layer of ReLU neurons.
 
 <Figure
   title="A curve from straight pieces"
@@ -124,7 +124,7 @@ ReLU is the default, but it is one of a family. Any function with a bend will st
 The slope is what matters most. Training works by following slopes downhill, so an activation whose slope is zero gives the weights before it nothing to follow. The step function has a slope of zero everywhere, which rules it out. Sigmoid and tanh flatten out for large inputs, which slows learning in deep networks. ReLU keeps a slope of 1 for every positive input, and that is the main reason it took over.
 
 <MarginNote>
-The sigmoid is the same function that turned a score into a probability in the logistic regression chapter. Logistic regression is a single neuron with a sigmoid activation.
+The sigmoid is the same function that turned a score into a probability in <Ref to="logistic-regression">the logistic regression chapter</Ref>. Logistic regression is a single neuron with a sigmoid activation.
 </MarginNote>
 
 ## Bending a boundary
@@ -153,6 +153,12 @@ Without an activation, the network scores 91% whether it has one hidden neuron o
     { text: 'Replace ReLU with the step function', why: 'The step function has zero slope everywhere, so the network could no longer be trained by gradient descent.' },
   ]}
 />
+
+<Pitfall title="An activation after the last layer, out of habit">
+
+Hidden layers need an activation. The output layer is different, and putting a ReLU there by habit quietly breaks the network. A ReLU on the output can never produce a negative number, so a network predicting temperatures could never say −5, and a classifier could never give a class a negative score. What goes after the last layer depends on the job: nothing at all for predicting a number, and softmax or a sigmoid for classes. <Ref to="one-network-many-jobs">A later chapter</Ref> covers each case.
+
+</Pitfall>
 
 ## In code
 
@@ -191,6 +197,76 @@ The output is three numbers per example, and at this point they are meaningless:
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Show that two linear layers in a row do the work of one.
+- Apply a ReLU, and describe the hinge that a single ReLU neuron draws.
+- Explain how a hidden layer builds a curve out of straight pieces.
+- Say why an activation is judged by its slope.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Apply the ReLU to each of these numbers: −2, 0, 3.5 and −0.1.
+
+<Solution>
+
+ReLU keeps positive numbers and replaces everything else with zero: the results are 0, 0, 3.5 and 0.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A first layer computes $h = 2x + 1$. A second layer computes $y = 3h - 4$. There is no activation between them. Write $y$ directly in terms of $x$. What does that tell you?
+
+<Solution>
+
+Substitute: $y = 3(2x + 1) - 4 = 6x + 3 - 4 = 6x - 1$.
+
+The two layers together are one straight line, with a weight of 6 and a bias of −1. A single layer could have computed it. The second layer added parameters and no new ability, and the same thing happens with layers of any width.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A small network computes $f(x) = \text{ReLU}(x) - 2\,\text{ReLU}(x - 1) + \text{ReLU}(x - 2)$. Work out $f$ at $x = 0$, 1, 2 and 3, and describe the shape.
+
+<Solution>
+
+- $f(0) = 0 - 0 + 0 = 0$
+- $f(1) = 1 - 0 + 0 = 1$
+- $f(2) = 2 - 2 + 0 = 0$
+- $f(3) = 3 - 4 + 1 = 0$
+
+The function is zero up to 0, rises to a peak of 1 at $x = 1$, falls back to zero at $x = 2$ and stays there. Three hinges make a tent. A row of such tents, of different heights, can follow any curve as closely as you like. That is the idea behind the figure with the sleep data.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+The step function outputs 1 for positive inputs and 0 otherwise. It is not a straight line, so it prevents layers from collapsing. Why is it still a poor activation for a network trained by gradient descent?
+
+<Solution>
+
+Its slope is zero everywhere, except at the jump, where it has no slope at all. Gradient descent changes each weight in proportion to how the loss responds to a small change in that weight. With a step function, a small change in a weight almost never changes the output, so the response is zero and the weight is never updated. The network cannot learn.
+
+ReLU has a slope of 1 for every positive input, so the signal for learning passes through. The sigmoid and tanh have useful slopes near zero and nearly none far from it, which is why very deep networks built on them train slowly.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Wide or deep?
@@ -210,3 +286,9 @@ A ReLU neuron whose input is negative for every example outputs zero for all of 
 - D. Smilkov and S. Carter, [TensorFlow Playground](https://playground.tensorflow.org), for experimenting with hidden layers in the browser.
 
 </References>
+
+<NextUp>
+
+The network can now draw curved boundaries. Its weights are still random, so what it draws is noise. Before it can improve, it needs a number that says how wrong it is. The next chapter builds that number.
+
+</NextUp>
