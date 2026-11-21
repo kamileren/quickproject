@@ -5,6 +5,10 @@ export type Part = CollectionEntry<'parts'>;
 
 export const SITE_NAME = 'The Book of Machine Learning';
 
+/** Where the book's source and companion code live. */
+export const REPO_SLUG = 'kamileren/quickproject';
+export const REPO_BRANCH = 'master';
+
 /** Every chapter in book order. */
 export async function getLectures(): Promise<Lecture[]> {
   const all = await getCollection('lectures');

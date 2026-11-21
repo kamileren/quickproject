@@ -1,0 +1,22 @@
+---
+/**
+ * A link to one of the companion Python files, used inside a sentence:
+ *   The full file is <CodeFile file="ch17_backprop.py" />.
+ * Adds "run it in Colab" when a notebook has been generated for the file.
+ */
+import fs from 'node:fs';
+import { REPO_BRANCH, REPO_SLUG } from '@/lib/book';
+
+interface Props {
+  /** File name inside the code/ folder. */
+  file: string;
+}
+const { file } = Astro.props;
+if (!fs.existsSync(`code/${file}`)) throw new Error(`<CodeFile file="${file}">: code/${file} does not exist`);
+
+const notebook = `code/notebooks/${file.replace(/\.py$/, '.ipynb')}`;
+const source = `https://github.com/${REPO_SLUG}/blob/${REPO_BRANCH}/code/${file}`;
+const colab = fs.existsSync(notebook) ? `https://colab.research.google.com/github/${REPO_SLUG}/blob/${REPO_BRANCH}/${notebook}` : undefined;
+---
+
+<span class="whitespace-nowrap"><a href={source} rel="noopener"><code>code/{file}</code></a></span>{colab && <> (<a href={colab} rel="noopener">run it in Colab</a>)</>}

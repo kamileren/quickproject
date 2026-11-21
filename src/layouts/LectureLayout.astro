@@ -181,6 +181,27 @@ const jsonLd = {
         requestAnimationFrame(update);
       }
     };
+    // A copy button on every code block.
+    for (const pre of article.querySelectorAll('pre')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'copy-code';
+      button.textContent = 'Copy';
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(pre.querySelector('code')?.textContent ?? '');
+          button.textContent = 'Copied';
+        } catch {
+          button.textContent = 'Press Ctrl+C';
+        }
+        setTimeout(() => (button.textContent = 'Copy'), 1600);
+      });
+      const frame = document.createElement('div');
+      frame.className = 'code-frame';
+      pre.replaceWith(frame);
+      frame.append(pre, button);
+    }
+
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll);
     update();

@@ -33,3 +33,9 @@ chapter's interactive figures load.
 The structure of the code (a class per layer, with `forward` and later `backward` methods) follows
 *Neural Networks from Scratch in Python* by Harrison Kinsley and Daniel Kukieła, whose code is MIT
 licensed. See `LICENSE-NNFS`. The explanations in the book chapters are original.
+
+## Notebooks
+
+`notebooks/` holds the same files as Jupyter notebooks, so each chapter can offer an "open in Colab"
+link. They are generated: after editing a `.py` file, run `npm run notebooks`. `npm run check` fails
+if a notebook is out of date.

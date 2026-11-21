@@ -208,6 +208,42 @@ body {
     overflow-x: auto;
   }
 
+  .book-prose .code-frame {
+    position: relative;
+  }
+  .book-prose .copy-code {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 0.25rem;
+    background: #fff;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .book-prose .code-frame:hover .copy-code,
+  .book-prose .copy-code:focus-visible {
+    opacity: 1;
+  }
+  .book-prose .copy-code:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  /* Touch screens have no hover, so the button is always there. */
+  @media (hover: none) {
+    .book-prose .copy-code {
+      opacity: 1;
+    }
+  }
+
   .book-prose table {
     width: 100%;
     margin: 2rem 0;

@@ -232,7 +232,7 @@ Navigation and pop-ins:
 - [x] 33c. Section list that stays beside the text and highlights the current section; a progress bar on small screens.
 - [x] 33d. Reading progress saved in the browser: ticks on the contents page, "continue reading", remembered checkpoints.
 - [x] 33e. Search (Pagefind).
-- [ ] 33f. Code blocks get a copy button; companion files link to GitHub and open in Colab.
+- [x] 33f. Code blocks get a copy button; companion files link to GitHub and open in Colab.
 
 Figures:
 

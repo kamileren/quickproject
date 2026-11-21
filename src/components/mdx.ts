@@ -10,6 +10,7 @@ import MarginNote from './prose/MarginNote.astro';
 import KeyTakeaways from './prose/KeyTakeaways.astro';
 import GoingFurther from './prose/GoingFurther.astro';
 import References from './prose/References.astro';
+import CodeFile from './prose/CodeFile.astro';
 import Term from './popins/Term.astro';
 import Symbol from './popins/Symbol.astro';
 import Checkpoint from './popins/Checkpoint.astro';
@@ -25,6 +26,7 @@ export const mdxComponents = {
   KeyTakeaways,
   GoingFurther,
   References,
+  CodeFile,
   Term,
   Symbol,
   Checkpoint,
