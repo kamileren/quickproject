@@ -4,5 +4,187 @@ number: "21"
 part: networks
 order: 23
 summary: "Training, evaluating, saving, and using a network on images."
-status: draft
+question: "Does the network we built on toy spirals work on real pictures?"
+dataset: fashion-mnist
+minutes: 18
+status: ready
+prerequisites: [one-network-many-jobs]
 ---
+
+import PixelInspector from '@/components/figures/ch21/PixelInspector';
+import TrainingLog from '@/components/figures/ch21/TrainingLog';
+import ConfusionGrid from '@/components/figures/ch21/ConfusionGrid';
+import Classifier from '@/components/figures/ch21/Classifier';
+
+Seven chapters have gone into building a network piece by piece, always on a few hundred invented points. This chapter is the test. We take the same pieces, change nothing about how they work, and point them at 70,000 photographs of clothing.
+
+The network in the figures below is real. It was trained by the code at the end of this chapter, and your browser is running its forward pass.
+
+## Pictures are numbers
+
+The dataset is called Fashion-MNIST. It holds 70,000 small greyscale photographs of clothing, each labelled with one of ten kinds: T-shirt, trouser, pullover, dress, coat, sandal, shirt, sneaker, bag and ankle boot. Sixty thousand are for training and ten thousand are held back for testing.
+
+To a network a picture is not a picture. Each image is a grid of 28 by 28 squares, and each square, a <Term id="pixel">pixel</Term>, is one number from 0 to 255 saying how bright it is.
+
+<Figure
+  title="An image, one number at a time"
+  caption="Sixteen of the test images. The large one is the selected image, enlarged so that single pixels are visible."
+  try="move over the large image and watch the brightness change between the clothing and the background. Then pick a different image."
+>
+  <PixelInspector client:visible />
+</Figure>
+
+Our dense layers expect a list of features, not a grid. So each image is unrolled, row after row, into one list of $28 \times 28 = 784$ numbers. This is called <Term id="flatten">flattening</Term>. The network will have 784 inputs, one per pixel.
+
+Flattening throws something away: the network is no longer told which pixels were neighbours. It can still learn a great deal, as we are about to see, and the next chapter introduces a kind of layer that keeps the grid.
+
+## Preparing the data
+
+Two small steps come before any training, and both matter more than they look.
+
+**Scale the inputs.** Pixel values run from 0 to 255. Fed in raw, they would make the first layer's sums enormous and the first gradients wild. Subtracting 127.5 and dividing by 127.5 maps every pixel into the range −1 to 1, where the weights' starting values and the learning rate behave as intended.
+
+$$
+\text{scaled} = \frac{\text{pixel} - 127.5}{127.5}
+$$
+
+**Shuffle the examples.** Datasets are often stored in order: all the T-shirts, then all the trousers. A network fed batches of only one class at a time would lurch toward predicting that class, then the next, and learn nothing stable. Shuffling makes every batch a fair mixture. We reshuffle before every pass through the data.
+
+<Checkpoint
+  question="Whatever scaling is applied to the training images, what must be done to a new image before the trained network sees it?"
+  options={[
+    { text: 'Nothing. Scaling is only for training', why: 'The network learned weights that expect inputs between −1 and 1. A raw image with values up to 255 would produce nonsense.' },
+    { text: 'Exactly the same scaling', correct: true, why: 'The network knows nothing about pixels, only about numbers in the range it was trained on. Every input, for ever, must be prepared the same way.' },
+    { text: 'A new scaling worked out from that image alone', why: 'That would map different images differently, so the same brightness would mean different things. Use the scaling fixed at training time.' },
+  ]}
+/>
+
+## Training in batches
+
+With 60,000 images we can no longer compute the gradient on all the data for every step, as we did on the spiral. Instead the data is cut into mini-batches, as the gradient descent chapter described. The <Term id="batch-size">batch size</Term> here is 128.
+
+| | |
+|---|---|
+| Training images | 60,000 |
+| Batch size | 128 |
+| Steps in one epoch | 60,000 ÷ 128, rounded up = 469 |
+| Epochs | 5 |
+| Total training steps | 2,345 |
+
+The network is the one from the last four chapters, only larger: 784 inputs, two hidden layers of 64 ReLU neurons, and 10 softmax outputs. That is 55,050 learnable numbers. The optimizer is Adam with a learning rate of 0.001.
+
+<Figure
+  title="The real training run"
+  caption="The grey line is the loss on individual batches. The orange line is the average over each epoch. This is a recording of the run that produced the network on this page."
+  try="compare the jagged grey line with the smooth orange one. Then read down the test accuracy column."
+>
+  <TrainingLog client:visible />
+</Figure>
+
+The loss on single batches is jagged, because each batch is a different random handful of images. Its trend is unmistakable. Before training the network scored 8% on the test set, no better than guessing among ten classes. After one pass through the data it scored 84.6%, and after five, 86.9%.
+
+Nothing was added to achieve this. The layers, the loss, the backward pass and the optimizer are the ones built on spiral data. The same machinery scales from 300 points to 60,000 images without change.
+
+## How good is it?
+
+An accuracy of 86.9% says how often the network is right. It does not say where it goes wrong, and for that we need the confusion matrix from the chapter on measuring classifiers, now with ten classes instead of two.
+
+<Figure
+  title="Which clothes get mixed up"
+  caption="Computed live from 500 test images, 50 of each kind. Dark cells on the diagonal are correct answers; orange cells are mistakes."
+  try="click the orange cells to see the images behind each kind of mistake. Then click a dark cell on the diagonal for comparison."
+>
+  <ConfusionGrid client:visible />
+</Figure>
+
+The mistakes are not spread evenly. Trousers, sandals and sneakers are almost always right: 49 out of 50 each. Shirts are right only 33 times out of 50, and when they are wrong they are called T-shirts, pullovers or coats. The single commonest error is a T-shirt called a shirt.
+
+These are the mistakes a person would make with a blurry 28-pixel image. The network is not confusing a boot with a bag. It struggles exactly where the classes really do look alike, which is some evidence that it has learned something sensible about shape.
+
+## Using the network
+
+Training is over. What remains is the reason for all of it: using the network on images it has never seen. This is called <Term id="inference">inference</Term>, and it needs only a forward pass. No loss, no backward pass, no updates.
+
+<Figure
+  title="The trained network, running in your browser"
+  caption="Each bar is the network's probability for one class. The dark bar is its answer."
+  try="step through a dozen images. Then press the mistake button a few times and look at how confident the network was each time it was wrong."
+>
+  <Classifier client:visible />
+</Figure>
+
+It is worth being clear about what the "trained network" is. It is 55,050 numbers. Your browser downloaded them as a 220-kilobyte file, placed them into three weight matrices and three bias vectors, and multiplied. Saving a model means writing those numbers to a file. Loading it means reading them back into a network of the same shape. The architecture is the recipe, and the weights are everything that was learned.
+
+The code at the end of the chapter demonstrates this directly. A freshly created network of the same shape scores 5% on the test set. After the saved numbers are copied into it, with no training at all, it scores 86.9%.
+
+<Checkpoint
+  question="You want to send a trained network to a colleague so they can use it. What do they need?"
+  options={[
+    { text: 'The training data', why: 'The data was needed to find the weights. Once the weights exist, the data is not needed to use them.' },
+    { text: 'The architecture and the saved weights', correct: true, why: 'The layer sizes and activations say how to arrange the numbers, and the weights are the numbers. Together they are the whole model. They also need to know how inputs were scaled.' },
+    { text: 'Only the final loss and accuracy', why: 'Those describe how well the network did. They contain nothing that can make a prediction.' },
+  ]}
+/>
+
+## In code
+
+The complete program is `code/ch21_fashion.py`. It wires the classes from the previous chapters into a `Model`, and its training loop is the one from the backpropagation chapter with a loop over batches added.
+
+```python
+def scale(images):
+    return (images.astype(np.float32) - 127.5) / 127.5        # 0..255 becomes -1..1
+
+model = Model(rng)                                             # 784 -> 64 -> 64 -> 10
+optimizer = Optimizer_Adam(learning_rate=0.001, decay=1e-4)
+
+for epoch in range(1, epochs + 1):
+    order = rng.permutation(len(X_train))                      # a fresh shuffle every epoch
+    for start in range(0, len(order), batch_size):
+        batch = order[start:start + batch_size]
+        loss = model.forward(X_train[batch], y_train[batch])   # forward pass and loss
+        model.backward(y_train[batch])                         # backward pass
+        optimizer.update(model.dense)                          # update
+
+    print(epoch, model.evaluate(X_test, y_test))               # accuracy on the held-out test set
+
+saved = model.get_parameters()                                 # saving: just the numbers
+fresh = Model(np.random.default_rng(123))
+fresh.set_parameters(saved)                                    # loading: put them back
+print(model.predict(X_test[:5]))                               # inference: forward pass only
+```
+
+Running it prints the table in the training figure: 84.6% after the first epoch and 86.9% after the fifth.
+
+<KeyTakeaways>
+
+- An image is a grid of numbers. A dense network reads it **flattened** into one list: 784 inputs for 28 × 28 pixels.
+- **Scale** inputs to a small range and **shuffle** before every epoch. New inputs must be scaled the same way.
+- Large datasets are trained in **mini-batches**: here 469 steps per epoch.
+- A **confusion matrix** shows which classes are mixed up, which accuracy alone hides.
+- A trained model is its **architecture plus its weights**. **Inference** is a forward pass.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Where this part of the book ends
+
+You have now built, from a single weighted sum, everything inside a working neural network: layers, activations, a loss, backpropagation, optimizers, regularization and three kinds of output. Modern networks are far larger and use more specialised layers, but they are trained by this loop. The two chapters that follow introduce two of those layers: one made for images, and one made for sequences such as text.
+
+### Doing better than 87%
+
+This network ignores the fact that an image is a grid. Convolutional layers, which look at small patches and reuse the same weights everywhere, typically pass 90% on this dataset. Training longer, adding dropout, or making the hidden layers wider also helps a little. The remaining mistakes, shirts against T-shirts and coats, are hard for people too.
+
+### Frameworks
+
+In practice nobody writes backward passes by hand. Libraries such as PyTorch provide the layers, compute the gradients automatically and run on graphics processors. Having built each piece once, you know what every line of such a program is doing.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 18 to 22, [nnfs.io](https://nnfs.io).
+- H. Xiao, K. Rasul and R. Vollgraf, [Fashion-MNIST: a novel image dataset for benchmarking machine learning algorithms](https://arxiv.org/abs/1708.07747), 2017. The dataset is at [github.com/zalandoresearch/fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) under the MIT licence.
+- A. Zhang, Z. C. Lipton, M. Li and A. J. Smola, *Dive into Deep Learning*, chapter 4 (image classification). Free at [d2l.ai](https://d2l.ai).
+
+</References>

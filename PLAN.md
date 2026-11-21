@@ -221,7 +221,7 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 - [x] 30. Chapter 18.
 - [x] 31. Chapter 19.
 - [x] 32. Chapter 20.
-- [ ] 33. Chapter 21, with the Fashion-MNIST subset and pretrained weights. Owner reviews.
+- [x] 33. Chapter 21, with the Fashion-MNIST subset and pretrained weights. Owner reviews.
 
 ### Wave 4: remaining models
 

@@ -373,3 +373,15 @@
 - id: binary-cross-entropy
   term: Binary cross-entropy
   definition: The cross-entropy loss for a yes/no answer. It is the log loss from logistic regression under another name.
+- id: pixel
+  term: Pixel
+  definition: One small square of an image. In a greyscale image each pixel is a single number giving its brightness.
+- id: flatten
+  term: Flatten
+  definition: To unroll a grid of numbers, such as an image, into one long list so that a dense layer can read it.
+- id: inference
+  term: Inference
+  definition: Using a trained model to make predictions. Only a forward pass is needed, with no loss and no weight updates.
+- id: batch-size
+  term: Batch size
+  definition: The number of examples used for each training step.
