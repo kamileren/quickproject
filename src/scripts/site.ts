@@ -121,6 +121,29 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ---- The top bar ------------------------------------------------------------
+
+// On a phone the bar slides away while the reader scrolls down and returns as
+// soon as they scroll up, so it never takes space from the text.
+const siteBar = document.getElementById('site-bar');
+if (siteBar) {
+  let lastY = window.scrollY;
+  addEventListener(
+    'scroll',
+    () => {
+      const y = window.scrollY;
+      const goingDown = y > lastY + 4;
+      const goingUp = y < lastY - 4;
+      if (goingDown && y > 240) siteBar.classList.add('is-away');
+      else if (goingUp || y <= 240) siteBar.classList.remove('is-away');
+      if (goingDown || goingUp) lastY = y;
+    },
+    { passive: true },
+  );
+  // Anything that takes focus inside the bar brings it back.
+  siteBar.addEventListener('focusin', () => siteBar.classList.remove('is-away'));
+}
+
 // ---- Offline ----------------------------------------------------------------
 
 // Pages the reader has opened stay readable without a connection.

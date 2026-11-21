@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import SiteNav from '@/components/SiteNav.astro';
 import { SITE_NAME } from '@/lib/book';
 import { longDate } from '@/lib/git';
 
@@ -10,9 +9,8 @@ const iso = (date: string) => date.slice(0, 10);
 ---
 
 <BaseLayout title={`What changed — ${SITE_NAME}`} description="New chapters and features in the book, newest first.">
-  <main class="px-6 pt-16 pb-32">
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
-      <SiteNav />
       <header class="mb-12">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>

@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import SiteNav from '@/components/SiteNav.astro';
 import { SITE_NAME } from '@/lib/book';
 
 // Kept in the order of the file, which follows the order the book introduces them.
@@ -9,10 +8,9 @@ const symbols = await getCollection('notation');
 const description = 'Every symbol the book uses and what it stands for, in one table.';
 ---
 
-<BaseLayout title={`Notation — ${SITE_NAME}`} description={description}>
-  <main class="px-6 pt-16 pb-32">
+<BaseLayout current="notation" title={`Notation — ${SITE_NAME}`} description={description}>
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
-      <SiteNav current="notation" />
       <header class="mb-12">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>

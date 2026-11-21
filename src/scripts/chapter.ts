@@ -3,7 +3,7 @@
  * sections and figures, exercise ticks, formula helpers and printing.
  */
 import { loadProgress, markRead, noteOpened, noteSection, setExerciseDone } from '@/lib/progress';
-import { copy } from './site';
+import { copy, toast } from './site';
 
 const article = document.querySelector<HTMLElement>('article[data-chapter-id]');
 if (article) {
@@ -18,6 +18,7 @@ if (article) {
   if (end) {
     const seen = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) {
+        if (!progress.read[chapterId]) toast('Chapter finished ✓');
         markRead(chapterId);
         seen.disconnect();
       }

@@ -3,6 +3,7 @@ import '@/styles/global.css';
 import 'katex/dist/katex.min.css';
 import { SITE_NAME } from '@/lib/book';
 import SiteChrome from '@/components/SiteChrome.astro';
+import SiteBar from '@/components/SiteBar.astro';
 import { PREFS_KEY } from '@/lib/prefs';
 
 interface Props {
@@ -16,9 +17,17 @@ interface Props {
   shareImage?: string;
   /** Set to false on the search page, which has its own search box. */
   searchWindow?: boolean;
+  /** The bar at the top. The cover page goes without. */
+  bar?: boolean;
+  /** Which link in the bar is this page. */
+  current?: 'glossary' | 'notation' | 'search';
+  /** Shown in the bar, e.g. the chapter being read. */
+  barTitle?: string;
+  /** The page has a section list the bar should offer (chapter pages). */
+  sections?: boolean;
 }
 
-const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true } = Astro.props;
+const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true, bar = true, current, barTitle, sections = false } = Astro.props;
 const image = new URL(`/og/${shareImage}.png`, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
@@ -65,7 +74,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body class="min-h-screen">
-    <slot />
+    <a href="#main" class="skip-link">Skip to the text</a>
+    {bar && <SiteBar current={current} title={barTitle} sections={sections} />}
+    <div id="main"><slot /></div>
     <SiteChrome searchWindow={searchWindow} />
   </body>
 </html>

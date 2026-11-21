@@ -45,17 +45,17 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={`${SITE_NAME} — A Free Interactive ML Textbook`} description={description} jsonLd={jsonLd}>
-  <main class="px-6 pt-20 pb-32">
+<BaseLayout title={`${SITE_NAME} — A Free Interactive ML Textbook`} description={description} jsonLd={jsonLd} bar={false}>
+  <main class="px-5 pt-14 pb-24 sm:px-6 sm:pt-20 sm:pb-32">
     <div class="mx-auto max-w-4xl">
-      <header class="mb-24 text-center">
+      <header class="mb-16 text-center sm:mb-24">
         <div class="micro-label mb-6 tracking-[0.5em] text-orange-600">Volume I // First Edition</div>
-        <h1 class="display mb-10 text-6xl leading-[0.9] sm:text-7xl md:text-8xl">
+        <h1 class="display mb-8 text-[clamp(2.6rem,12.5vw,3.75rem)] leading-[0.95] sm:mb-10 sm:text-7xl sm:leading-[0.9] md:text-8xl">
           The Book of <br />
           <span class="italic">Machine Learning.</span>
         </h1>
         <div class="mx-auto max-w-xl">
-          <p class="mb-10 text-xl leading-relaxed font-light text-stone-500 italic">
+          <p class="mb-8 text-lg leading-relaxed font-light text-stone-500 italic sm:mb-10 sm:text-xl">
             Machine learning from first principles, one idea at a time. Every chapter starts with a question, works
             through a real example, and gives you something to try.
           </p>
@@ -82,7 +82,7 @@ const jsonLd = {
         </div>
       </header>
 
-      <section aria-labelledby="paths" class="mb-24">
+      <section aria-labelledby="paths" class="mb-16 sm:mb-24">
         <h2 id="paths" class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
           Where to start
         </h2>
@@ -101,8 +101,9 @@ const jsonLd = {
         </div>
       </section>
 
-      <div class="grid gap-16 md:grid-cols-12">
+      <div class="grid gap-12 md:grid-cols-12 md:gap-16">
         <div class="md:col-span-4">
+          <div class="md:sticky md:top-10">
           <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
             Preface
           </h2>
@@ -115,6 +116,27 @@ const jsonLd = {
             A chapter takes about a quarter of an hour to read, and longer if you play with the figures, which you
             should. Each one ends with exercises and their worked solutions.
           </p>
+
+          <section aria-labelledby="progress-title" class="mt-8 rounded border border-stone-200 p-4 font-sans">
+            <h2 id="progress-title" class="micro-label mb-2 text-stone-900">Your progress</h2>
+            <div class="mb-3 h-1.5 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
+              <div id="progress-bar" class="h-full w-0 rounded-full bg-orange-600 transition-[width] duration-500"></div>
+            </div>
+            <p id="progress-count" class="text-[13px] leading-relaxed text-stone-600">Nothing read yet. Chapters you finish are ticked in the contents.</p>
+            <p class="mt-1 text-[13px]">
+              <a id="review-link" hidden href="/review/" class="text-orange-700 underline decoration-orange-300 underline-offset-2 hover:text-orange-900"></a>
+            </p>
+            <p class="mt-3 text-[11px] leading-relaxed text-stone-400">Kept in this browser only. Save it to a file to carry it to another device.</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button id="progress-export" type="button" class="btn btn-secondary btn-small">Save to a file</button>
+              <label class="btn btn-secondary btn-small">
+                Load a file
+                <input id="progress-import" type="file" accept="application/json,.json" class="sr-only" />
+              </label>
+              <button id="progress-clear" type="button" hidden class="btn btn-small cursor-pointer text-stone-500 hover:text-red-600">Clear</button>
+            </div>
+          </section>
+          </div>
         </div>
 
         <nav id="contents" class="md:col-span-8" aria-label="Table of contents">
@@ -125,8 +147,8 @@ const jsonLd = {
             {
               parts.map((part) => (
                 <section>
-                  <h3 class="micro-label mb-2 tracking-widest text-orange-600">
-                    <a href={`/parts/${part.id}/`} class="hover:text-orange-800">
+                  <h3 class="micro-label mb-1 tracking-widest text-orange-600">
+                    <a href={`/parts/${part.id}/`} class="inline-block py-1.5 hover:text-orange-800">
                       {part.data.label}: {part.data.title} <span aria-hidden="true">›</span>
                     </a>
                   </h3>
@@ -146,7 +168,10 @@ const jsonLd = {
                               </span>
                             </span>
                             <span class="flex items-center gap-3">
-                              <span class="toc-status text-[9px] font-bold tracking-widest uppercase">
+                              {ready && l.data.minutes && (
+                                <span class="hidden font-mono text-[10px] text-stone-400 sm:inline">{l.data.minutes} min</span>
+                              )}
+                              <span class="toc-status w-10 text-right text-[9px] font-bold tracking-widest uppercase">
                                 {ready ? 'Read' : 'Soon'}
                               </span>
                               <span aria-hidden="true" class={ready ? 'text-orange-600' : 'text-stone-200'}>
@@ -176,23 +201,6 @@ const jsonLd = {
               ))
             }
           </div>
-          <div class="mt-8 font-sans text-xs leading-6 text-stone-500">
-            <p id="progress-note" hidden>
-              <span id="progress-count"></span>
-              <a id="review-link" hidden href="/review/" class="underline decoration-orange-300 underline-offset-2 hover:text-orange-700"></a>
-            </p>
-            <p>
-              Progress is kept in this browser only.
-              <button id="progress-export" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">Save it to a file</button>
-              to move it to another device, or
-              <label class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
-                load a saved file<input id="progress-import" type="file" accept="application/json,.json" class="sr-only" />
-              </label>.
-              <button id="progress-clear" type="button" hidden class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
-                Clear progress
-              </button>
-            </p>
-          </div>
         </nav>
       </div>
     </div>
@@ -210,7 +218,7 @@ const jsonLd = {
     if (!progress.read[row.dataset.chapterId ?? '']) continue;
     done++;
     const status = row.querySelector('.toc-status');
-    if (status) status.textContent = 'Done ✓';
+    if (status) status.textContent = '✓ Done';
     row.classList.add('is-done');
   }
 
@@ -223,20 +231,19 @@ const jsonLd = {
     startText.textContent = `Continue: ${last.title}`;
   }
 
-  const note = document.getElementById('progress-note');
-  const count = document.getElementById('progress-count');
   const exercisesDone = Object.values(progress.exercises).reduce((sum, list) => sum + list.length, 0);
-  if ((done > 0 || exercisesDone > 0) && note && count) {
+  const count = document.getElementById('progress-count');
+  const fill = document.getElementById('progress-bar');
+  if ((done > 0 || exercisesDone > 0) && count) {
     count.textContent =
-      `You have finished ${done} of ${rows.length} chapters` + (exercisesDone > 0 ? ` and ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'}. ` : '. ');
-    note.hidden = false;
+      `${done} of ${rows.length} chapters finished` + (exercisesDone > 0 ? `, ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'} done.` : '.');
   }
+  if (fill) fill.style.width = `${(100 * done) / Math.max(1, rows.length)}%`;
   const toReview = Object.values(progress.missed).filter((m) => !m.resolved).length;
   const review = document.getElementById('review-link');
-  if (toReview > 0 && review && note) {
-    review.textContent = `${toReview} checkpoint ${toReview === 1 ? 'question' : 'questions'} to review`;
+  if (toReview > 0 && review) {
+    review.textContent = `${toReview} checkpoint ${toReview === 1 ? 'question' : 'questions'} to review →`;
     review.hidden = false;
-    note.hidden = false;
   }
 
   const clear = document.getElementById('progress-clear');

@@ -27,7 +27,7 @@ html {
   --prose-scale: 1;
   background: #fff;
   scroll-behavior: smooth;
-  scroll-padding-top: 2rem;
+  scroll-padding-top: 4.5rem;
 }
 
 body {
@@ -516,7 +516,7 @@ html:has(dialog[open]) {
 }
 /* Headings and figures reached by a link stop clear of the top edge. */
 .book-prose :is(h2, figure, .exercise) {
-  scroll-margin-top: 1.5rem;
+  scroll-margin-top: 4.5rem;
 }
 
 .book-prose .katex-display {
@@ -729,5 +729,102 @@ html.has-expanded-figure {
     margin-top: 4vh;
     max-height: 90vh;
     padding: 1.25rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The bar at the top, and other finishing touches.
+   --------------------------------------------------------------------------- */
+.site-bar {
+  transition: transform 0.25s ease;
+}
+/* Only phones hide the bar while reading; on larger screens it costs nothing to keep. */
+@media (max-width: 767px) {
+  .site-bar.is-away {
+    transform: translateY(-100%);
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  z-index: 70;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  background: var(--ink);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: #fff;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Previous and next chapter. */
+.chapter-card {
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.chapter-card:hover {
+  border-color: var(--ink);
+  background: var(--wash);
+}
+
+/* Buttons respond to a press. */
+.btn:active:not(:disabled),
+.float-button:active,
+.pref-option:active {
+  transform: translateY(1px);
+}
+
+/* Folded blocks open with a short fade. */
+.fold[open] > :not(summary) {
+  animation: fold-in 0.2s ease;
+}
+@keyframes fold-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+/* Windows fade in. */
+dialog.site-dialog[open] {
+  animation: dialog-in 0.16s ease;
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Long words and addresses never push a phone page sideways. */
+.book-prose {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  /* The opening question and the takeaways sit a little smaller on a phone. */
+  .book-prose > p,
+  .book-prose > ul,
+  .book-prose > ol {
+    margin-bottom: 1.4rem;
+  }
+  .takeaways {
+    margin-inline: -0.5rem;
+  }
+  .book-prose pre {
+    margin-inline: -0.75rem;
+    padding: 1rem;
+    border-radius: 0;
+    border-inline: 0;
+    font-size: 0.75rem;
+  }
+  .book-prose .code-frame .copy-code {
+    right: 0;
   }
 }

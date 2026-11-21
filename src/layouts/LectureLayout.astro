@@ -4,7 +4,6 @@ import BaseLayout from './BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
 import SectionList from '@/components/SectionList.astro';
 import { lastChanged, longDate } from '@/lib/git';
-import SiteNav from '@/components/SiteNav.astro';
 import Pop from '@/components/popins/Pop';
 import { getReadyLectures } from '@/lib/book';
 import { chapterLabel, chapterName, chapterUrl, REPO_BRANCH, REPO_SLUG, SITE_NAME, type Lecture, type Part } from '@/lib/book';
@@ -55,13 +54,12 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={`${title} — ${SITE_NAME}`} description={summary} jsonLd={jsonLd} shareImage={lecture.id}>
-  <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600"></div>
-  <main id="top" class="px-6 pt-10 pb-24 sm:pt-16 sm:pb-32">
+<BaseLayout title={`${title} — ${SITE_NAME}`} description={summary} jsonLd={jsonLd} shareImage={lecture.id} barTitle={`${number.includes('.') ? 'Toolkit' : 'Ch.'} ${number} · ${title}`} sections>
+  <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600" data-print-hide></div>
+  <main id="top" class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="relative mx-auto max-w-3xl">
-      <SiteNav />
 
-      <header class="mb-16">
+      <header class="mb-10 sm:mb-16">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>
           <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">
@@ -69,7 +67,7 @@ const jsonLd = {
           </div>
         </div>
         <h1 data-pagefind-meta="title" class="display mb-8 text-[clamp(2rem,9.5vw,3rem)] leading-[1.05] break-words hyphens-auto sm:text-6xl md:text-7xl">{title}{/[?!.]$/.test(title) ? '' : '.'}</h1>
-        <p class="max-w-2xl text-2xl leading-relaxed font-light text-stone-500 italic">{question ?? summary}</p>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic sm:text-2xl">{question ?? summary}</p>
 
         <dl class="mt-8 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] text-stone-500">
           {
@@ -123,7 +121,7 @@ const jsonLd = {
       {
         sections.length > 0 && (
           <nav aria-label="In this chapter" class="mb-12 min-[1280px]:absolute min-[1280px]:top-0 min-[1280px]:right-full min-[1280px]:mr-10 min-[1280px]:mb-0 min-[1280px]:h-full min-[1280px]:w-44 min-[1500px]:mr-16 min-[1500px]:w-48">
-            <div class="min-[1280px]:sticky min-[1280px]:top-10">
+            <div class="min-[1280px]:sticky min-[1280px]:top-20">
               <div class="micro-label mb-3 text-stone-400">In this chapter</div>
               <SectionList links={sectionLinks} />
             </div>
@@ -145,10 +143,10 @@ const jsonLd = {
         <a href="/changelog/" class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">What changed</a>
       </p>
 
-      <nav id="chapter-end" aria-label="Chapters" class="mt-10 grid gap-4 border-t-2 border-stone-900 pt-8 font-sans sm:grid-cols-2">
+      <nav id="chapter-end" aria-label="Chapters" class="mt-10 grid gap-3 border-t-2 border-stone-900 pt-6 font-sans sm:grid-cols-2">
         {
           prev ? (
-            <a href={chapterUrl(prev)} rel="prev" class="group block">
+            <a href={chapterUrl(prev)} rel="prev" class="chapter-card group block">
               <div class="micro-label mb-1 text-stone-400">‹ Previous</div>
               <div class="display text-lg group-hover:text-orange-700">{prev.data.title}</div>
             </a>
@@ -158,12 +156,12 @@ const jsonLd = {
         }
         {
           next ? (
-            <a href={chapterUrl(next)} rel="next" class="group block sm:text-right">
+            <a href={chapterUrl(next)} rel="next" class="chapter-card is-next group block sm:text-right">
               <div class="micro-label mb-1 text-stone-400">Next ›</div>
               <div class="display text-lg group-hover:text-orange-700">{next.data.title}</div>
             </a>
           ) : (
-            <a href="/" class="group block sm:text-right">
+            <a href="/" class="chapter-card group block sm:text-right">
               <div class="micro-label mb-1 text-stone-400">More chapters are on the way</div>
               <div class="display text-lg group-hover:text-orange-700">Back to contents</div>
             </a>
@@ -174,15 +172,6 @@ const jsonLd = {
   </main>
 
   {/* On screens too narrow for the side list: a button that pulls the list up, and one that goes to the top. */}
-  <button
-    type="button"
-    data-open="sections-window"
-    data-print-hide
-    aria-label="Sections of this chapter, search and settings"
-    class="float-button fixed right-3 bottom-3 z-30 min-[1280px]:hidden"
-  >
-    ≡
-  </button>
   <dialog id="sections-window" aria-label="In this chapter" class="site-dialog w-[min(26rem,calc(100vw-1.5rem))]">
     <div class="mb-4 flex items-center justify-between">
       <span class="micro-label text-stone-900">In this chapter</span>

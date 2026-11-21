@@ -1,14 +1,12 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import SiteNav from '@/components/SiteNav.astro';
 import SearchBox from '@/components/SearchBox.astro';
 import { SITE_NAME } from '@/lib/book';
 ---
 
-<BaseLayout title={`Search — ${SITE_NAME}`} description="Search every chapter of the book and the glossary." noindex searchWindow={false}>
-  <main class="px-6 pt-16 pb-32">
+<BaseLayout current="search" title={`Search — ${SITE_NAME}`} description="Search every chapter of the book and the glossary." noindex searchWindow={false}>
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
-      <SiteNav current="search" />
       <header class="mb-8">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>

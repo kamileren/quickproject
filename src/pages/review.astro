@@ -4,14 +4,12 @@
  * The questions are kept in the reader's browser, so this page is filled in there.
  */
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import SiteNav from '@/components/SiteNav.astro';
 import { SITE_NAME } from '@/lib/book';
 ---
 
 <BaseLayout title={`Review — ${SITE_NAME}`} description="The checkpoint questions you missed, ready to try again." noindex>
-  <main class="px-6 pt-16 pb-32">
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
-      <SiteNav />
       <header class="mb-12">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>

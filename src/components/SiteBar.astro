@@ -1,0 +1,81 @@
+---
+/**
+ * The bar that stays at the top of every page except the cover.
+ * Wide screens show the links; narrow ones fold them into a menu.
+ * On a phone it slides away while reading down and returns on the way up
+ * (see src/scripts/site.ts).
+ */
+interface Props {
+  /** Which link is the current page. */
+  current?: 'glossary' | 'notation' | 'search';
+  /** Shown in the middle of the bar, e.g. the chapter being read. */
+  title?: string;
+  /** Show the button that opens the chapter's section list (chapter pages, narrow screens). */
+  sections?: boolean;
+}
+const { current, title, sections = false } = Astro.props;
+const links = [
+  { id: 'contents', label: 'Contents', href: '/#contents' },
+  { id: 'glossary', label: 'Glossary', href: '/glossary/' },
+  { id: 'notation', label: 'Notation', href: '/notation/' },
+];
+const iconButton = 'grid h-10 w-10 cursor-pointer place-items-center rounded text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900';
+---
+
+<header id="site-bar" class="site-bar sticky top-0 z-30 border-b border-stone-200/80 bg-white/90 backdrop-blur" data-print-hide>
+  <nav aria-label="Site" class="mx-auto flex h-12 max-w-6xl items-center gap-2 px-3 font-sans text-sm text-stone-500 sm:px-6">
+    <a href="/" class="flex shrink-0 items-center gap-2 rounded px-1 py-2 font-serif font-bold text-stone-900 transition-colors hover:text-orange-700" aria-label="The Book of Machine Learning: home">
+      <span aria-hidden="true" class="grid h-6 w-6 place-items-center rounded bg-stone-900 font-serif text-sm text-white italic">B</span>
+      <span class:list={[title ? 'hidden lg:inline' : 'inline']}>The Book of ML</span>
+    </a>
+
+    {
+      title && (
+        <span class="min-w-0 flex-1 truncate border-l border-stone-200 pl-3 text-[13px] text-stone-500" aria-hidden="true">
+          {title}
+        </span>
+      )
+    }
+    {!title && <span class="flex-1" />}
+
+    <span class="hidden items-center gap-5 md:flex">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            aria-current={current === link.id ? 'page' : undefined}
+            class:list={['transition-colors hover:text-orange-600', current === link.id && 'font-semibold text-stone-900']}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </span>
+
+    <span class="flex shrink-0 items-center md:ml-3">
+      {
+        sections && (
+          <button type="button" data-open="sections-window" class:list={[iconButton, 'min-[1280px]:hidden']} aria-label="Sections of this chapter" title="Sections of this chapter">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <path d="M3 4.5h1M7 4.5h8M3 9h1M7 9h8M3 13.5h1M7 13.5h8" />
+            </svg>
+          </button>
+        )
+      }
+      <a href="/search/" data-open="search-window" class={iconButton} aria-label="Search" title="Search (/)" aria-current={current === 'search' ? 'page' : undefined}>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <circle cx="8" cy="8" r="5" />
+          <path d="m12 12 3.5 3.5" />
+        </svg>
+      </a>
+      <button type="button" data-open="settings-window" class:list={[iconButton, 'font-serif text-base leading-none']} aria-label="Text size and colours" title="Text size and colours (t)">
+        <span aria-hidden="true">A<span class="text-xs">a</span></span>
+      </button>
+      <button type="button" data-open="menu-window" class:list={[iconButton, 'md:hidden']} aria-label="Menu" title="Menu">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 5h12M3 9h12M3 13h12" />
+        </svg>
+      </button>
+    </span>
+  </nav>
+</header>
