@@ -244,8 +244,8 @@ Content:
 
 - [x] 33j. New prose components: `<Exercises>`, `<Pitfall>` (common mistakes), `<NowYouCan>`, a "predict first" checkpoint, and a data box.
 - [x] 33k. Home page "start here", and a short opener page for each part.
-- [ ] 33l. Back-fill Part 0 and Part I (chapters 0.1 to 5): exercises, pitfalls, bridges, back-references.
-- [ ] 33m. Back-fill Part II (chapters 6 to 10), with one more worked example in chapters 6 and 10.
+- [x] 33l. Back-fill Part 0 and Part I (chapters 0.1 to 5): exercises, pitfalls, bridges, back-references.
+- [x] 33m. Back-fill Part II (chapters 6 to 10), with one more worked example in chapters 6 and 10.
 - [ ] 33n. Back-fill Part IV (chapters 14 to 21), with one more worked example in chapters 16 and 17.
 
 Left out on purpose: running Python in the browser, accounts and comments, dark mode.
