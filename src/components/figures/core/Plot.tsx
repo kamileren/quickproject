@@ -230,11 +230,17 @@ export function Dots({ points, r = 4.5, fill = COLORS.ink, title, hollow = false
           stroke={hollow ? fill : '#fff'}
           strokeWidth={hollow ? 2 : 1.5}
         >
-          {title && <title>{title(p, i)}</title>}
+          {/* Pausing the pointer on a dot shows its values. */}
+          <title>{title ? title(p, i) : `${readable(p.x)}, ${readable(p.y)}`}</title>
         </circle>
       ))}
     </g>
   );
+}
+
+/** A number short enough for a tooltip: at most two decimals, no trailing zeros. */
+function readable(value: number): string {
+  return String(+value.toFixed(2));
 }
 
 interface FnLineProps {
@@ -534,6 +540,71 @@ export function Bars({ bars, width = 0.6, fill = COLORS.ink, title }: BarsProps)
   );
 }
 
+/** One cell of a pixel map: a colour as "#rrggbb" and how opaque it is (0 to 1), or null for nothing. */
+export type Cell = { fill: string; opacity: number } | null;
+
+interface PixelMapProps {
+  cols: number;
+  rows: number;
+  /** The cell in column c (left to right) and row r (bottom to top). */
+  cell: (c: number, r: number) => Cell;
+  /** Change this when the cells change, so the picture is redrawn. */
+  version: unknown;
+  opacity?: number;
+}
+
+/**
+ * Fills the plot with a grid of coloured cells, drawn as one small picture
+ * stretched over the plot. Thousands of separate rectangles would do the same
+ * job but make the page many times heavier.
+ *
+ * The picture is painted in the browser, so it appears once the figure wakes up.
+ */
+export function PixelMap({ cols, rows, cell, version, opacity = 1 }: PixelMapProps) {
+  const { sx, sy, xDomain, yDomain } = usePlot();
+  const [href, setHref] = useState<string>();
+
+  useEffect(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = cols;
+    canvas.height = rows;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const image = ctx.createImageData(cols, rows);
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        const value = cell(c, r);
+        if (!value) continue;
+        const rgb = parseInt(value.fill.slice(1), 16);
+        const at = ((rows - 1 - r) * cols + c) * 4; // picture rows run top to bottom
+        image.data[at] = (rgb >> 16) & 255;
+        image.data[at + 1] = (rgb >> 8) & 255;
+        image.data[at + 2] = rgb & 255;
+        image.data[at + 3] = Math.round(255 * Math.max(0, Math.min(1, value.opacity)));
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+    setHref(canvas.toDataURL());
+    // `cell` is a new function on every render; `version` says when its answers actually change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version, cols, rows]);
+
+  if (!href) return null;
+  return (
+    <image
+      aria-hidden="true"
+      href={href}
+      x={sx(xDomain[0])}
+      y={sy(yDomain[1])}
+      width={sx(xDomain[1]) - sx(xDomain[0])}
+      height={sy(yDomain[0]) - sy(yDomain[1])}
+      preserveAspectRatio="none"
+      opacity={opacity}
+      style={{ imageRendering: 'pixelated' }}
+    />
+  );
+}
+
 interface RegionsProps {
   /** Opacity of the shading at a point of the plot, from 0 (none) to 1. */
   opacity: (x: number, y: number) => number;
@@ -547,26 +618,27 @@ interface RegionsProps {
  * everywhere, or how confident it is. Draw it before the data points.
  */
 export function Regions({ opacity, fill = COLORS.accent, cols = 40, rows = 28 }: RegionsProps) {
-  const { sx, sy, xDomain, yDomain } = usePlot();
+  const { xDomain, yDomain } = usePlot();
   const dx = (xDomain[1] - xDomain[0]) / cols;
   const dy = (yDomain[1] - yDomain[0]) / rows;
-  const cells = [];
+  const values: number[] = [];
   for (let c = 0; c < cols; c++) {
     for (let r = 0; r < rows; r++) {
-      const x = xDomain[0] + c * dx;
-      const y = yDomain[0] + r * dy;
-      const o = opacity(x + dx / 2, y + dy / 2);
-      if (o <= 0.004) continue;
-      cells.push(
-        <rect key={`${c}-${r}`} x={sx(x)} y={sy(y + dy)} width={sx(x + dx) - sx(x)} height={sy(y) - sy(y + dy)} fill={fill} opacity={Math.min(1, o)} />,
-      );
+      const o = opacity(xDomain[0] + (c + 0.5) * dx, yDomain[0] + (r + 0.5) * dy);
+      values.push(o <= 0.004 ? 0 : Math.round(Math.min(1, o) * 255));
     }
   }
-  // crispEdges stops neighbouring cells blending into visible seams.
   return (
-    <g aria-hidden="true" shapeRendering="crispEdges">
-      {cells}
-    </g>
+    <PixelMap
+      cols={cols}
+      rows={rows}
+      // The picture is repainted only when some cell actually changed.
+      version={`${fill}|${values.join(',')}`}
+      cell={(c, r) => {
+        const v = values[c * rows + r];
+        return v === 0 ? null : { fill, opacity: v / 255 };
+      }}
+    />
   );
 }
 

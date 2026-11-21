@@ -9,12 +9,27 @@ interface Props {
 const { title, caption, try: tryIt } = Astro.props;
 ---
 
-<figure class="my-16 rounded-sm border-2 border-stone-900 p-5 sm:p-8" style="counter-increment: figure">
-  <header class="mb-6">
-    <div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div>
-    <p class="text-xs text-stone-500 italic">{title}</p>
+<figure class="book-figure my-16 rounded-sm border-2 border-stone-900 p-5 sm:p-8" style="counter-increment: figure">
+  <header class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div>
+      <p class="text-xs text-stone-500 italic">{title}</p>
+    </div>
+    <button
+      type="button"
+      hidden
+      data-figure-reset
+      title="Put this figure back the way it started"
+      class="micro-label shrink-0 cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
+    >
+      ↺ Start over
+    </button>
   </header>
-  <div class="not-prose text-base" data-pagefind-ignore><slot /></div>
+  <div class="not-prose text-base" data-figure-body data-pagefind-ignore><slot /></div>
+  {/* Runs the moment the figure has been read from the page, before it wakes up, to keep an untouched copy. */}
+  <script is:inline>
+    document.currentScript.previousElementSibling.pristine = document.currentScript.previousElementSibling.innerHTML;
+  </script>
   {
     (caption || tryIt) && (
       <figcaption class="mt-6 border-t border-stone-100 pt-4 text-[12px] leading-relaxed text-stone-500">
@@ -28,3 +43,23 @@ const { title, caption, try: tryIt } = Astro.props;
     )
   }
 </figure>
+
+<script>
+  // "Start over" rebuilds a figure from the page as it first arrived, which
+  // works for every figure without each one needing its own reset logic.
+  for (const figure of document.querySelectorAll<HTMLElement>('figure.book-figure')) {
+    const body = figure.querySelector<HTMLElement & { pristine?: string }>('[data-figure-body]');
+    const button = figure.querySelector<HTMLButtonElement>('[data-figure-reset]');
+    const pristine = body?.pristine;
+    if (!body || !button || !pristine?.includes('<astro-island')) continue;
+    // Figures that already have their own Reset button do not need a second one.
+    if ([...body.querySelectorAll('button')].some((b) => b.textContent?.trim().toLowerCase() === 'reset')) continue;
+
+    button.hidden = false;
+    button.addEventListener('click', () => {
+      body.style.minHeight = `${body.offsetHeight}px`; // no jump while the figure rebuilds
+      body.innerHTML = pristine;
+      setTimeout(() => (body.style.minHeight = ''), 600);
+    });
+  }
+</script>

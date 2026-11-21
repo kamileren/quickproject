@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { SERIES, usePlot } from './Plot';
+import { PixelMap, SERIES, usePlot } from './Plot';
 
 interface ClassMapProps {
   /** Returns the predicted class for each [x, y] point it is given. Called once with the whole grid. */
@@ -17,7 +17,7 @@ interface ClassMapProps {
  * the data points.
  */
 export function ClassMap({ classify, version, cols = 44, rows = 44, opacity = 0.2 }: ClassMapProps) {
-  const { sx, sy, xDomain, yDomain } = usePlot();
+  const { xDomain, yDomain } = usePlot();
   const dx = (xDomain[1] - xDomain[0]) / cols;
   const dy = (yDomain[1] - yDomain[0]) / rows;
 
@@ -32,14 +32,12 @@ export function ClassMap({ classify, version, cols = 44, rows = 44, opacity = 0.
   }, [version, cols, rows, xDomain[0], xDomain[1], yDomain[0], yDomain[1]]);
 
   return (
-    <g aria-hidden="true" shapeRendering="crispEdges" opacity={opacity}>
-      {classes.map((k, i) => {
-        const c = Math.floor(i / rows);
-        const r = i % rows;
-        const x = xDomain[0] + c * dx;
-        const y = yDomain[0] + r * dy;
-        return <rect key={i} x={sx(x)} y={sy(y + dy)} width={sx(x + dx) - sx(x)} height={sy(y) - sy(y + dy)} fill={SERIES[k % SERIES.length]} />;
-      })}
-    </g>
+    <PixelMap
+      cols={cols}
+      rows={rows}
+      version={classes.join('')}
+      opacity={opacity}
+      cell={(c, r) => ({ fill: SERIES[classes[c * rows + r] % SERIES.length], opacity: 1 })}
+    />
   );
 }
