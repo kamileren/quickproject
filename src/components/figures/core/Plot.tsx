@@ -569,3 +569,36 @@ export function Regions({ opacity, fill = COLORS.accent, cols = 40, rows = 28 }:
     </g>
   );
 }
+
+interface ArrowProps {
+  from: Point;
+  to: Point;
+  stroke?: string;
+  strokeWidth?: number;
+  dashed?: boolean;
+  opacity?: number;
+}
+
+/** An arrow between two data points, e.g. a vector or a gradient direction. */
+export function Arrow({ from, to, stroke = COLORS.ink, strokeWidth = 2.5, dashed = false, opacity = 1 }: ArrowProps) {
+  const { sx, sy } = usePlot();
+  const x1 = sx(from.x);
+  const y1 = sy(from.y);
+  const x2 = sx(to.x);
+  const y2 = sy(to.y);
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  if (length < 1) return null;
+  // Arrowhead in pixel space, so it keeps its shape whatever the axis scales are.
+  const head = Math.min(11, length * 0.45);
+  const ux = (x2 - x1) / length;
+  const uy = (y2 - y1) / length;
+  const bx = x2 - ux * head;
+  const by = y2 - uy * head;
+  const half = head * 0.42;
+  return (
+    <g opacity={opacity}>
+      <line x1={x1} y1={y1} x2={bx} y2={by} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={dashed ? '5 4' : undefined} />
+      <polygon points={`${x2},${y2} ${bx - uy * half},${by + ux * half} ${bx + uy * half},${by - ux * half}`} fill={stroke} />
+    </g>
+  );
+}

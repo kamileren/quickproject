@@ -4,5 +4,178 @@ number: "0.1"
 part: toolkit
 order: 0
 summary: "Lists of numbers, the dot product, and what a matrix does to a vector."
-status: draft
+question: "How do you do arithmetic on a whole table of data at once?"
+minutes: 12
+status: ready
 ---
+
+import VectorAdd from '@/components/figures/t01/VectorAdd';
+import DotProduct from '@/components/figures/t01/DotProduct';
+import RowByRow from '@/components/figures/t01/RowByRow';
+
+This is a toolkit chapter. It is optional, and you can skip it if lists of numbers and tables of numbers already feel comfortable. Everything here is used somewhere in the book, and nothing here needs more than multiplication and addition.
+
+## A list of numbers
+
+A student studied for 4 hours and slept for 7. Write those two facts side by side:
+
+$$
+x = [4,\ 7]
+$$
+
+That list is a <Term id="vector">vector</Term>. The order matters: the first entry is always study, the second always sleep. A single ordinary number, by contrast, is called a <Term id="scalar">scalar</Term>.
+
+Vectors are how machine learning describes things. A student is two numbers. A house might be five: size, age, rooms, floor, distance to the centre. A small greyscale image of 28 by 28 pixels is a list of 784 brightness values. Whatever the object, once it is a vector the same mathematics applies.
+
+A vector with two entries can also be drawn, as an arrow from the origin to the point $(4, 7)$. Pictures like that are a good guide to intuition even though real vectors have far too many entries to draw.
+
+## Adding and stretching
+
+Two things can be done to vectors with almost no thought.
+
+**Add** two vectors by adding matching entries. **Stretch** a vector by multiplying every entry by the same scalar.
+
+$$
+[3,\ 1] + [1,\ 3] = [4,\ 4] \qquad\qquad 2 \times [3,\ 1] = [6,\ 2]
+$$
+
+In the picture, adding means placing one arrow at the tip of the other. Stretching changes an arrow's length, and a negative scalar flips it round.
+
+<Figure
+  title="Adding arrows, stretching arrows"
+  caption="The orange arrow is the sum. The dashed arrow is b, moved so that it starts where a ends."
+  try="drag the tips of a and b and check the sum against the numbers. Then pull the slider below zero and watch a flip."
+>
+  <VectorAdd client:visible />
+</Figure>
+
+These two operations are all that gradient descent uses. "Take the weights, and subtract the learning rate times the gradient" is one stretch and one addition.
+
+## The dot product
+
+The most important operation in this book takes two vectors and returns a single number. Multiply matching entries, then add up the results. That is the <Term id="dot-product">dot product</Term>.
+
+<Equation reads="multiply each pair of matching entries, then add everything up">
+
+$$
+a \cdot b = a_1 b_1 + a_2 b_2 + \dots + a_d b_d
+$$
+
+</Equation>
+
+<Example title="A prediction is a dot product">
+
+Suppose each hour of study is worth 5 points and each hour of sleep is worth 2. Collect those into a vector of weights, $w = [5,\ 2]$. For the student with $x = [4,\ 7]$:
+
+$$
+w \cdot x = 5 \times 4 + 2 \times 7 = 20 + 14 = 34
+$$
+
+Every linear model in this book, and every neuron in a neural network, makes its prediction this way: a dot product of weights and features, plus a bias.
+
+</Example>
+
+The dot product also has a geometric meaning. It measures how much two arrows point the same way.
+
+<Figure
+  title="How much do two arrows agree?"
+  caption="The thick orange bar is the shadow that b casts along a."
+  try="swing b around until the dot product is zero. Then keep going until it turns negative."
+>
+  <DotProduct client:visible />
+</Figure>
+
+- **Positive**: the arrows point broadly the same way.
+- **Zero**: they are at right angles. Neither says anything about the other.
+- **Negative**: they point broadly opposite ways.
+
+<Checkpoint
+  question="What is the dot product of [2, 0, 3] and [4, 5, 1]?"
+  options={[
+    { text: '11', correct: true, why: '2×4 + 0×5 + 3×1 = 8 + 0 + 3 = 11.' },
+    { text: '[8, 0, 3]', why: 'That multiplies matching entries but forgets to add them up. A dot product is always a single number.' },
+    { text: '15', why: 'That adds all six numbers. Each entry is multiplied by its partner first.' },
+  ]}
+/>
+
+## A table of numbers
+
+A dataset has many examples. Stack their vectors as rows and you get a table: one row per student, one column per feature. A table of numbers is a <Term id="matrix">matrix</Term>.
+
+$$
+X = \begin{bmatrix} 1 & 6 \\ 4 & 7 \\ 6 & 5 \\ 9 & 8 \end{bmatrix}
+\qquad \text{four students, two features each}
+$$
+
+Multiplying a matrix by a vector means taking the dot product of *each row* with the vector. The result has one number per row. With the students as rows and the weights as the vector, one multiplication produces every student's prediction at once.
+
+<Figure
+  title="One dot product per row"
+  caption="Each row is a student. Each row is combined with the same two weights to give that student's score."
+  try="click each student in turn and check the arithmetic underneath. Then change the weights and watch all four scores update together."
+>
+  <RowByRow client:visible />
+</Figure>
+
+This is why linear algebra is everywhere in machine learning. A model's predictions for a million examples are written $Xw$, three symbols, and a computer can carry that out far faster than a loop over the rows.
+
+## Keeping track of shapes
+
+The size of a matrix is its <Term id="shape">shape</Term>, written rows × columns. The matrix above is 4 × 2.
+
+For $Xw$ to make sense, each row of $X$ must have as many entries as $w$, because they are paired off in a dot product. The rule is:
+
+$$
+(\,n \times d\,)\ \text{matrix} \;\times\; (\,d\,)\ \text{vector} \;=\; (\,n\,)\ \text{vector}
+$$
+
+The inner sizes must match, and they disappear. The outer size is what remains. When code involving matrices fails, mismatched shapes are the cause more often than anything else, so it is worth writing the shapes down before blaming the mathematics.
+
+<Checkpoint
+  question="A dataset has 500 houses with 6 features each, and a model has one weight per feature. What is the shape of the predictions Xw?"
+  options={[
+    { text: '500', correct: true, why: 'X is 500 × 6 and w has 6 entries. The 6s pair off, leaving one prediction per house.' },
+    { text: '6', why: 'There is one prediction per row of X, and X has 500 rows. The 6 is used up in the dot products.' },
+    { text: '500 × 6', why: 'That is the shape of X itself. Each row collapses to a single number when it meets the weights.' },
+  ]}
+/>
+
+## In code
+
+NumPy is the standard Python library for vectors and matrices. The `@` symbol means "matrix multiply", which for two vectors is the dot product.
+
+```python
+import numpy as np
+
+x = np.array([4, 7])                # one student: hours studied, hours slept
+w = np.array([5, 2])                # one weight per feature
+
+print(x + x)                        # [ 8 14]   add entry by entry
+print(2 * x)                        # [ 8 14]   stretch
+print(w @ x)                        # 34        dot product
+
+X = np.array([[1, 6],
+              [4, 7],
+              [6, 5],
+              [9, 8]])              # four students as rows
+print(X.shape)                      # (4, 2)
+print(X @ w)                        # [17 34 40 61]   every prediction at once
+```
+
+<KeyTakeaways>
+
+- A **vector** is an ordered list of numbers. It describes one example by its features.
+- Vectors are added entry by entry, and stretched by multiplying every entry by a scalar.
+- The **dot product** multiplies matching entries and adds them up. A linear model's prediction is a dot product.
+- A **matrix** is a table with one row per example. Matrix times vector is one dot product per row.
+- **Shapes** must match on the inside: (n × d) times (d) gives (n).
+
+</KeyTakeaways>
+
+<References>
+
+- M. P. Deisenroth, A. A. Faisal and C. S. Ong, *Mathematics for Machine Learning*, chapter 2. Free at [mml-book.github.io](https://mml-book.github.io).
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 2, [nnfs.io](https://nnfs.io).
+- G. Sanderson, [Essence of linear algebra](https://www.3blue1brown.com/topics/linear-algebra), 3Blue1Brown.
+
+</References>

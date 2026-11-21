@@ -250,3 +250,18 @@
 - id: rbf
   term: RBF kernel
   definition: The most common kernel. It scores two points as similar when they are close together, with a setting for how quickly that similarity fades with distance.
+- id: vector
+  term: Vector
+  definition: An ordered list of numbers. It can describe one example by its features, or be drawn as an arrow.
+- id: scalar
+  term: Scalar
+  definition: A single ordinary number, as opposed to a list of them.
+- id: dot-product
+  term: Dot product
+  definition: Multiply the matching entries of two vectors and add the results. It gives one number that is large when the vectors point the same way.
+- id: matrix
+  term: Matrix
+  definition: A rectangular table of numbers. A dataset with one row per example and one column per feature is a matrix.
+- id: shape
+  term: Shape
+  definition: The size of a matrix, written rows × columns. A table of 12 students and 2 features has shape 12 × 2.
