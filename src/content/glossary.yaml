@@ -265,3 +265,12 @@
 - id: shape
   term: Shape
   definition: The size of a matrix, written rows × columns. A table of 12 students and 2 features has shape 12 × 2.
+- id: derivative
+  term: Derivative
+  definition: How fast the output of a function changes when its input changes a little. On a graph it is the steepness of the curve at a point.
+- id: partial-derivative
+  term: Partial derivative
+  definition: The derivative with respect to one input while all the other inputs are held still.
+- id: chain-rule
+  term: Chain rule
+  definition: When one calculation feeds into another, the overall rate of change is the product of the rates of each step.

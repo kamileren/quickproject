@@ -4,5 +4,202 @@ number: "0.2"
 part: toolkit
 order: 1
 summary: "Slope by nudging, partial derivatives, and the chain rule."
-status: draft
+question: "If I change the input a little, how much does the output change?"
+minutes: 13
+status: ready
 ---
+
+import NudgeSlope from '@/components/figures/t02/NudgeSlope';
+import GradientMap from '@/components/figures/t02/GradientMap';
+import ChainMachines from '@/components/figures/t02/ChainMachines';
+
+This is a toolkit chapter, and optional. It covers the one idea from calculus that machine learning leans on: measuring how sensitive an output is to its inputs. Training a model means asking that question about the loss and every weight, millions of times.
+
+## How fast is it changing?
+
+For a straight line the question has an easy answer. The line $y = 3x + 1$ goes up 3 for every 1 it goes across. Its slope is 3, everywhere.
+
+$$
+\text{slope} = \frac{\text{rise}}{\text{run}} = \frac{\text{change in output}}{\text{change in input}}
+$$
+
+A slope is a rate. If $x$ is hours of study and $y$ is an exam score, a slope of 3 means three points per hour. Positive slopes go uphill from left to right, negative ones downhill, and a slope of zero is flat.
+
+Curves are harder, because a curve is steeper in some places than others. It has no single slope. It has a slope *at each point*.
+
+## Slope by nudging
+
+To find the slope of a curve at one point, do what you would do with a real hill: take a small step and see how much higher you are.
+
+Pick a point $x$. Nudge it by a small amount $h$. Measure how much the output changed, and divide by the nudge:
+
+<Equation reads="slope ≈ change in output ÷ size of the nudge">
+
+$$
+\text{slope at } x \;\approx\; \frac{f(x + h) - f(x)}{h}
+$$
+
+</Equation>
+
+<Figure
+  title="Shrinking the nudge"
+  caption="The dark curve is y = x². The orange line passes through the chosen point and a second point a nudge further along."
+  try="pull the nudge slider all the way down and watch rise ÷ run settle. Then drag the point to a different x and do it again."
+>
+  <NudgeSlope client:visible />
+</Figure>
+
+With a big nudge the line cuts across the curve and its slope is only a rough answer. As the nudge shrinks, the line stops changing: it settles onto the line that just touches the curve. The slope it settles on is the <Term id="derivative">derivative</Term> of the function at that point.
+
+At $x = 1$ on the curve $y = x^2$, the numbers go like this:
+
+| Nudge $h$ | 2 | 1 | 0.1 | 0.01 |
+|---|---|---|---|---|
+| Rise ÷ run | 4 | 3 | 2.1 | 2.01 |
+
+They are closing in on 2. Try other points and a pattern appears: the slope at $x$ always settles on $2x$.
+
+## Rules instead of nudging
+
+Nudging works for any function, and computers do sometimes find derivatives this way. But for common functions the answer follows a pattern, so it can be written down once and reused.
+
+| Function | Its derivative | In words |
+|---|---|---|
+| $c$ (a constant) | $0$ | A constant never changes. |
+| $c\,x$ | $c$ | A straight line has the same slope everywhere. |
+| $x^2$ | $2x$ | Steeper the further you are from zero. |
+| $x^n$ | $n\,x^{n-1}$ | Bring the power down, reduce it by one. |
+| $f + g$ | $f' + g'$ | Do each part separately and add. |
+
+The derivative of $f$ is written $f'(x)$, or $\dfrac{df}{dx}$. Both mean the same thing: the slope of $f$ at $x$.
+
+<Example title="Using the rules">
+
+Take $f(x) = 3x^2 + 5x + 7$. Handle each part in turn:
+
+- $3x^2$ becomes $3 \times 2x = 6x$
+- $5x$ becomes $5$
+- $7$ becomes $0$
+
+So $f'(x) = 6x + 5$. At $x = 2$ the curve is rising at a rate of 17.
+
+</Example>
+
+One fact makes derivatives useful for finding the best model. At the very bottom of a valley, or the top of a hill, the ground is flat: **the derivative is zero**. That is how the formula for the best line was found in the linear regression chapter.
+
+<Checkpoint
+  question="A loss curve has derivative −4 at the current value of a weight. What does that tell you?"
+  options={[
+    { text: 'The loss is −4', why: 'The derivative is the slope of the loss, not its value.' },
+    { text: 'Increasing the weight a little will lower the loss', correct: true, why: 'A negative slope means the curve goes downhill to the right. A small increase in the weight reduces the loss by about 4 times that increase.' },
+    { text: 'The weight is at its best value', why: 'At the best value the slope would be zero. A slope of −4 means there is still downhill to go.' },
+  ]}
+/>
+
+## Several inputs at once
+
+A real loss depends on many weights, not one. With two inputs, picture the function as a landscape: every position $(x, y)$ has a height.
+
+Standing on a hillside there are now two questions. How steep is it if I step east? And how steep if I step north? Each is answered by nudging one input while holding the other still. The result is a <Term id="partial-derivative">partial derivative</Term>, written with a curly $\partial$.
+
+For the bowl $f(x, y) = x^2 + 3y^2$:
+
+$$
+\frac{\partial f}{\partial x} = 2x \qquad\qquad \frac{\partial f}{\partial y} = 6y
+$$
+
+To get the first, treat $y$ as a constant and use the rules above. To get the second, treat $x$ as a constant.
+
+Put the partial derivatives side by side in a vector and you have the <Term id="gradient">gradient</Term>. It has a remarkable property: it points in the direction of steepest ascent. Its opposite therefore points straight downhill.
+
+<Figure
+  title="Which way is up?"
+  caption="The bowl seen from above, like a hiking map. Each ring joins points of equal height."
+  try="drag the point around. Notice that the arrows always cross the rings at right angles, and shrink to nothing at the centre."
+>
+  <GradientMap client:visible />
+</Figure>
+
+This is the whole basis of gradient descent. Compute the gradient of the loss, step the opposite way, repeat. A model with a million weights has a gradient with a million entries, and the recipe is unchanged.
+
+## The chain rule
+
+Models are built by feeding one calculation into the next. A weighted sum goes into a sigmoid; the sigmoid goes into a loss. To train the model we need to know how the final output responds to something at the very start.
+
+Consider two steps. First triple the input: $u = 3x$. Then square the result: $y = u^2$.
+
+- Nudge $x$, and $u$ changes 3 times as much.
+- Nudge $u$, and $y$ changes $2u$ times as much.
+
+So a nudge to $x$ is magnified by 3 and then by $2u$. The overall rate is the two multiplied together. This is the <Term id="chain-rule">chain rule</Term>.
+
+<Equation reads="overall rate = rate of the second step × rate of the first step">
+
+$$
+\frac{dy}{dx} = \frac{dy}{du} \times \frac{du}{dx}
+$$
+
+</Equation>
+
+<Figure
+  title="Rates multiply along the chain"
+  caption="Each dark box is a calculation, labelled with how much it magnifies a small change to its input."
+  try="set x to 1 and read the overall rate. Then check it against the nudge in the second row of numbers."
+>
+  <ChainMachines client:visible />
+</Figure>
+
+With three steps there are three rates to multiply, and with a hundred steps a hundred. Backpropagation, the algorithm that trains neural networks, is this rule applied carefully from the end of a long chain back to its beginning.
+
+<Checkpoint
+  question="A change to a weight makes a neuron's output change 0.5 times as much. That output's change makes the loss change 4 times as much. How does the loss respond to the weight?"
+  options={[
+    { text: '4.5 times the change in the weight', why: 'Rates along a chain multiply, they do not add.' },
+    { text: '2 times the change in the weight', correct: true, why: 'By the chain rule the rates multiply: 0.5 × 4 = 2.' },
+    { text: '8 times the change in the weight', why: 'That divides instead of multiplying. The first step shrinks the change by half before the second step magnifies it.' },
+  ]}
+/>
+
+## In code
+
+The nudging definition is three lines of Python, and it is a handy way to check a derivative you have worked out by hand.
+
+```python
+def slope(f, x, h=1e-5):
+    return (f(x + h) - f(x - h)) / (2 * h)      # nudge both ways for accuracy
+
+f = lambda x: 3 * x**2 + 5 * x + 7
+print(slope(f, 2))                              # 17.0, matching 6x + 5 at x = 2
+
+def gradient(f, point, h=1e-5):
+    grad = []
+    for i in range(len(point)):                 # nudge one input at a time
+        up, down = list(point), list(point)
+        up[i] += h
+        down[i] -= h
+        grad.append((f(up) - f(down)) / (2 * h))
+    return grad
+
+bowl = lambda p: p[0]**2 + 3 * p[1]**2
+print(gradient(bowl, [2, 1]))                   # [4.0, 6.0]
+```
+
+Libraries such as PyTorch do not nudge. They apply the rules and the chain rule automatically, which is exact and far faster.
+
+<KeyTakeaways>
+
+- A **derivative** is the slope of a function at a point: how much the output changes per unit change in the input.
+- It can be found by **nudging** the input and dividing, or by a few simple rules.
+- At a lowest or highest point the derivative is **zero**.
+- With several inputs there is one **partial derivative** each. Together they form the **gradient**, which points uphill.
+- The **chain rule**: when calculations are chained, their rates multiply.
+
+</KeyTakeaways>
+
+<References>
+
+- M. P. Deisenroth, A. A. Faisal and C. S. Ong, *Mathematics for Machine Learning*, chapter 5. Free at [mml-book.github.io](https://mml-book.github.io).
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 7 and 8, [nnfs.io](https://nnfs.io).
+- G. Sanderson, [Essence of calculus](https://www.3blue1brown.com/topics/calculus), 3Blue1Brown.
+
+</References>
