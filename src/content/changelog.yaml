@@ -1,5 +1,11 @@
 # What changed in the book, newest first. Shown at /changelog/.
 # Add an entry whenever something a reader would notice is published.
+- id: 2026-11-21-map
+  date: "2026-11-21"
+  title: A map you can read, and more to try on the cover
+  items:
+    - The map now lists the chapters by name. Pick one to see what to read first, what comes next, and how many minutes stand between you and it.
+    - The cover shows one of four small figures, a different one each visit.
 - id: 2026-11-21-cover
   date: "2026-11-21"
   title: A cover you can play with
