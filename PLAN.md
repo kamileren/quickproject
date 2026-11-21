@@ -223,6 +223,33 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 - [x] 32. Chapter 20.
 - [x] 33. Chapter 21, with the Fashion-MNIST subset and pretrained weights. Owner reviews.
 
+### Wave 3.5: opportunities found after wave 3
+
+Navigation and pop-ins:
+
+- [ ] 33a. Term and symbol pop-ins show where the term is introduced and link to the glossary. Generated glossary and notation pages.
+- [ ] 33b. `<Ref>` pop-in: a back-reference to another chapter with a short recap and a link.
+- [ ] 33c. Section list that stays beside the text and highlights the current section; a progress bar on small screens.
+- [ ] 33d. Reading progress saved in the browser: ticks on the contents page, "continue reading", remembered checkpoints.
+- [ ] 33e. Search (Pagefind).
+- [ ] 33f. Code blocks get a copy button; companion files link to GitHub and open in Colab.
+
+Figures:
+
+- [ ] 33g. Reset button on every figure; drag handles work from the keyboard; hover read-outs on points.
+- [ ] 33h. Page weight: region maps drawn on a canvas; KaTeX ships woff2 only.
+- [ ] 33i. A share image per chapter.
+
+Content:
+
+- [ ] 33j. New prose components: `<Exercises>`, `<Pitfall>` (common mistakes), `<NowYouCan>`, a "predict first" checkpoint, and a data box.
+- [ ] 33k. Home page "start here", and a short opener page for each part.
+- [ ] 33l. Back-fill Part 0 and Part I (chapters 0.1 to 5): exercises, pitfalls, bridges, back-references.
+- [ ] 33m. Back-fill Part II (chapters 6 to 10), with one more worked example in chapters 6 and 10.
+- [ ] 33n. Back-fill Part IV (chapters 14 to 21), with one more worked example in chapters 16 and 17.
+
+Left out on purpose: running Python in the browser, accounts and comments, dark mode.
+
 ### Wave 4: remaining models
 
 - [ ] 34. `trees` library.
@@ -234,7 +261,7 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 ### Wave 5: finish
 
 - [ ] 44–46. Chapters 27, 28, 29.
-- [ ] 47. Search, generated glossary and notation pages, reading progress saved in the browser.
+- [ ] 47. Search index, glossary and progress checked against the full book (built in wave 3.5).
 - [ ] 48. Final pass: SEO, accessibility, page weight, README and a short authoring guide.
 
 ## Sources
