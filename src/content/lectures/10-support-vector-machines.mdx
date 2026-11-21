@@ -4,5 +4,191 @@ number: "10"
 part: classification
 order: 12
 summary: "Separating classes with the widest possible margin."
-status: draft
+question: "When many lines separate two groups perfectly, which one should you pick?"
+dataset: toy2d
+minutes: 17
+status: ready
+prerequisites: [logistic-regression, regularization]
 ---
+
+import WidestStreet from '@/components/figures/ch10/WidestStreet';
+import SupportVectors from '@/components/figures/ch10/SupportVectors';
+import SoftMargin from '@/components/figures/ch10/SoftMargin';
+import KernelRegions from '@/components/figures/ch10/KernelRegions';
+
+Logistic regression draws a straight boundary and is content with any line that fits the training data well. This chapter asks a sharper question: among all the lines that work, is one of them *best*? The answer leads to a classifier built on geometry instead of probability, and to a trick that lets straight-line methods draw curves.
+
+## The widest street
+
+Here are two groups of points with a clear gap between them. Plenty of lines separate them without a single mistake. They are not equally good.
+
+A line that passes very close to some of the points is fragile. A new point only slightly different from those would land on the wrong side. A line that stays far from both groups has room to spare.
+
+Picture the boundary as the centre line of a street, and widen the street until it touches the nearest point on either side. The width of that empty street is the <Term id="margin">margin</Term>. The safest boundary is the one with the widest street.
+
+<Figure
+  title="Build the widest street you can"
+  caption="The solid line is your boundary. The dashed lines are the edges of the widest empty street centred on it."
+  try="drag the two handles to make your street as wide as possible. Then reveal the best possible street and compare."
+>
+  <WidestStreet client:visible />
+</Figure>
+
+The widest street here is 1.48 units across. Finding it is exactly what a <Term id="svm">support vector machine</Term> does: it is the classifier that maximises the margin.
+
+<Derivation title="The same idea as an optimisation problem">
+
+Write the boundary as $w \cdot x + b = 0$ and label the classes $y = +1$ and $y = -1$. Scale $w$ and $b$ so that the nearest points on each side satisfy $w \cdot x + b = \pm 1$. The street is then $2 / \lVert w \rVert$ wide, so making it wide means making $w$ small:
+
+$$
+\text{minimise } \tfrac{1}{2}\lVert w \rVert^2 \quad \text{subject to} \quad y_i\,(w \cdot x_i + b) \ge 1 \ \text{ for every point } i
+$$
+
+The condition says every point must be on its correct side and outside the street. Notice that the thing being minimised is the ridge penalty from the regularization chapter. An SVM is, in a sense, all regularization: the smallest weights that still classify everything correctly.
+
+</Derivation>
+
+## The points that matter
+
+Look again at the widest street. It is pinned in place by the few points it touches. Everything else is further back and plays no part.
+
+The points on the edge of the street are called <Term id="support-vector">support vectors</Term>, and they give the method its name.
+
+<Figure
+  title="Only the edge points count"
+  caption="Every point can be dragged. Ringed points are the support vectors, the ones the street is resting on."
+  try="drag a point that is far from the street and watch nothing change. Then drag a ringed point and watch the whole street swing."
+>
+  <SupportVectors client:visible />
+</Figure>
+
+This is very different from the models before it. In logistic regression every example pulls on the weights, however far it is from the boundary. Here you could delete every point except the support vectors and get exactly the same classifier. The easy cases, deep inside their own territory, tell the model nothing it needs.
+
+<Checkpoint
+  question="An SVM is trained on 10,000 points and ends with 40 support vectors. You add 500 new points, all far from the boundary and on the correct side. What happens to the boundary?"
+  options={[
+    { text: 'It shifts toward the new points', why: 'Points well outside the street do not touch it and so cannot move it.' },
+    { text: 'Nothing: it stays exactly where it was', correct: true, why: 'Only points on or inside the margin determine the boundary. Correctly classified points far from it are ignored.' },
+    { text: 'The margin narrows because there is more data', why: 'The margin is set by the closest points. The new ones are not close.' },
+  ]}
+/>
+
+## When no line is clean
+
+Real groups overlap. There is then no line with an empty street on either side, and the problem as stated has no solution. Even when a clean line exists, a single stray point can force the street to be very narrow.
+
+The fix is to let points enter the street, or cross it, at a price. Each violation is charged in proportion to how far it intrudes, and a setting called $C$ fixes the price. This is the <Term id="soft-margin">soft margin</Term>.
+
+<Equation reads="minimise: (how small the weights are) + C × (total amount by which points intrude)">
+
+$$
+\text{minimise } \tfrac{1}{2}\lVert w \rVert^2 + C \sum_i \max\!\big(0,\; 1 - y_i\,(w \cdot x_i + b)\big)
+$$
+
+</Equation>
+
+- **Large C** makes violations expensive. The street narrows to avoid them, and the boundary bends to the awkward points.
+- **Small C** makes them cheap. The street widens, more points end up inside it, and the boundary reflects the overall trend.
+
+<Figure
+  title="How much to mind the awkward points"
+  caption="The two groups overlap, so some points must end up inside the street or on the wrong side."
+  try="slide C from 100 down to 0.001. Watch the street widen and the number of ringed points grow."
+>
+  <SoftMargin client:visible />
+</Figure>
+
+At $C = 100$ the street is 0.25 wide with only 2 points inside it. At $C = 0.01$ it is 5.75 wide and holds 26 of the 44 points. Every point inside the street or on its edge is now a support vector.
+
+This is the same trade as the penalty strength in the regularization chapter, turned upside down: a *small* $C$ means *strong* regularization. Like every hyperparameter, it is chosen by cross-validation.
+
+## Bending the boundary
+
+So far the boundary has been straight. Some data cannot be separated by any straight line however soft the margin: here, one group sits inside a ring of the other.
+
+The standard answer in Part I was to add features, such as $x^2$. SVMs have a neater route. Their training turns out to need only one thing from the data: for each pair of points, a number saying how *similar* they are. For a straight boundary that number is the dot product. Replace it with a different measure of similarity, called a <Term id="kernel">kernel</Term>, and the same algorithm draws a curved boundary without ever computing new features.
+
+The most widely used is the <Term id="rbf">RBF kernel</Term>. It calls two points similar when they are close together:
+
+$$
+K(a, b) = \exp\!\big(-\gamma\,\lVert a - b \rVert^2\big)
+$$
+
+The setting $\gamma$ controls how fast similarity fades with distance. The resulting classifier behaves a little like a smooth version of nearest neighbours, in which only the support vectors get a vote.
+
+<Figure
+  title="A boundary that closes into a loop"
+  caption="Shaded areas would be classified as the filled kind."
+  try="with the straight boundary, read the accuracy. Switch to RBF, then move γ to its smallest and largest values and count the support vectors."
+>
+  <KernelRegions client:visible />
+</Figure>
+
+The straight boundary gets 73% right. With an RBF kernel at a moderate $\gamma$, it gets everything right, using fewer than a third of the points as support vectors.
+
+The two extremes of $\gamma$ are both bad, in the familiar way. With $\gamma$ very small, every point is "similar" to every other and the boundary is nearly straight again: underfitting. With $\gamma$ very large, each point is similar only to itself, almost every point becomes a support vector, and the model has memorised the training set: overfitting.
+
+<Checkpoint
+  question="An RBF-kernel SVM scores 100% on training data and 71% on new data. Which change is most likely to help?"
+  options={[
+    { text: 'Increase γ', why: 'A larger γ makes the boundary wrap even more tightly around individual training points, which is more overfitting.' },
+    { text: 'Decrease γ or decrease C', correct: true, why: 'Both make the model smoother: a smaller γ widens each point\'s influence, and a smaller C tolerates more violations. Either reduces overfitting.' },
+    { text: 'Switch to a linear kernel regardless of the data', why: 'That might help or might underfit badly. Tuning γ and C by cross-validation is the direct fix.' },
+  ]}
+/>
+
+## In code
+
+```python
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+
+# SVMs measure distances, so scale the features first.
+model = make_pipeline(StandardScaler(), SVC(kernel="rbf"))
+
+# C and gamma are tuned together, each over several powers of ten.
+grid = {"svc__C": [0.1, 1, 10, 100], "svc__gamma": [0.01, 0.1, 1, 10]}
+search = GridSearchCV(model, grid, cv=5).fit(X_train, y_train)
+
+print(search.best_params_)
+print(search.score(X_test, y_test))
+print(search.best_estimator_[-1].n_support_)    # support vectors per class
+```
+
+Use `SVC(kernel="linear")` or the faster `LinearSVC` for a straight boundary. Because SVMs depend on distances, the scaling step matters as much here as it did for nearest neighbours.
+
+<KeyTakeaways>
+
+- Of all the boundaries that separate two classes, an SVM picks the one with the **widest margin**.
+- The boundary is fixed by the **support vectors**, the few points on the edge of the margin. The rest could be deleted.
+- A **soft margin** lets points cross, at a price set by **C**. Small C means a wider, more tolerant street.
+- A **kernel** replaces the dot product with another measure of similarity, giving curved boundaries from the same algorithm.
+- **C** and **γ** control flexibility, and are tuned together by cross-validation.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### The hinge loss
+
+The term $\max(0,\, 1 - y\,(w \cdot x + b))$ is called the hinge loss. It is zero for points safely outside the street and grows in a straight line as a point intrudes. Compare it with the log loss of logistic regression, which is never quite zero: that difference is why logistic regression listens to every point and an SVM only to the support vectors.
+
+### Why kernels work
+
+A kernel is secretly a dot product in a larger space of features. The RBF kernel corresponds to infinitely many features, which could never be computed one by one. Because the SVM only ever asks for dot products between pairs of points, it never needs the features themselves. This is known as the kernel trick.
+
+### Where SVMs stand today
+
+Before deep learning, kernel SVMs were the strongest general-purpose classifiers. They are still excellent on small and medium datasets with a few thousand examples. On very large datasets they are slow to train, because the work grows with the square of the number of examples.
+
+</GoingFurther>
+
+<References>
+
+- G. James, D. Witten, T. Hastie and R. Tibshirani, *An Introduction to Statistical Learning*, chapter 9. Free at [statlearning.com](https://www.statlearning.com).
+- T. Ma and A. Ng, *CS229 Lecture Notes*, chapters 5 and 6 (kernel methods and support vector machines), [cs229.stanford.edu](https://cs229.stanford.edu/main_notes.pdf).
+- scikit-learn user guide, [Support Vector Machines](https://scikit-learn.org/stable/modules/svm.html).
+
+</References>

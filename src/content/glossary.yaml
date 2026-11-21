@@ -232,3 +232,21 @@
 - id: smoothing
   term: Smoothing
   definition: Adding a small amount to every count so that nothing is ever judged impossible just because it was not in the training data.
+- id: margin
+  term: Margin
+  definition: The empty gap between a decision boundary and the closest training points on either side. A wider margin leaves more room for error.
+- id: svm
+  term: Support vector machine
+  definition: A classifier that chooses the boundary with the widest possible margin between the classes.
+- id: support-vector
+  term: Support vector
+  definition: A training point that sits on the edge of the margin, or inside it. These points alone determine where the boundary goes.
+- id: soft-margin
+  term: Soft margin
+  definition: A margin that some points are allowed to cross, at a cost. It lets an SVM handle classes that overlap.
+- id: kernel
+  term: Kernel
+  definition: A function that measures how similar two examples are. Using one lets a method that draws straight boundaries draw curved ones.
+- id: rbf
+  term: RBF kernel
+  definition: The most common kernel. It scores two points as similar when they are close together, with a setting for how quickly that similarity fades with distance.
