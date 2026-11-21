@@ -12,18 +12,29 @@ const { title, caption, try: tryIt } = Astro.props;
 <figure class="book-figure my-16 rounded-sm border-2 border-stone-900 p-5 sm:p-8" style="counter-increment: figure">
   <header class="mb-6 flex items-start justify-between gap-4">
     <div>
-      <div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div>
+      <div class="flex items-baseline"><div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div><span data-anchor-slot></span></div>
       <p class="text-xs text-stone-500 italic">{title}</p>
     </div>
+    <span class="flex shrink-0 flex-wrap justify-end gap-2">
+    <button
+      type="button"
+      hidden
+      data-figure-expand
+      title="Let this figure fill the screen"
+      class="micro-label cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
+    >
+      ⤢ Expand
+    </button>
     <button
       type="button"
       hidden
       data-figure-reset
       title="Put this figure back the way it started"
-      class="micro-label shrink-0 cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
+      class="micro-label cursor-pointer rounded border border-stone-200 px-2 py-1 text-stone-500 transition-colors hover:border-stone-900 hover:text-stone-900"
     >
       ↺ Start over
     </button>
+    </span>
   </header>
   <div class="not-prose text-base" data-figure-body data-pagefind-ignore><slot /></div>
   {/* Runs the moment the figure has been read from the page, before it wakes up, to keep an untouched copy. */}

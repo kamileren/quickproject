@@ -1,0 +1,88 @@
+---
+/**
+ * Things every page has but that sit outside the page's own content: the
+ * search window, the reading settings and the list of keyboard shortcuts.
+ * Behaviour is in src/scripts/site.ts.
+ */
+import SearchBox from './SearchBox.astro';
+
+interface Props {
+  /** The search page has its own search box, so it skips the window. */
+  searchWindow?: boolean;
+}
+const { searchWindow = true } = Astro.props;
+
+const shortcuts = [
+  ['/', 'Search the book'],
+  ['← →', 'Previous and next chapter'],
+  ['g', 'Glossary'],
+  ['c', 'Table of contents'],
+  ['e', 'Jump to the exercises'],
+  ['t', 'Reading settings'],
+  ['?', 'Show this list'],
+  ['Esc', 'Close a window or pop-in'],
+];
+---
+
+{
+  searchWindow && (
+    <dialog id="search-window" aria-label="Search" class="site-dialog w-[min(44rem,calc(100vw-1.5rem))]">
+      <div class="mb-4 flex items-center justify-between">
+        <span class="micro-label text-stone-900">Search</span>
+        <button type="button" data-close class="micro-label cursor-pointer text-stone-500 hover:text-stone-900">Close · Esc</button>
+      </div>
+      <SearchBox />
+    </dialog>
+  )
+}
+
+<dialog id="settings-window" aria-label="Reading settings" class="site-dialog w-[min(22rem,calc(100vw-1.5rem))]">
+  <div class="mb-5 flex items-center justify-between">
+    <span class="micro-label text-stone-900">Reading settings</span>
+    <button type="button" data-close class="micro-label cursor-pointer text-stone-500 hover:text-stone-900">Close</button>
+  </div>
+  <fieldset class="mb-5">
+    <legend class="mb-2 font-sans text-xs text-stone-500">Text size</legend>
+    <div class="grid grid-cols-3 gap-2" data-pref="size">
+      <button type="button" class="pref-option font-serif text-sm" data-value="s">Small</button>
+      <button type="button" class="pref-option font-serif text-base" data-value="m">Medium</button>
+      <button type="button" class="pref-option font-serif text-lg" data-value="l">Large</button>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend class="mb-2 font-sans text-xs text-stone-500">Colours</legend>
+    <div class="grid grid-cols-3 gap-2" data-pref="theme">
+      <button type="button" class="pref-option font-sans text-sm" data-value="light">Light</button>
+      <button type="button" class="pref-option font-sans text-sm" data-value="dark">Dark</button>
+      <button type="button" class="pref-option font-sans text-sm" data-value="auto">Match device</button>
+    </div>
+  </fieldset>
+  <p class="mt-5 font-sans text-[11px] leading-relaxed text-stone-400">Saved in this browser only.</p>
+</dialog>
+
+<dialog id="shortcuts-window" aria-label="Keyboard shortcuts" class="site-dialog w-[min(24rem,calc(100vw-1.5rem))]">
+  <div class="mb-5 flex items-center justify-between">
+    <span class="micro-label text-stone-900">Keyboard shortcuts</span>
+    <button type="button" data-close class="micro-label cursor-pointer text-stone-500 hover:text-stone-900">Close</button>
+  </div>
+  <dl class="grid grid-cols-[4.5rem_1fr] gap-y-2.5 font-sans text-sm text-stone-700">
+    {
+      shortcuts.map(([key, what]) => (
+        <>
+          <dt>
+            <kbd class="rounded border border-stone-300 bg-stone-50 px-1.5 py-0.5 font-mono text-xs text-stone-900">{key}</kbd>
+          </dt>
+          <dd>{what}</dd>
+        </>
+      ))
+    }
+  </dl>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded bg-stone-900 px-4 py-2 font-sans text-xs text-white opacity-0 transition-opacity"></div>
+
+{searchWindow && <script is:inline type="module" src="/search.js"></script>}
+
+<script>
+  import '@/scripts/site';
+</script>

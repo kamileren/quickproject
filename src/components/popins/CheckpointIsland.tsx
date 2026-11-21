@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { chapterIdFromPath, saveAnswer, savedAnswer } from '@/lib/progress';
+import { chapterIdFromPath, noteFirstTry, saveAnswer, savedAnswer } from '@/lib/progress';
 
 export interface CheckpointOption {
   text: string;
@@ -28,7 +28,10 @@ export default function CheckpointIsland({ question, options, predict = false }:
 
   const pick = (i: number) => {
     setPicked(i);
-    saveAnswer(chapterIdFromPath(location.pathname), question, i);
+    const chapter = chapterIdFromPath(location.pathname);
+    const chapterTitle = document.querySelector<HTMLElement>('article[data-chapter-title]')?.dataset.chapterTitle ?? chapter;
+    noteFirstTry({ chapter, chapterTitle, question, options }, Boolean(options[i].correct));
+    saveAnswer(chapter, question, i);
   };
   const chosen = picked === null ? null : options[picked];
 

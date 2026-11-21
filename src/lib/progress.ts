@@ -5,13 +5,27 @@
  * settings) every function quietly does nothing and the book works as before.
  */
 
+/** A checkpoint the reader got wrong on the first try, kept whole so it can be asked again. */
+export interface Missed {
+  chapter: string;
+  chapterTitle: string;
+  question: string;
+  options: { text: string; correct?: boolean; why: string }[];
+  /** Set once the reader has answered it correctly on the review page. */
+  resolved?: boolean;
+}
+
 export interface Progress {
   /** Chapter id → when the reader reached its end (ms since 1970). */
   read: Record<string, number>;
-  /** The chapter the reader had open most recently. */
-  last?: { id: string; title: string; label: string };
+  /** The chapter the reader had open most recently, and the section they had reached. */
+  last?: { id: string; title: string; label: string; section?: string };
   /** Chapter id → question text → index of the option picked. */
   answers: Record<string, Record<string, number>>;
+  /** Chapter id → numbers (from 1) of the exercises ticked as done. */
+  exercises: Record<string, number[]>;
+  /** Checkpoints missed on the first try, by "chapter|question". */
+  missed: Record<string, Missed>;
 }
 
 export interface Store {
@@ -21,7 +35,7 @@ export interface Store {
 }
 
 const KEY = 'book-of-ml:progress:v1';
-const empty = (): Progress => ({ read: {}, answers: {} });
+const empty = (): Progress => ({ read: {}, answers: {}, exercises: {}, missed: {} });
 
 function defaultStore(): Store | undefined {
   try {
@@ -31,12 +45,25 @@ function defaultStore(): Store | undefined {
   }
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Turns whatever was stored (or imported) into a well-formed Progress. */
+function tidy(parsed: unknown): Progress {
+  if (!isRecord(parsed)) return empty();
+  const last = isRecord(parsed.last) && typeof parsed.last.id === 'string' ? (parsed.last as Progress['last']) : undefined;
+  return {
+    read: isRecord(parsed.read) ? (parsed.read as Progress['read']) : {},
+    last,
+    answers: isRecord(parsed.answers) ? (parsed.answers as Progress['answers']) : {},
+    exercises: isRecord(parsed.exercises) ? (parsed.exercises as Progress['exercises']) : {},
+    missed: isRecord(parsed.missed) ? (parsed.missed as Progress['missed']) : {},
+  };
+}
+
 export function loadProgress(store: Store | undefined = defaultStore()): Progress {
   try {
     const raw = store?.getItem(KEY);
-    if (!raw) return empty();
-    const parsed = JSON.parse(raw) as Partial<Progress>;
-    return { read: parsed.read ?? {}, last: parsed.last, answers: parsed.answers ?? {} };
+    return raw ? tidy(JSON.parse(raw)) : empty();
   } catch {
     return empty();
   }
@@ -53,7 +80,17 @@ function save(progress: Progress, store: Store | undefined): void {
 /** Remembers which chapter is open, for "continue reading". */
 export function noteOpened(id: string, title: string, label: string, store: Store | undefined = defaultStore()): void {
   const progress = loadProgress(store);
-  progress.last = { id, title, label };
+  // Coming back to the same chapter keeps the section the reader had reached.
+  const section = progress.last?.id === id ? progress.last.section : undefined;
+  progress.last = { id, title, label, section };
+  save(progress, store);
+}
+
+/** Remembers the section the reader has scrolled to in the open chapter. */
+export function noteSection(id: string, section: string | undefined, store: Store | undefined = defaultStore()): void {
+  const progress = loadProgress(store);
+  if (progress.last?.id !== id || progress.last.section === section) return;
+  progress.last.section = section;
   save(progress, store);
 }
 
@@ -75,11 +112,59 @@ export function savedAnswer(id: string, question: string, store: Store | undefin
   return loadProgress(store).answers[id]?.[question] ?? null;
 }
 
+/**
+ * Called with the reader's first answer to a checkpoint. A wrong first answer
+ * is kept for the review page; later answers to the same question are ignored.
+ */
+export function noteFirstTry(entry: Missed, wasCorrect: boolean, store: Store | undefined = defaultStore()): void {
+  const progress = loadProgress(store);
+  if (progress.answers[entry.chapter]?.[entry.question] !== undefined) return; // not the first try
+  if (wasCorrect) return;
+  progress.missed[`${entry.chapter}|${entry.question}`] = entry;
+  save(progress, store);
+}
+
+/** Marks a missed checkpoint as answered correctly on the review page. */
+export function resolveMissed(key: string, store: Store | undefined = defaultStore()): void {
+  const progress = loadProgress(store);
+  if (!progress.missed[key]) return;
+  progress.missed[key].resolved = true;
+  save(progress, store);
+}
+
+/** Ticks or unticks an exercise. Returns the exercises of that chapter now marked done. */
+export function setExerciseDone(id: string, exercise: number, done: boolean, store: Store | undefined = defaultStore()): number[] {
+  const progress = loadProgress(store);
+  const set = new Set(progress.exercises[id] ?? []);
+  if (done) set.add(exercise);
+  else set.delete(exercise);
+  progress.exercises[id] = [...set].sort((a, b) => a - b);
+  save(progress, store);
+  return progress.exercises[id];
+}
+
 export function clearProgress(store: Store | undefined = defaultStore()): void {
   try {
     store?.removeItem(KEY);
   } catch {
     // Nothing to clear.
+  }
+}
+
+/** Everything saved, as text the reader can keep in a file and load on another device. */
+export function exportProgress(store: Store | undefined = defaultStore()): string {
+  return JSON.stringify({ book: 'the-book-of-ml', version: 1, progress: loadProgress(store) }, null, 2);
+}
+
+/** Loads text made by exportProgress. Returns false, changing nothing, if it is not such a file. */
+export function importProgress(text: string, store: Store | undefined = defaultStore()): boolean {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (!isRecord(parsed) || parsed.book !== 'the-book-of-ml' || !isRecord(parsed.progress)) return false;
+    save(tidy(parsed.progress), store);
+    return true;
+  } catch {
+    return false;
   }
 }
 

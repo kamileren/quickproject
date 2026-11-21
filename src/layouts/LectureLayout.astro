@@ -1,11 +1,13 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
-import { getEntry } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
+import SectionList from '@/components/SectionList.astro';
+import { lastChanged, longDate } from '@/lib/git';
 import SiteNav from '@/components/SiteNav.astro';
 import Pop from '@/components/popins/Pop';
 import { getReadyLectures } from '@/lib/book';
-import { chapterLabel, chapterName, chapterUrl, SITE_NAME, type Lecture, type Part } from '@/lib/book';
+import { chapterLabel, chapterName, chapterUrl, REPO_BRANCH, REPO_SLUG, SITE_NAME, type Lecture, type Part } from '@/lib/book';
 
 interface Props {
   lecture: Lecture;
@@ -27,6 +29,20 @@ const sharers = dataset
   : [];
 const hasExercises = (lecture.body ?? '').includes('<Exercises>');
 const sections = headings.filter((h) => h.depth === 2 && h.text !== 'Key Takeaways' && h.text !== 'References');
+
+// The same list is shown beside the text on wide screens and in a pull-up sheet on small ones.
+const sectionLinks = [
+  ...sections.map((s, i) => ({ href: `#${s.slug}`, label: s.text, tag: `${number}.${i + 1}` })),
+  ...(hasExercises ? [{ href: '#exercises', label: 'Exercises', tag: '' }] : []),
+];
+
+// Symbols a reader can point at inside a formula. "d" is left out: it also appears in dy/dx.
+const notation = Object.fromEntries(
+  (await getCollection('notation')).filter((n) => n.data.symbol.length === 1 && n.data.symbol !== 'd').map((n) => [n.data.symbol, n.data.meaning]),
+);
+
+const updated = lecture.filePath ? lastChanged(lecture.filePath) : undefined;
+const editUrl = lecture.filePath ? `https://github.com/${REPO_SLUG}/edit/${REPO_BRANCH}/${lecture.filePath}` : undefined;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -90,11 +106,12 @@ const jsonLd = {
                   {prerequisites.map((p, i) => (
                     <>
                       {i > 0 && ', '}
-                      <a class="underline decoration-orange-300 underline-offset-2 hover:text-orange-600" href={chapterUrl(p)}>
+                      <a class="underline decoration-orange-300 underline-offset-2 hover:text-orange-600" href={chapterUrl(p)} data-prerequisite={p.id}>
                         {p.data.title}
                       </a>
                     </>
                   ))}
+                  <span id="prerequisite-note" hidden class="ml-2 text-orange-700" />
                 </dd>
               </div>
             )
@@ -108,23 +125,7 @@ const jsonLd = {
           <nav aria-label="In this chapter" class="mb-12 min-[1280px]:absolute min-[1280px]:top-0 min-[1280px]:right-full min-[1280px]:mr-10 min-[1280px]:mb-0 min-[1280px]:h-full min-[1280px]:w-44 min-[1500px]:mr-16 min-[1500px]:w-48">
             <div class="min-[1280px]:sticky min-[1280px]:top-10">
               <div class="micro-label mb-3 text-stone-400">In this chapter</div>
-              <ol id="section-list" class="space-y-1.5 border-l border-stone-100 font-sans text-[13px] leading-snug text-stone-500">
-                {sections.map((s, i) => (
-                  <li>
-                    <a href={`#${s.slug}`} class="-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600">
-                      <span class="mr-1.5 font-mono text-[10px] text-stone-400">{number}.{i + 1}</span>
-                      {s.text}
-                    </a>
-                  </li>
-                ))}
-                {hasExercises && (
-                  <li>
-                    <a href="#exercises" class="-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600">
-                      Exercises
-                    </a>
-                  </li>
-                )}
-              </ol>
+              <SectionList links={sectionLinks} />
             </div>
           </nav>
         )
@@ -134,10 +135,20 @@ const jsonLd = {
         <slot />
       </article>
 
-      <nav id="chapter-end" aria-label="Chapters" class="mt-24 grid gap-4 border-t-2 border-stone-900 pt-8 font-sans sm:grid-cols-2">
+      <p class="mt-16 flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-stone-400" data-print-hide>
+        {updated && <span>Last updated <time datetime={updated}>{longDate(updated)}</time></span>}
+        {editUrl && (
+          <a href={editUrl} rel="noopener" class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">
+            Spotted a mistake? Suggest an edit
+          </a>
+        )}
+        <a href="/changelog/" class="underline decoration-stone-300 underline-offset-2 hover:text-orange-700">What changed</a>
+      </p>
+
+      <nav id="chapter-end" aria-label="Chapters" class="mt-10 grid gap-4 border-t-2 border-stone-900 pt-8 font-sans sm:grid-cols-2">
         {
           prev ? (
-            <a href={chapterUrl(prev)} class="group block">
+            <a href={chapterUrl(prev)} rel="prev" class="group block">
               <div class="micro-label mb-1 text-stone-400">‹ Previous</div>
               <div class="display text-lg group-hover:text-orange-700">{prev.data.title}</div>
             </a>
@@ -147,7 +158,7 @@ const jsonLd = {
         }
         {
           next ? (
-            <a href={chapterUrl(next)} class="group block sm:text-right">
+            <a href={chapterUrl(next)} rel="next" class="group block sm:text-right">
               <div class="micro-label mb-1 text-stone-400">Next ›</div>
               <div class="display text-lg group-hover:text-orange-700">{next.data.title}</div>
             </a>
@@ -161,85 +172,24 @@ const jsonLd = {
       </nav>
     </div>
   </main>
+
+  {/* On screens too narrow for the side list: a button that pulls the list up, and one that goes to the top. */}
+  <div class="fixed right-4 bottom-4 z-30 flex flex-col gap-2 min-[1280px]:hidden" data-print-hide>
+    <button id="to-top" type="button" hidden aria-label="Back to the top" class="float-button" onclick="window.scrollTo({ top: 0 })">↑</button>
+    <button type="button" data-open="sections-window" aria-label="Sections of this chapter" class="float-button">≡</button>
+  </div>
+  <dialog id="sections-window" aria-label="In this chapter" class="site-dialog w-[min(26rem,calc(100vw-1.5rem))]">
+    <div class="mb-4 flex items-center justify-between">
+      <span class="micro-label text-stone-900">In this chapter</span>
+      <button type="button" data-close class="micro-label cursor-pointer text-stone-500 hover:text-stone-900">Close</button>
+    </div>
+    <SectionList links={sectionLinks} large />
+  </dialog>
+
+  <div id="symbol-tip" role="tooltip" hidden class="pointer-events-none fixed z-50 max-w-64 rounded border border-stone-900 bg-white px-3 py-2 font-serif text-[13px] leading-snug text-stone-700 shadow-xl"></div>
+  <script is:inline type="application/json" id="notation-data" set:html={JSON.stringify(notation)} />
 </BaseLayout>
 
-<style>
-  #section-list a[aria-current='true'] {
-    border-left-color: var(--accent);
-    color: var(--ink);
-    font-weight: 600;
-  }
-</style>
-
 <script>
-  import { markRead, noteOpened } from '@/lib/progress';
-
-  const article = document.querySelector<HTMLElement>('article[data-chapter-id]');
-  if (article) {
-    const { chapterId = '', chapterTitle = '', chapterLabel = '' } = article.dataset;
-    noteOpened(chapterId, chapterTitle, chapterLabel);
-
-    // The chapter counts as read once its last lines have been on screen.
-    const end = document.getElementById('chapter-end');
-    if (end) {
-      const seen = new IntersectionObserver((entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          markRead(chapterId);
-          seen.disconnect();
-        }
-      });
-      seen.observe(end);
-    }
-
-    // Thin bar at the top of the window: how far through the chapter the reader is.
-    const bar = document.getElementById('reading-bar');
-    const links = [...document.querySelectorAll<HTMLAnchorElement>('#section-list a')];
-    const headings = links
-      .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
-      .filter((h): h is HTMLElement => h !== null);
-
-    let queued = false;
-    const update = () => {
-      queued = false;
-      const box = article.getBoundingClientRect();
-      const done = Math.min(1, Math.max(0, -box.top / Math.max(1, box.height - window.innerHeight)));
-      if (bar) bar.style.transform = `scaleX(${done})`;
-      // The current section is the last heading that has passed the top third of the window.
-      let current = -1;
-      headings.forEach((h, i) => {
-        if (h.getBoundingClientRect().top < window.innerHeight / 3) current = i;
-      });
-      links.forEach((a, i) => (i === current ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
-    };
-    const onScroll = () => {
-      if (!queued) {
-        queued = true;
-        requestAnimationFrame(update);
-      }
-    };
-    // A copy button on every code block.
-    for (const pre of article.querySelectorAll('pre')) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'copy-code';
-      button.textContent = 'Copy';
-      button.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(pre.querySelector('code')?.textContent ?? '');
-          button.textContent = 'Copied';
-        } catch {
-          button.textContent = 'Press Ctrl+C';
-        }
-        setTimeout(() => (button.textContent = 'Copy'), 1600);
-      });
-      const frame = document.createElement('div');
-      frame.className = 'code-frame';
-      pre.replaceWith(frame);
-      frame.append(pre, button);
-    }
-
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', onScroll);
-    update();
-  }
+  import '@/scripts/chapter';
 </script>

@@ -22,6 +22,7 @@ const links = [
       links.map((link) => (
         <a
           href={link.href}
+          data-open={link.id === 'search' ? 'search-window' : undefined}
           aria-current={current === link.id ? 'page' : undefined}
           class:list={['transition-colors hover:text-orange-600', current === link.id && 'font-semibold text-stone-900']}
         >
@@ -29,6 +30,15 @@ const links = [
         </a>
       ))
     }
+    <button
+      type="button"
+      data-open="settings-window"
+      aria-label="Reading settings"
+      title="Reading settings (t)"
+      class="cursor-pointer font-serif text-base leading-none transition-colors hover:text-orange-600"
+    >
+      A<span class="text-xs">a</span>
+    </button>
     <slot />
   </span>
 </nav>

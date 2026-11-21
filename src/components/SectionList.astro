@@ -1,0 +1,22 @@
+---
+/** The sections of a chapter as a list of links. The current one is marked by src/scripts/chapter.ts. */
+interface Props {
+  links: { href: string; label: string; tag: string }[];
+  /** Bigger text and touch targets, for the pull-up sheet on phones. */
+  large?: boolean;
+}
+const { links, large = false } = Astro.props;
+---
+
+<ol data-section-list class:list={['border-l border-stone-100 font-sans leading-snug text-stone-500', large ? 'space-y-1 text-base' : 'space-y-1.5 text-[13px]']}>
+  {
+    links.map((link) => (
+      <li>
+        <a href={link.href} class:list={['-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600', large && 'py-1.5']}>
+          {link.tag && <span class="mr-1.5 font-mono text-[10px] text-stone-400">{link.tag}</span>}
+          {link.label}
+        </a>
+      </li>
+    ))
+  }
+</ol>

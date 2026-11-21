@@ -19,6 +19,14 @@ export default tseslint.config(
     },
   },
   {
+    files: ['public/search.js'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
+  {
     files: ['scripts/**/*.mjs', '*.{js,mjs,ts}'],
     languageOptions: { globals: globals.node },
   },

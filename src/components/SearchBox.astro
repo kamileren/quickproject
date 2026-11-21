@@ -1,0 +1,36 @@
+---
+/**
+ * The search field and its results. Used on the search page and inside the
+ * search window that opens over any page. The logic is in public/search.js.
+ */
+interface Props {
+  /** Keep the address bar in step with the query (the search page only). */
+  syncUrl?: boolean;
+}
+const { syncUrl = false } = Astro.props;
+---
+
+<div data-search data-sync-url={syncUrl ? '' : undefined}>
+  <form role="search">
+    <input
+      name="q"
+      type="search"
+      aria-label="Search the book"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Try “overfitting” or “learning rate”"
+      class="w-full rounded-sm border-2 border-stone-900 px-4 py-3 font-serif text-lg placeholder:text-stone-400 focus:border-orange-600 focus:outline-none"
+    />
+  </form>
+  <p data-search-status aria-live="polite" class="mt-3 min-h-5 font-sans text-xs text-stone-500"></p>
+  <ol data-search-results class="mt-6 space-y-7"></ol>
+</div>
+
+<style is:global>
+  [data-search-results] mark {
+    border-radius: 2px;
+    background: var(--accent-soft);
+    color: inherit;
+    padding: 0 1px;
+  }
+</style>

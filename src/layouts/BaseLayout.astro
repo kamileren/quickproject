@@ -2,6 +2,8 @@
 import '@/styles/global.css';
 import 'katex/dist/katex.min.css';
 import { SITE_NAME } from '@/lib/book';
+import SiteChrome from '@/components/SiteChrome.astro';
+import { PREFS_KEY } from '@/lib/prefs';
 
 interface Props {
   title: string;
@@ -12,9 +14,11 @@ interface Props {
   jsonLd?: Record<string, unknown>;
   /** Name of the share picture in public/og/, without the extension. */
   shareImage?: string;
+  /** Set to false on the search page, which has its own search box. */
+  searchWindow?: boolean;
 }
 
-const { title, description, noindex = false, jsonLd, shareImage = 'home' } = Astro.props;
+const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true } = Astro.props;
 const image = new URL(`/og/${shareImage}.png`, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
@@ -25,6 +29,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+    <meta name="theme-color" content="#1c1917" />
+    {/* Applies the reader's text size and colours before anything is drawn. Mirrors src/lib/prefs.ts. */}
+    <script is:inline define:vars={{ PREFS_KEY }}>
+      try {
+        const p = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+        const dark = p.theme === 'dark' || (p.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.dataset.size = p.size === 's' || p.size === 'l' ? p.size : 'm';
+      } catch {
+        // No stored preferences: the defaults apply.
+      }
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content={SITE_NAME} />
@@ -48,5 +66,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   </head>
   <body class="min-h-screen">
     <slot />
+    <SiteChrome searchWindow={searchWindow} />
   </body>
 </html>

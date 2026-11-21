@@ -24,6 +24,8 @@
 }
 
 html {
+  --prose-scale: 1;
+  background: #fff;
   scroll-behavior: smooth;
   scroll-padding-top: 2rem;
 }
@@ -118,7 +120,7 @@ body {
      ------------------------------------------------------------------------- */
   .book-prose {
     counter-reset: section figure definition;
-    font-size: 1.125rem;
+    font-size: calc(1.125rem * var(--prose-scale));
     line-height: 1.7;
     color: var(--body);
   }
@@ -273,7 +275,7 @@ body {
       white-space: nowrap;
     }
     .book-prose {
-      font-size: 1.0625rem;
+      font-size: calc(1.0625rem * var(--prose-scale));
     }
   }
 
@@ -419,4 +421,260 @@ input[type='range'].book-range::-moz-range-thumb {
 input[type='range'].book-range:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   Reading preferences, set on <html> by the settings window.
+   --------------------------------------------------------------------------- */
+html[data-size='s'] {
+  --prose-scale: 0.9;
+}
+html[data-size='l'] {
+  --prose-scale: 1.15;
+}
+
+/*
+  Dark colours. The whole page is inverted and its hues turned back, which
+  keeps orange orange and blue blue while swapping light for dark. Every
+  figure follows without needing colours of its own. Photographs and pictures
+  drawn pixel by pixel are inverted a second time so they look as they should.
+*/
+html[data-theme='dark'] {
+  filter: invert(0.93) hue-rotate(180deg);
+}
+html[data-theme='dark'] :is(img, canvas, video, [data-true-colors]) {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Windows that open over the page: search, settings, shortcuts, sections. */
+dialog.site-dialog {
+  margin: 8vh auto auto;
+  max-height: 84vh;
+  padding: 1.5rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.25rem;
+  background: #fff;
+  color: var(--ink);
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
+}
+dialog.site-dialog::backdrop {
+  background: rgb(28 25 23 / 0.45);
+}
+/* The page behind an open window does not scroll. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.pref-option {
+  padding: 0.5rem 0.25rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  background: #fff;
+  color: var(--body);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.pref-option:hover {
+  border-color: var(--faint);
+}
+.pref-option[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Chapter page helpers added by src/scripts/chapter.ts.
+   --------------------------------------------------------------------------- */
+
+/* "#" beside a heading or figure number: copies a link to it. */
+.anchor-link {
+  margin-left: 0.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-weight: 400;
+  color: var(--faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+:is(h2, figure header):hover .anchor-link,
+.anchor-link:focus-visible {
+  opacity: 1;
+}
+.anchor-link:hover {
+  color: var(--accent);
+}
+@media (hover: none) {
+  .anchor-link {
+    opacity: 0.6;
+  }
+}
+/* Headings and figures reached by a link stop clear of the top edge. */
+.book-prose :is(h2, figure, .exercise) {
+  scroll-margin-top: 1.5rem;
+}
+
+.book-prose .katex-display {
+  position: relative;
+}
+.copy-tex {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.katex-display:hover .copy-tex,
+.copy-tex:focus-visible {
+  opacity: 1;
+}
+.copy-tex:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* A symbol in a formula that says what it means when pointed at. */
+.katex .has-meaning {
+  cursor: help;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.exercise-done {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+.exercise-done input {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.exercise.is-done {
+  border-color: #fdba74;
+  background: #fffaf5;
+}
+
+.float-button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--ink);
+  border-radius: 9999px;
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+.float-button[hidden] {
+  display: none;
+}
+
+/* A figure opened to fill the screen. */
+figure.book-figure.is-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  overflow-y: auto;
+}
+html.has-expanded-figure {
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   Printing and saving as PDF: the text and figures, without the controls.
+   --------------------------------------------------------------------------- */
+@media print {
+  html {
+    filter: none !important;
+  }
+  nav,
+  dialog,
+  #reading-bar,
+  #toast,
+  [data-print-hide],
+  .anchor-link,
+  .copy-code,
+  .copy-tex,
+  .exercise-done,
+  [data-figure-reset],
+  [data-figure-expand],
+  figure.book-figure button,
+  figure.book-figure input[type='range'] {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .book-prose {
+    font-size: 11pt;
+  }
+  .book-prose h2 {
+    margin-top: 2rem;
+    break-after: avoid;
+  }
+  figure.book-figure,
+  .exercise,
+  .takeaways,
+  pre,
+  table {
+    break-inside: avoid;
+  }
+  .takeaways {
+    border: 2px solid #000;
+    background: none !important;
+    color: #000 !important;
+  }
+  .takeaways :is(h2, strong, li) {
+    color: #000 !important;
+  }
+  .book-prose a {
+    text-decoration: none;
+  }
+  .pop-trigger {
+    border: 0;
+    font-style: normal;
+  }
+  /* Margin notes go back into the text. */
+  .book-prose aside {
+    position: static !important;
+    width: auto !important;
+  }
+}
+
+/* The section of the chapter the reader is in. */
+[data-section-list] a[aria-current='true'] {
+  border-left-color: var(--accent);
+  color: var(--ink);
+  font-weight: 600;
 }

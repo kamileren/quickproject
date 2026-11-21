@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { chapterIdFromPath, clearProgress, loadProgress, markRead, noteOpened, saveAnswer, savedAnswer, type Store } from './progress';
+import {
+  chapterIdFromPath,
+  clearProgress,
+  exportProgress,
+  importProgress,
+  loadProgress,
+  markRead,
+  noteFirstTry,
+  noteOpened,
+  noteSection,
+  resolveMissed,
+  saveAnswer,
+  savedAnswer,
+  setExerciseDone,
+  type Store,
+} from './progress';
 
 function memoryStore(): Store & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -13,7 +28,7 @@ function memoryStore(): Store & { data: Map<string, string> } {
 
 describe('reading progress', () => {
   it('starts empty', () => {
-    expect(loadProgress(memoryStore())).toEqual({ read: {}, last: undefined, answers: {} });
+    expect(loadProgress(memoryStore())).toEqual({ read: {}, last: undefined, answers: {}, exercises: {}, missed: {} });
   });
 
   it('remembers the open chapter and finished chapters', () => {
@@ -22,7 +37,7 @@ describe('reading progress', () => {
     markRead('linear-regression', 1000, store);
     markRead('linear-regression', 2000, store); // the first time is kept
     const progress = loadProgress(store);
-    expect(progress.last).toEqual({ id: 'gradient-descent', title: 'Gradient Descent', label: 'Chapter 3' });
+    expect(progress.last).toEqual({ id: 'gradient-descent', title: 'Gradient Descent', label: 'Chapter 3', section: undefined });
     expect(progress.read).toEqual({ 'linear-regression': 1000 });
   });
 
@@ -33,6 +48,50 @@ describe('reading progress', () => {
     expect(savedAnswer('knn', 'Where is the effort?', store)).toBe(2);
     expect(savedAnswer('knn', 'Another question', store)).toBeNull();
     expect(savedAnswer('svm', 'Where is the effort?', store)).toBeNull();
+  });
+
+  it('remembers the section reached, and keeps it when the same chapter is reopened', () => {
+    const store = memoryStore();
+    noteOpened('knn', 'Nearest Neighbours', 'Chapter 8', store);
+    noteSection('knn', 'choosing-k', store);
+    noteSection('svm', 'ignored', store); // not the open chapter
+    noteOpened('knn', 'Nearest Neighbours', 'Chapter 8', store);
+    expect(loadProgress(store).last?.section).toBe('choosing-k');
+    noteOpened('svm', 'Support Vector Machines', 'Chapter 10', store);
+    expect(loadProgress(store).last?.section).toBeUndefined();
+  });
+
+  it('ticks and unticks exercises', () => {
+    const store = memoryStore();
+    setExerciseDone('knn', 3, true, store);
+    setExerciseDone('knn', 1, true, store);
+    expect(setExerciseDone('knn', 1, true, store)).toEqual([1, 3]);
+    expect(setExerciseDone('knn', 3, false, store)).toEqual([1]);
+  });
+
+  it('keeps a checkpoint for review only when the first answer was wrong', () => {
+    const store = memoryStore();
+    const entry = (question: string) => ({ chapter: 'knn', chapterTitle: 'Nearest Neighbours', question, options: [{ text: 'a', why: 'no' }, { text: 'b', correct: true, why: 'yes' }] });
+    noteFirstTry(entry('one'), false, store);
+    saveAnswer('knn', 'one', 0, store);
+    noteFirstTry(entry('two'), true, store);
+    saveAnswer('knn', 'two', 1, store);
+    noteFirstTry(entry('two'), false, store); // a later wrong click does not count
+    expect(Object.keys(loadProgress(store).missed)).toEqual(['knn|one']);
+    resolveMissed('knn|one', store);
+    expect(loadProgress(store).missed['knn|one'].resolved).toBe(true);
+  });
+
+  it('exports and imports, and refuses files that are not exports', () => {
+    const a = memoryStore();
+    markRead('knn', 5, a);
+    setExerciseDone('knn', 2, true, a);
+    const b = memoryStore();
+    expect(importProgress(exportProgress(a), b)).toBe(true);
+    expect(loadProgress(b)).toEqual(loadProgress(a));
+    expect(importProgress('{"something":"else"}', b)).toBe(false);
+    expect(importProgress('not json', b)).toBe(false);
+    expect(loadProgress(b).read).toEqual({ knn: 5 });
   });
 
   it('clears everything', () => {

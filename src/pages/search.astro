@@ -1,35 +1,23 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SiteNav from '@/components/SiteNav.astro';
+import SearchBox from '@/components/SearchBox.astro';
 import { SITE_NAME } from '@/lib/book';
 ---
 
-<BaseLayout title={`Search — ${SITE_NAME}`} description="Search every chapter of the book and the glossary." noindex>
+<BaseLayout title={`Search — ${SITE_NAME}`} description="Search every chapter of the book and the glossary." noindex searchWindow={false}>
   <main class="px-6 pt-16 pb-32">
     <div class="mx-auto max-w-3xl">
       <SiteNav current="search" />
-      <header class="mb-10">
+      <header class="mb-8">
         <div class="mb-8 flex items-center gap-4">
           <div class="h-[2px] w-12 bg-stone-900"></div>
           <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Reference</div>
         </div>
-        <h1 class="display mb-8 text-5xl leading-[1.05] sm:text-6xl">Search.</h1>
-        <form id="search-form" role="search" class="flex gap-3">
-          <label class="sr-only" for="search-box">Search the book</label>
-          <input
-            id="search-box"
-            name="q"
-            type="search"
-            autocomplete="off"
-            spellcheck="false"
-            placeholder="Try “overfitting” or “learning rate”"
-            class="w-full rounded-sm border-2 border-stone-900 px-4 py-3 font-serif text-lg placeholder:text-stone-400 focus:border-orange-600 focus:outline-none"
-          />
-        </form>
-        <p id="search-status" aria-live="polite" class="mt-4 min-h-5 font-sans text-xs text-stone-500"></p>
+        <h1 class="display text-5xl leading-[1.05] sm:text-6xl">Search.</h1>
       </header>
 
-      <ol id="search-results" class="space-y-8"></ol>
+      <SearchBox syncUrl />
 
       <noscript>
         <p class="text-stone-600">Search needs JavaScript. The <a class="underline" href="/#contents">table of contents</a> and the <a class="underline" href="/glossary/">glossary</a> work without it.</p>
@@ -37,95 +25,3 @@ import { SITE_NAME } from '@/lib/book';
     </div>
   </main>
 </BaseLayout>
-
-<style is:global>
-  #search-results mark {
-    border-radius: 2px;
-    background: var(--accent-soft);
-    color: inherit;
-    padding: 0 1px;
-  }
-</style>
-
-{/* Not bundled: the index and its loader are written into dist/pagefind/ after the build. */}
-<script is:inline type="module">
-  const box = document.getElementById('search-box');
-  const status = document.getElementById('search-status');
-  const list = document.getElementById('search-results');
-  const form = document.getElementById('search-form');
-  form.addEventListener('submit', (e) => e.preventDefault());
-
-  let pagefind;
-  try {
-    pagefind = await import('/pagefind/pagefind.js');
-    await pagefind.options({ excerptLength: 28 });
-    pagefind.init();
-  } catch {
-    status.textContent = 'The search index is only available on the built site (npm run build, then npm run preview).';
-  }
-
-  const el = (tag, className, text) => {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  };
-
-  // Pagefind excerpts are escaped text with <mark> around the matches, so they are safe to insert.
-  const excerpt = (html) => {
-    const p = el('p', 'mt-1 text-[15px] leading-relaxed text-stone-600');
-    p.innerHTML = html;
-    return p;
-  };
-
-  let latest = 0;
-  async function run(query) {
-    const ticket = ++latest;
-    const q = query.trim();
-    history.replaceState(null, '', q ? `?q=${encodeURIComponent(q)}` : location.pathname);
-    if (!q || !pagefind) {
-      list.replaceChildren();
-      if (pagefind) status.textContent = '';
-      return;
-    }
-    const found = await pagefind.debouncedSearch(q, {}, 150);
-    if (found === null || ticket !== latest) return; // a newer keystroke took over
-    const pages = await Promise.all(found.results.slice(0, 12).map((r) => r.data()));
-    if (ticket !== latest) return;
-
-    status.textContent =
-      found.results.length === 0
-        ? `Nothing found for “${q}”.`
-        : `${found.results.length} ${found.results.length === 1 ? 'page' : 'pages'} mention “${q}”.`;
-
-    list.replaceChildren(
-      ...pages.map((page) => {
-        const item = el('li', 'border-b border-stone-100 pb-6');
-        if (page.meta.kind) item.append(el('div', 'micro-label mb-1 text-orange-600', page.meta.kind));
-        const title = el('a', 'display text-xl underline decoration-orange-300 decoration-2 underline-offset-4 hover:text-orange-700', page.meta.title);
-        title.href = page.url;
-        item.append(title);
-
-        // Sections of the page that match, each with its own link.
-        const sections = page.sub_results.filter((s) => s.url !== page.url).slice(0, 3);
-        if (sections.length === 0) item.append(excerpt(page.excerpt));
-        for (const section of sections) {
-          const row = el('div', 'mt-3 border-l-2 border-stone-200 pl-4');
-          const link = el('a', 'font-sans text-sm font-semibold text-stone-800 hover:text-orange-700', section.title);
-          link.href = section.url;
-          row.append(link, excerpt(section.excerpt));
-          item.append(row);
-        }
-        return item;
-      }),
-    );
-  }
-
-  box.addEventListener('input', () => run(box.value));
-  const initial = new URLSearchParams(location.search).get('q');
-  if (initial) {
-    box.value = initial;
-    run(initial);
-  }
-  box.focus();
-</script>
