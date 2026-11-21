@@ -28,6 +28,18 @@ const paths = [
   },
 ];
 
+const ready = lectures.filter((l) => l.data.status === 'ready');
+const countIn = (tag: string) => ready.reduce((sum, l) => sum + ((l.body ?? '').match(new RegExp(`<${tag}[\\s>]`, 'g')) ?? []).length, 0);
+const stats = [`${ready.length} chapters`, `${countIn('Figure')} interactive figures`.replace('interactive ', ''), `${countIn('Exercise')} exercises`, 'free'];
+
+const quickLinks = [
+  { label: 'Search', href: '/search/', open: 'search-window' },
+  { label: 'Glossary', href: '/glossary/' },
+  { label: 'Map', href: '/map/' },
+  { label: 'Recap', href: '/recap/' },
+  { label: 'Notation', href: '/notation/' },
+];
+
 const description =
   'A free, interactive online textbook that teaches machine learning from first principles: regression, classification, trees, neural networks and more, one idea at a time.';
 
@@ -46,64 +58,70 @@ const jsonLd = {
 ---
 
 <BaseLayout title={`${SITE_NAME} — A Free Interactive ML Textbook`} description={description} jsonLd={jsonLd} bar={false}>
-  <main class="px-5 pt-14 pb-24 sm:px-6 sm:pt-20 sm:pb-32">
+  <main class="relative px-5 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-32">
+    <div class="absolute top-2 right-2 flex font-sans text-stone-500 sm:top-4 sm:right-4" data-print-hide>
+      <button type="button" data-open="settings-window" aria-label="Text size and colours" title="Text size and colours (t)" class="grid h-10 w-10 cursor-pointer place-items-center rounded font-serif text-base leading-none hover:bg-stone-100 hover:text-stone-900">
+        <span aria-hidden="true">A<span class="text-xs">a</span></span>
+      </button>
+      <button type="button" data-open="menu-window" aria-label="Menu" title="Menu" class="grid h-10 w-10 cursor-pointer place-items-center rounded hover:bg-stone-100 hover:text-stone-900">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h12M3 9h12M3 13h12" /></svg>
+      </button>
+    </div>
     <div class="mx-auto max-w-4xl">
-      <header class="mb-16 text-center sm:mb-24">
-        <div class="micro-label mb-6 tracking-[0.5em] text-orange-600">Volume I // First Edition</div>
+      <header class="mb-12 text-center sm:mb-24">
+        <div class="micro-label mb-5 tracking-[0.35em] text-orange-600 sm:mb-6 sm:tracking-[0.5em]">Volume I // First Edition</div>
         <h1 class="display mb-8 text-[clamp(2.6rem,12.5vw,3.75rem)] leading-[0.95] sm:mb-10 sm:text-7xl sm:leading-[0.9] md:text-8xl">
           The Book of <br />
           <span class="italic">Machine Learning.</span>
         </h1>
         <div class="mx-auto max-w-xl">
-          <p class="mb-8 text-lg leading-relaxed font-light text-stone-500 italic sm:mb-10 sm:text-xl">
+          <p class="mb-7 text-[1.0625rem] leading-relaxed font-light text-stone-500 italic sm:mb-10 sm:text-xl">
             Machine learning from first principles, one idea at a time. Every chapter starts with a question, works
             through a real example, and gives you something to try.
           </p>
           {
             firstReady && (
-              <div class="flex justify-center gap-4">
-                <a id="start-link" class="btn btn-primary" href={chapterUrl(firstReady)}>
+              <div class="flex justify-center">
+                <a id="start-link" class="btn btn-primary w-full justify-center py-3.5 text-[13px] sm:w-auto sm:py-2.5 sm:text-xs" href={chapterUrl(firstReady)}>
                   <span id="start-text">Start Reading</span> <span aria-hidden="true">→</span>
                 </a>
               </div>
-              <p class="mt-6 font-sans text-xs text-stone-500">
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/glossary/">Glossary</a>
-                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/notation/">Notation</a>
-                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/search/" data-open="search-window">Search</a>
-                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/map/">Map</a>
-                <span class="mx-2 text-stone-300" aria-hidden="true">/</span>
-                <a class="underline decoration-orange-300 underline-offset-4 hover:text-orange-700" href="/recap/">Recap</a>
-              </p>
+              <p class="mt-4 font-mono text-[10px] tracking-wider text-stone-400 uppercase">{stats.join(' · ')}</p>
+              <nav aria-label="Reference pages" class="mt-6 flex flex-wrap justify-center gap-2 font-sans text-[13px]">
+                {quickLinks.map((link) => (
+                  <a href={link.href} data-open={link.open} class="rounded-full border border-stone-200 px-3.5 py-1.5 text-stone-600 transition-colors hover:border-stone-900 hover:text-stone-900">
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
             )
           }
         </div>
       </header>
 
-      <section aria-labelledby="paths" class="mb-16 sm:mb-24">
+      <section aria-labelledby="paths" class="mb-12 sm:mb-24">
         <h2 id="paths" class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
           Where to start
         </h2>
-        <div class="grid gap-x-10 gap-y-8 md:grid-cols-3">
+        <div class="path-row -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-x-10 md:overflow-visible md:px-0 md:pb-0">
           {
             paths.map((path) => (
-              <div>
-                <h3 class="display mb-2 text-lg">{path.title}</h3>
-                <p class="mb-3 text-sm leading-7 text-stone-600">{path.text}</p>
-                <a class="inline-block py-1.5 font-sans text-xs font-bold tracking-wider text-orange-700 uppercase hover:text-orange-900" href={path.href}>
+              <a href={path.href} class="path-card group block w-[80%] shrink-0 snap-center rounded border border-stone-200 p-4 transition-colors hover:border-stone-900 md:w-auto md:border-0 md:p-0">
+                <h3 class="display mb-1.5 text-lg md:mb-2">{path.title}</h3>
+                <p class="mb-2 text-sm leading-6 text-stone-600 md:mb-3 md:leading-7">{path.text}</p>
+                <span class="inline-block font-sans text-xs font-bold tracking-wider text-orange-700 uppercase group-hover:text-orange-900">
                   {path.action} <span aria-hidden="true">→</span>
-                </a>
-              </div>
+                </span>
+              </a>
             ))
           }
         </div>
       </section>
 
-      <div class="grid gap-12 md:grid-cols-12 md:gap-16">
-        <div class="md:col-span-4">
-          <div class="md:sticky md:top-10">
+      <div class="grid gap-10 md:grid-cols-12 md:gap-16">
+        <div class="max-md:contents md:col-span-4">
+          <div class="max-md:contents md:sticky md:top-10">
+          <div class="max-md:order-3">
           <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
             Preface
           </h2>
@@ -116,8 +134,9 @@ const jsonLd = {
             A chapter takes about a quarter of an hour to read, and longer if you play with the figures, which you
             should. Each one ends with exercises and their worked solutions.
           </p>
+          </div>
 
-          <section aria-labelledby="progress-title" class="mt-8 rounded border border-stone-200 p-4 font-sans">
+          <section id="progress-panel" data-empty aria-labelledby="progress-title" class="rounded border border-stone-200 p-4 font-sans max-md:order-1 md:mt-8">
             <h2 id="progress-title" class="micro-label mb-2 text-stone-900">Your progress</h2>
             <div class="mb-3 h-1.5 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
               <div id="progress-bar" class="h-full w-0 rounded-full bg-orange-600 transition-[width] duration-500"></div>
@@ -139,66 +158,84 @@ const jsonLd = {
           </div>
         </div>
 
-        <nav id="contents" class="md:col-span-8" aria-label="Table of contents">
+        <nav id="contents" class="max-md:order-2 md:col-span-8" aria-label="Table of contents">
           <h2 class="mb-6 border-b border-stone-200 pb-2 text-xs font-bold tracking-[0.2em] text-stone-900 uppercase">
             Table of Contents
           </h2>
-          <div class="space-y-10">
+          <div class="space-y-8 sm:space-y-10">
             {
-              parts.map((part) => (
-                <section>
-                  <h3 class="micro-label mb-1 tracking-widest text-orange-600">
-                    <a href={`/parts/${part.id}/`} class="inline-block py-1.5 hover:text-orange-800">
-                      {part.data.label}: {part.data.title} <span aria-hidden="true">›</span>
-                    </a>
-                  </h3>
-                  <p class="mb-3 text-sm leading-6 text-stone-500">{part.data.intro.split('. ')[0].replace(/\.$/, '')}.</p>
+              parts.map((part) => {
+                const own = lectures.filter((l) => l.data.part === part.id);
+                const published = own.filter((l) => l.data.status === 'ready').length;
+                const rows = (
                   <ol>
-                    {lectures
-                      .filter((l) => l.data.part === part.id)
-                      .map((l) => {
-                        const ready = l.data.status === 'ready';
-                        const number = l.data.number.includes('.') ? l.data.number : l.data.number.padStart(2, '0');
-                        const row = (
-                          <>
-                            <span class="flex items-baseline gap-3 sm:gap-6">
-                              <span class="w-6 shrink-0 font-mono text-xs font-bold">{number}</span>
-                              <span class:list={['display text-lg tracking-tight', !ready && 'text-stone-400']}>
-                                <span class:list={[ready && 'toc-title']}>{l.data.title}</span>
-                              </span>
+                    {own.map((l) => {
+                      const isReady = l.data.status === 'ready';
+                      const number = l.data.number.includes('.') ? l.data.number : l.data.number.padStart(2, '0');
+                      const row = (
+                        <>
+                          <span class="flex min-w-0 items-baseline gap-3 sm:gap-6">
+                            <span class="w-6 shrink-0 font-mono text-xs font-bold">{number}</span>
+                            <span class:list={['display text-[1.0625rem] leading-snug tracking-tight sm:text-lg', !isReady && 'text-stone-400']}>
+                              <span class:list={[isReady && 'toc-title']}>{l.data.title}</span>
                             </span>
-                            <span class="flex items-center gap-3">
-                              {ready && l.data.minutes && (
-                                <span class="hidden font-mono text-[10px] text-stone-400 sm:inline">{l.data.minutes} min</span>
-                              )}
-                              <span class="toc-status w-10 text-right text-[9px] font-bold tracking-widest uppercase">
-                                {ready ? 'Read' : 'Soon'}
-                              </span>
-                              <span aria-hidden="true" class={ready ? 'text-orange-600' : 'text-stone-200'}>
-                                ›
-                              </span>
+                          </span>
+                          <span class="flex shrink-0 items-center gap-2 sm:gap-3">
+                            {isReady && l.data.minutes && <span class="toc-min font-mono text-[10px] text-stone-400">{l.data.minutes} min</span>}
+                            <span class="toc-status text-right text-[9px] font-bold tracking-widest uppercase sm:w-10">{isReady ? 'Read' : 'Soon'}</span>
+                            <span aria-hidden="true" class={isReady ? 'text-orange-600' : 'text-stone-200'}>
+                              ›
                             </span>
-                          </>
-                        );
-                        return (
-                          <li class="border-b border-stone-100">
-                            {ready ? (
-                              <a
-                                href={chapterUrl(l)}
-                                data-chapter-id={l.id}
-                                class="toc-row flex items-center justify-between gap-3 py-2.5 text-stone-900 transition-colors hover:text-orange-700"
-                              >
-                                {row}
-                              </a>
-                            ) : (
-                              <span class="flex items-center justify-between py-2 text-stone-300">{row}</span>
-                            )}
-                          </li>
-                        );
-                      })}
+                          </span>
+                        </>
+                      );
+                      return (
+                        <li class="border-b border-stone-100">
+                          {isReady ? (
+                            <a
+                              href={chapterUrl(l)}
+                              data-chapter-id={l.id}
+                              class="toc-row flex items-center justify-between gap-3 py-3 text-stone-900 transition-colors hover:text-orange-700 sm:py-2.5"
+                            >
+                              {row}
+                            </a>
+                          ) : (
+                            <span class="toc-row is-draft flex items-center justify-between gap-3 py-2 text-stone-300">{row}</span>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ol>
-                </section>
-              ))
+                );
+                const heading = (
+                  <>
+                    {part.data.label}: {part.data.title}
+                  </>
+                );
+                return published === 0 ? (
+                  <details class="fold toc-later border-b border-stone-100 pb-2">
+                    <summary class="micro-label py-2 tracking-widest text-stone-400">
+                      <span class="flex-1">{heading}</span>
+                      <span class="font-normal tracking-wider">{own.length} chapters, coming soon</span>
+                    </summary>
+                    <p class="mt-2 mb-2 text-sm leading-6 text-stone-500">{part.data.intro.split('. ')[0].replace(/\.$/, '')}.</p>
+                    {rows}
+                  </details>
+                ) : (
+                  <section data-part>
+                    <h3 class="micro-label mb-1 flex items-baseline justify-between gap-3 tracking-widest text-orange-600">
+                      <a href={`/parts/${part.id}/`} class="inline-block py-1.5 hover:text-orange-800">
+                        {heading} <span aria-hidden="true">›</span>
+                      </a>
+                      <span data-part-count class="shrink-0 font-normal tracking-wider text-stone-400">
+                        {published === own.length ? `${own.length} chapters` : `${published} of ${own.length} out`}
+                      </span>
+                    </h3>
+                    <p class="mb-2 text-sm leading-6 text-stone-500">{part.data.intro.split('. ')[0].replace(/\.$/, '')}.</p>
+                    {rows}
+                  </section>
+                );
+              })
             }
           </div>
         </nav>
@@ -222,6 +259,16 @@ const jsonLd = {
     row.classList.add('is-done');
   }
 
+  document.querySelectorAll<HTMLElement>('[data-part]').forEach((part) => {
+    const all = part.querySelectorAll('a[data-chapter-id]').length;
+    const finished = part.querySelectorAll('.toc-row.is-done').length;
+    const label = part.querySelector('[data-part-count]');
+    if (label && finished > 0) {
+      label.textContent = finished === all ? '✓ all read' : `${finished} of ${all} read`;
+      label.classList.add('text-orange-700');
+    }
+  });
+
   const last = progress.last;
   const lastRow = last && rows.find((r) => r.dataset.chapterId === last.id);
   const start = document.getElementById('start-link') as HTMLAnchorElement | null;
@@ -234,6 +281,7 @@ const jsonLd = {
   const exercisesDone = Object.values(progress.exercises).reduce((sum, list) => sum + list.length, 0);
   const count = document.getElementById('progress-count');
   const fill = document.getElementById('progress-bar');
+  if (done > 0 || exercisesDone > 0 || last) document.getElementById('progress-panel')?.removeAttribute('data-empty');
   if ((done > 0 || exercisesDone > 0) && count) {
     count.textContent =
       `${done} of ${rows.length} chapters finished` + (exercisesDone > 0 ? `, ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'} done.` : '.');
@@ -272,6 +320,32 @@ const jsonLd = {
 <style>
   .toc-row.is-done .toc-status {
     color: var(--accent-dark);
+  }
+  /* On a phone a row shows its reading time; once finished, it shows the tick. */
+  @media (max-width: 639px) {
+    .toc-row:not(.is-done):not(.is-draft) .toc-status,
+    .toc-row.is-done .toc-min {
+      display: none;
+    }
+  }
+  /* The row of starting points scrolls sideways on a phone, without a visible scrollbar. */
+  .path-row {
+    scrollbar-width: none;
+  }
+  .path-row::-webkit-scrollbar {
+    display: none;
+  }
+  /* Before anything has been read, the progress panel on a phone is just the two file buttons. */
+  @media (max-width: 767px) {
+    #progress-panel[data-empty] > :is(div:first-of-type, p) {
+      display: none;
+    }
+    #progress-panel[data-empty] > p#progress-count {
+      display: block;
+    }
+  }
+  .toc-later > summary::before {
+    color: var(--faint);
   }
   .toc-row .toc-title {
     text-decoration: underline;
