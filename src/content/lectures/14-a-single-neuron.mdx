@@ -4,5 +4,200 @@ number: "14"
 part: networks
 order: 16
 summary: "Inputs, weights, and a bias: the smallest piece of a network."
-status: draft
+question: "What is the simplest part of a neural network, and what can it do on its own?"
+dataset: study-sleep
+minutes: 14
+status: ready
+prerequisites: [logistic-regression]
 ---
+
+import NeuronSum from '@/components/figures/ch14/NeuronSum';
+import NeuronBoundary from '@/components/figures/ch14/NeuronBoundary';
+import LayerOutputs from '@/components/figures/ch14/LayerOutputs';
+
+This part of the book builds a neural network from nothing. Each chapter adds one piece, and by the end you will have a complete network that learns to recognise images, with no step taken on trust.
+
+A <Term id="neural-network">neural network</Term> has a reputation for mystery. Its parts are not mysterious at all. The smallest part is one you have already met twice without the name.
+
+## Borrowed from biology, loosely
+
+The name comes from the brain. A biological neuron receives signals from many others, and if the combined signal is strong enough it sends a signal of its own onward.
+
+The artificial version keeps that outline and nothing else. It takes several numbers in, combines them, and puts one number out. It is a small piece of arithmetic. The comparison with the brain is a useful picture for remembering the shape, and it should not be pushed further than that.
+
+What makes networks powerful is not any single neuron. It is what happens when thousands of them are connected, which the next chapters build up to. First, one neuron on its own.
+
+## One neuron: a weighted sum
+
+A <Term id="neuron">neuron</Term> does three things.
+
+1. It multiplies each input by its own <Term id="weight">weight</Term>.
+2. It adds the results together.
+3. It adds one more number, the bias.
+
+<Equation reads="output = (each input × its weight, added up) + bias">
+
+$$
+\text{output} = w_1 x_1 + w_2 x_2 + \dots + w_d x_d + b
+$$
+
+</Equation>
+
+A weight says how much the neuron cares about an input and in which direction. A large positive weight means "more of this pushes my output up". A negative weight means the opposite. A weight near zero means the input is ignored. The bias shifts the output up or down whatever the inputs are.
+
+<Example title="One neuron, three inputs">
+
+A student studied 4 hours, slept 7, and scored 60 on the last test. The neuron has weights 5, 2 and 0.5, and a bias of 10.
+
+$$
+5 \times 4 \;+\; 2 \times 7 \;+\; 0.5 \times 60 \;+\; 10 \;=\; 20 + 14 + 30 + 10 \;=\; 74
+$$
+
+</Example>
+
+<Figure
+  title="A neuron is a weighted sum"
+  caption="The inputs are fixed. Each row shows what one input contributes once it is multiplied by its weight."
+  try="set a weight to zero and watch that input stop mattering. Then make one negative, and see the bias shift everything without touching the inputs."
+>
+  <NeuronSum client:visible />
+</Figure>
+
+If this looks familiar, it should. It is the prediction of linear regression, and the score inside logistic regression. Written with vectors it is a dot product plus a bias, $w \cdot x + b$. A neuron is the same calculation, given a new name because of what we are about to do with it.
+
+## What one neuron can decide
+
+The output of a neuron is just a number. To see what that number can express, give the neuron two inputs and colour the plane by whether its output is above or below zero.
+
+<Figure
+  title="One neuron draws one straight line"
+  caption="Each dot is a student. The shaded side is where the neuron's output is positive."
+  try="adjust the weights and bias so that the shaded area covers the passes and not the fails. Then try to get all forty right."
+>
+  <NeuronBoundary client:visible />
+</Figure>
+
+However you set the three numbers, the boundary is a straight line. The two weights set its direction, and the bias slides it back and forth. You can get most of the forty students on the correct side, and about 37 is the best possible, but never all of them, because the passes and fails overlap.
+
+This is the limit of a single neuron. It can make any decision that a straight cut can make, and no other kind. Data shaped like a ring or a spiral is beyond it.
+
+<Checkpoint
+  question="A neuron has weights [2, −1] and bias 3. What is its output for the input [4, 5]?"
+  options={[
+    { text: '6', correct: true, why: '2×4 + (−1)×5 + 3 = 8 − 5 + 3 = 6.' },
+    { text: '3', why: 'That leaves out the bias. The weighted sum is 8 − 5 = 3, and the bias adds 3 more.' },
+    { text: '16', why: 'The second weight is negative, so its term is subtracted: 8 − 5, not 8 + 5.' },
+  ]}
+/>
+
+## Many neurons, one layer
+
+One neuron gives one number. Put several neurons side by side, show them all the same inputs, and you get several numbers. That group is a <Term id="layer">layer</Term>.
+
+Each neuron in the layer has its own weights and its own bias, so each one responds to something different. In the figure, the first neuron cares mostly about study, the second mostly about sleep, and the third about the last test score.
+
+<Figure
+  title="Three neurons, the same inputs"
+  caption="Each row is one neuron with its own weights and bias. All three read the same three inputs."
+  try="raise the hours slept and see which output reacts most. Then find inputs that make the third neuron's output negative."
+>
+  <LayerOutputs client:visible />
+</Figure>
+
+When every neuron is connected to every input, as here, the layer is called a <Term id="dense-layer">dense layer</Term>. It is the standard building block.
+
+Writing out each neuron separately gets tedious, and there is a compact way to say the same thing. Stack the neurons' weights as the rows of a matrix $W$ and their biases into a vector $b$. Then the whole layer is one line:
+
+$$
+\text{outputs} = W x + b
+$$
+
+Each row of $W$ takes a dot product with $x$, exactly as in the toolkit chapter on [vectors and matrices](/vectors-and-matrices/). A layer of a thousand neurons is still that one line.
+
+## Many examples at once
+
+So far the layer has processed one student. In practice we push many examples through together, as the rows of a matrix $X$. Such a group is a <Term id="batch">batch</Term>.
+
+| What goes in | Shape | What comes out | Shape |
+|---|---|---|---|
+| One student, 3 features | 3 | One output per neuron | 3 |
+| A batch of 32 students | 32 × 3 | One row of outputs per student | 32 × 3 |
+| The same batch into a layer of 5 neurons | 32 × 3 | | 32 × 5 |
+
+The rule is easy to remember. The number of rows stays the same: one row in, one row out, per example. The number of columns changes from the number of inputs to the number of neurons.
+
+Batches matter for two reasons. Computers multiply whole matrices far faster than they loop over rows. And, as the gradient descent chapter showed, a gradient estimated from a batch is steadier than one from a single example.
+
+<Checkpoint
+  question="A batch of 64 images, each flattened to 784 numbers, goes into a dense layer of 128 neurons. What is the shape of the output?"
+  options={[
+    { text: '64 × 128', correct: true, why: 'One row per image, one column per neuron. The 784 inputs are used up inside each neuron\'s weighted sum.' },
+    { text: '784 × 128', why: 'That is the shape of the weights: one weight for every input of every neuron. The output has one row per example.' },
+    { text: '64 × 784', why: 'That is the shape of the input batch. The layer turns each row of 784 numbers into 128.' },
+  ]}
+/>
+
+## In code
+
+Here is the chapter in NumPy: a neuron longhand, then as a dot product, then a whole layer on a whole batch. The full file is `code/ch14_neuron.py` in the book's repository.
+
+```python
+import numpy as np
+
+inputs = [4, 7, 60]            # hours studied, hours slept, last test score
+weights = [5, 2, 0.5]
+bias = 10
+print(np.dot(inputs, weights) + bias)            # 74.0   one neuron
+
+layer_weights = np.array([[5, 2, 0.5],           # one row of weights per neuron
+                          [1, 6, 0.0],
+                          [-2, 0, 1.0]])
+layer_biases = np.array([10, -20, 0])
+print(layer_weights @ inputs + layer_biases)     # [74. 26. 52.]   a layer
+
+batch = np.array([[4, 7, 60],                    # one row per student
+                  [1, 5, 40],
+                  [8, 8, 75]])
+print(batch @ layer_weights.T + layer_biases)    # a layer on a batch: shape (3, 3)
+
+
+class Layer_Dense:
+    def __init__(self, n_inputs, n_neurons, rng):
+        self.weights = 0.01 * rng.standard_normal((n_inputs, n_neurons))
+        self.biases = np.zeros((1, n_neurons))
+
+    def forward(self, inputs):
+        self.output = inputs @ self.weights + self.biases
+```
+
+The class at the end is the first piece of the network we will keep building. It starts with small random weights, because a layer whose neurons all began identical would stay identical for ever. The next chapters add to it one method at a time.
+
+<KeyTakeaways>
+
+- A **neuron** multiplies each input by a weight, adds them up, and adds a bias. It is a dot product plus a number.
+- On its own a neuron can only make a **straight-line** decision, the same as logistic regression.
+- A **layer** is several neurons reading the same inputs, each with its own weights.
+- A whole layer is one matrix calculation: **outputs = W x + b**.
+- A **batch** passes many examples through at once: rows stay, columns become the number of neurons.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Why random starting weights
+
+If every neuron in a layer started with the same weights, each would compute the same output, receive the same correction during training, and remain a copy of the others for ever. Starting from small random values breaks the tie, so the neurons can grow to respond to different things.
+
+### How many weights is that?
+
+A dense layer with $d$ inputs and $m$ neurons has $d \times m$ weights and $m$ biases. A layer from 784 inputs to 128 neurons already has 100,480 numbers to learn. The size of modern networks comes from stacking many such layers, not from any one of them being complicated.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 1 and 2, [nnfs.io](https://nnfs.io). This part of the book follows their order of construction.
+- M. Nielsen, *Neural Networks and Deep Learning*, chapter 1, [neuralnetworksanddeeplearning.com](http://neuralnetworksanddeeplearning.com/chap1.html).
+- G. Sanderson, [But what is a neural network?](https://www.3blue1brown.com/lessons/neural-networks), 3Blue1Brown.
+
+</References>

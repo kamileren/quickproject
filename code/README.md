@@ -1,0 +1,18 @@
+# Companion code for Part IV: a neural network from scratch
+
+One short NumPy file per chapter. Each file runs on its own and prints the numbers quoted in its
+chapter, so you can check the text against the code.
+
+| File | Chapter | What it adds |
+|---|---|---|
+| `ch14_neuron.py` | 14. A Single Neuron | A neuron, a layer of neurons, a batch of examples |
+
+Run any of them with Python 3 and NumPy installed:
+
+```
+python code/ch14_neuron.py
+```
+
+The structure of the code (a class per layer, with `forward` and later `backward` methods) follows
+*Neural Networks from Scratch in Python* by Harrison Kinsley and Daniel Kukieła, whose code is MIT
+licensed. See `LICENSE-NNFS`. The explanations in the book chapters are original.

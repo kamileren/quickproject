@@ -213,8 +213,15 @@ Cross-links to keep: chapter 3 opens with the random-search experiment; chapter 
 
 ### Wave 3: Part IV, from scratch
 
-- [ ] 25. `nn` library, spiral data, Fashion-MNIST subset, `code/` folder with the MIT notice.
-- [ ] 26–33. Chapters 14 to 21. Owner reviews.
+- [x] 25. `nn` library, spiral data, `code/` folder with the MIT notice. (The Fashion-MNIST subset is prepared with chapter 21.)
+- [x] 26. Chapter 14.
+- [ ] 27. Chapter 15.
+- [ ] 28. Chapter 16.
+- [ ] 29. Chapter 17.
+- [ ] 30. Chapter 18.
+- [ ] 31. Chapter 19.
+- [ ] 32. Chapter 20.
+- [ ] 33. Chapter 21, with the Fashion-MNIST subset and pretrained weights. Owner reviews.
 
 ### Wave 4: remaining models
 

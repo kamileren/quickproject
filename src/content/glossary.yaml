@@ -289,3 +289,21 @@
 - id: conditional-probability
   term: Conditional probability
   definition: The probability of one thing given that another is known to be true, such as the chance a message is spam given that it contains "free".
+- id: neuron
+  term: Neuron
+  definition: The smallest unit of a neural network. It multiplies each input by a weight, adds the results and a bias, and passes on one number.
+- id: weight
+  term: Weight
+  definition: A learned number that says how strongly one input affects a neuron's output, and in which direction.
+- id: neural-network
+  term: Neural network
+  definition: A model made of layers of simple units called neurons, each feeding its output to the next layer.
+- id: layer
+  term: Layer
+  definition: A group of neurons that all receive the same inputs and each produce one output.
+- id: dense-layer
+  term: Dense layer
+  definition: A layer in which every neuron is connected to every input. Also called a fully connected layer.
+- id: batch
+  term: Batch
+  definition: A group of examples passed through a model together, as the rows of one matrix.
