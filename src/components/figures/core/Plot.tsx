@@ -381,23 +381,7 @@ interface DragHandleProps {
 export function DragHandle({ x, y, onChange, label, fill = COLORS.accent, constrain = (p) => p }: DragHandleProps) {
   const { sx, sy, xDomain, yDomain, svgRef } = usePlot();
   const dragging = useRef(false);
-  const handleRef = useRef<SVGGElement>(null);
   const [active, setActive] = useState(false);
-
-  // On a touch screen the browser would otherwise treat a finger on the handle as the start of a
-  // scroll and take the gesture away. `touch-action: none` covers most browsers; cancelling the
-  // touch itself covers the ones that ignore it on drawings.
-  useEffect(() => {
-    const el = handleRef.current;
-    if (!el) return;
-    const stop = (e: TouchEvent) => e.preventDefault();
-    el.addEventListener('touchstart', stop, { passive: false });
-    el.addEventListener('touchmove', stop, { passive: false });
-    return () => {
-      el.removeEventListener('touchstart', stop);
-      el.removeEventListener('touchmove', stop);
-    };
-  }, []);
 
   const clampToPlot = (p: Point): Point => ({
     x: Math.max(xDomain[0], Math.min(xDomain[1], p.x)),
@@ -431,7 +415,6 @@ export function DragHandle({ x, y, onChange, label, fill = COLORS.accent, constr
 
   return (
     <g
-      ref={handleRef}
       tabIndex={0}
       role="slider"
       aria-label={`${label}. Use arrow keys to move.`}
@@ -456,11 +439,10 @@ export function DragHandle({ x, y, onChange, label, fill = COLORS.accent, constr
         dragging.current = false;
         setActive(false);
       }}
-      style={{ cursor: active ? 'grabbing' : 'grab', outline: 'none', touchAction: 'none' }}
+      style={{ cursor: active ? 'grabbing' : 'grab', outline: 'none' }}
       className="group"
     >
-      {/* The area a finger can land on is much larger than the dot. */}
-      <circle cx={sx(x)} cy={sy(y)} r={26} fill="transparent" />
+      <circle cx={sx(x)} cy={sy(y)} r={20} fill="transparent" />
       <circle
         cx={sx(x)}
         cy={sy(y)}

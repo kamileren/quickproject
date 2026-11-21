@@ -11,14 +11,7 @@ function open(id: string): void {
   if (!d || d.open) return;
   document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach((other) => other.close());
   d.showModal();
-  // Focus goes to the search field if there is one, otherwise to the window itself
-  // (not to its Close button, which would light up as if it had been chosen).
-  const field = d.querySelector<HTMLInputElement>('input[type="search"]');
-  if (field) field.focus();
-  else {
-    d.tabIndex = -1;
-    d.focus();
-  }
+  d.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
 }
 
 /** Shows a short message at the bottom of the window. */
@@ -141,29 +134,14 @@ if (siteBar) {
       const y = window.scrollY;
       const goingDown = y > lastY + 4;
       const goingUp = y < lastY - 4;
-      const away = goingDown && y > 240 ? true : goingUp || y <= 240 ? false : undefined;
-      if (away !== undefined) {
-        siteBar.classList.toggle('is-away', away);
-        // On a chapter the bottom bar goes with it, so the text has the whole screen.
-        document.getElementById('mobile-tabs')?.classList.toggle('is-away', away);
-      }
+      if (goingDown && y > 240) siteBar.classList.add('is-away');
+      else if (goingUp || y <= 240) siteBar.classList.remove('is-away');
       if (goingDown || goingUp) lastY = y;
     },
     { passive: true },
   );
   // Anything that takes focus inside the bar brings it back.
   siteBar.addEventListener('focusin', () => siteBar.classList.remove('is-away'));
-  // So does reaching the end of the page, where the next step is in the bottom bar.
-  addEventListener(
-    'scroll',
-    () => {
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80) {
-        siteBar.classList.remove('is-away');
-        document.getElementById('mobile-tabs')?.classList.remove('is-away');
-      }
-    },
-    { passive: true },
-  );
 }
 
 // ---- Offline ----------------------------------------------------------------

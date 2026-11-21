@@ -1,12 +1,5 @@
 # What changed in the book, newest first. Shown at /changelog/.
 # Add an entry whenever something a reader would notice is published.
-- id: 2026-11-21-phone
-  date: "2026-11-21"
-  title: The book as a phone app
-  items:
-    - Figures can be dragged with a finger. Before this, touching a handle scrolled the page instead.
-    - A bar at the bottom of the screen for getting around, which becomes the reader's controls inside a chapter.
-    - Search, sections and settings slide up from the bottom, and pages cross-fade.
 - id: 2026-11-21-map
   date: "2026-11-21"
   title: A map you can read, and more to try on the cover
