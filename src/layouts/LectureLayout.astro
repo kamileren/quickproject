@@ -55,7 +55,9 @@ const ownTerms = (
 );
 
 // The opening question plus the summary says more to a searcher than either alone.
-const metaDescription = [question, summary, `${chapterLabel(number)} of a free interactive textbook.`].filter(Boolean).join(' ');
+const core = [question, summary].filter(Boolean).join(' ');
+const tail = ` ${chapterLabel(number)} of a free interactive textbook.`;
+const metaDescription = core.length + tail.length <= 158 ? core + tail : core;
 
 const jsonLd = {
   '@context': 'https://schema.org',

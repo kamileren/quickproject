@@ -1,5 +1,13 @@
 # What changed in the book, newest first. Shown at /changelog/.
 # Add an entry whenever something a reader would notice is published.
+- id: 2026-11-21-cover
+  date: "2026-11-21"
+  title: A cover you can play with
+  items:
+    - The front page has a live figure to try, and shows returning readers where they stopped.
+    - Every chapter has a fifth exercise that sends you back to one of its figures.
+    - On a phone, definitions open as a sheet at the bottom, and a plot stays in view while you use its controls.
+    - Table headings no longer capitalise symbols, and small grey text is easier to read.
 - id: 2026-11-21-polish
   date: "2026-11-21"
   title: A better phone view

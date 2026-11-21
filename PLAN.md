@@ -260,6 +260,15 @@ Left out on purpose: running Python in the browser, accounts and comments, dark 
 - [x] 33t. Offline reading and an installable app manifest. (Saving progress to a file was built and then removed at the owner's request.)
 - [x] 33u. Phone pass: figure headers, the confusion grid, the map, tap targets, spacing.
 
+### Wave 3.7: final polish
+
+- [x] 33v. Cover: live figure, welcome-back card, a rotating question, phone layout. Saving progress to a file removed.
+- [x] 33w. Sticky top bar aligned with the text, phone menu, previous and next arrows, new-terms index beside chapters.
+- [x] 33x. Phone: pop-ins as bottom sheets, plots stay in view above their controls, one-line section summary.
+- [x] 33y. Fixes: symbols in table headings, glossary see-also, small grey text, descriptions, a check for run-together text.
+- [x] 33z. A "with the figure" exercise in every chapter; five predict-first questions.
+- [x] Verified in a browser: all 79 figures in dark colours, printing, the offline cache, the sliding bar.
+
 ### Wave 4: remaining models
 
 - [ ] 34. `trees` library.

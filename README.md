@@ -54,6 +54,9 @@ Other blocks worth knowing:
 
 Every exercise answer with numbers in it must be checked by running the calculation, not by eye.
 
+In `.astro` files, a line break between text and a link or button is dropped, which glues the words together.
+Write `{' '}` where a space is needed. `npm run check` ends with `scripts/check-html.mjs`, which catches this.
+
 The content check enforces the limits that keep chapters readable: per section at most one `<Figure>`, one
 `<Checkpoint>` and three new `<Term>`s; every figure has a `try` prompt; every term exists in the glossary and is
 introduced once; every chapter has its pitfall, skills list, exercises with solutions, and closing bridge.
