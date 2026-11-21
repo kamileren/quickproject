@@ -15,7 +15,7 @@ import PenaltyFit from '@/components/figures/ch05/PenaltyFit';
 import WeightBars from '@/components/figures/ch05/WeightBars';
 import LambdaCurve from '@/components/figures/ch05/LambdaCurve';
 
-The last chapter ended with a choice: pick a model simple enough not to overfit. That works when "simple" is a dial you can turn, like the degree of a curve. Often it is not. A model with a hundred features has a hundred weights, and you cannot know in advance which ones to remove.
+<Ref to="generalization">The last chapter</Ref> ended with a choice: pick a model simple enough not to overfit. That works when "simple" is a dial you can turn, like the degree of a curve. Often it is not. A model with a hundred features has a hundred weights, and you cannot know in advance which ones to remove.
 
 This chapter takes a different route. Keep the flexible model, and change what it is rewarded for.
 
@@ -107,7 +107,7 @@ A model in which most weights are zero is called <Term id="sparse">sparse</Term>
 
 ## Choosing the strength
 
-The penalty strength $\lambda$ is a hyperparameter, like the degree in the last chapter, and it is chosen the same way. Try a range of values, score each by cross-validation on the training data, and keep the best. Because useful values span several powers of ten, the values tried are spaced by multiplication: 0.001, 0.01, 0.1, 1, 10.
+The penalty strength $\lambda$ is a hyperparameter, like the degree in <Ref to="generalization">the last chapter</Ref>, and it is chosen the same way. Try a range of values, score each by cross-validation on the training data, and keep the best. Because useful values span several powers of ten, the values tried are spaced by multiplication: 0.001, 0.01, 0.1, 1, 10.
 
 <Figure
   title="Finding λ without the test set"
@@ -136,6 +136,12 @@ For the lasso, cross-validation lands almost exactly on the best value. For ridg
     { text: 'λ was set to zero', why: 'With λ = 0 there is no penalty and nearly all 200 weights would be non-zero.' },
   ]}
 />
+
+<Pitfall title="Reporting the penalised loss">
+
+During training the model minimises error plus penalty. When you report how good the model is, report the error alone. The penalty is a tool for steering training and says nothing about how far off the predictions are. Comparing two models by their penalised losses is doubly misleading when they use different values of λ, because the same weights would then get different scores.
+
+</Pitfall>
 
 ## In code
 
@@ -173,6 +179,87 @@ Libraries scale the penalty slightly differently from one another, so the best `
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Explain why large weights are a sign of overfitting.
+- Write down the ridge and lasso losses and say how they differ.
+- Predict what happens to the weights, the training error and the error on new data as λ grows.
+- Choose λ without touching the test set.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+Two models have the same mean squared error, 10. Model A has weights $[2,\ 2]$ and model B has weights $[0,\ 3]$. With $\lambda = 1$, which model does ridge prefer, and which does lasso prefer?
+
+<Solution>
+
+Ridge adds the squared weights. A: $4 + 4 = 8$, a loss of 18. B: $0 + 9 = 9$, a loss of 19. **Ridge prefers A.**
+
+Lasso adds the sizes of the weights. A: $2 + 2 = 4$, a loss of 14. B: $0 + 3 = 3$, a loss of 13. **Lasso prefers B.**
+
+Squaring punishes one large weight more than two medium ones, so ridge likes the weight spread out. Lasso counts every unit of weight the same, so it is happy to put everything on one feature and switch the other off.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A model has a single weight. Without a penalty the best value is 4, and the loss is $(w - 4)^2$. Add a ridge penalty, giving $(w - 4)^2 + \lambda w^2$. Find the best $w$ for $\lambda = 0$, 1 and 3. Does it ever reach zero?
+
+<Solution>
+
+Set the derivative to zero: $2(w - 4) + 2\lambda w = 0$, which gives $w = 4 / (1 + \lambda)$.
+
+- $\lambda = 0$: $w = 4$
+- $\lambda = 1$: $w = 2$
+- $\lambda = 3$: $w = 1$
+
+The weight shrinks towards zero as λ grows, and it never gets there. However large λ is, $4 / (1 + \lambda)$ is still positive. Ridge shrinks weights and does not remove them.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Now use a lasso penalty on the same model: $(w - 4)^2 + \lambda w$, for $w$ at or above zero. Find the best $w$ for $\lambda = 2$, 8 and 10.
+
+<Solution>
+
+Set the derivative to zero: $2(w - 4) + \lambda = 0$, which gives $w = 4 - \lambda / 2$.
+
+- $\lambda = 2$: $w = 3$
+- $\lambda = 8$: $w = 0$
+- $\lambda = 10$: the formula gives $-1$, which is outside the allowed range. The lowest point within the range is $w = 0$.
+
+The weight falls in a straight line and hits zero at $\lambda = 8$. From there on it stays at exactly zero. This is why lasso can switch features off and ridge cannot.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+You fit a ridge model for a range of λ values, from very small to very large. Sketch, in words, what happens to the training error and to the validation error along the way. Where is the best λ?
+
+<Solution>
+
+**Training error rises all the way.** With no penalty the model fits the training data as closely as it can. Every increase in λ pulls the weights away from that best fit, so the training error can only get worse.
+
+**Validation error falls, then rises.** At very small λ the model overfits and validation error is high. As λ grows the weights calm down and validation error drops. Past a certain point the model is too restrained to follow the real pattern, and validation error climbs again.
+
+The best λ is at the bottom of the validation curve. The training curve cannot tell you where that is, because it is lowest at $\lambda = 0$.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Why scaling comes first
@@ -185,7 +272,7 @@ The elastic net uses both penalties together, with a second setting for the mix 
 
 ### Other ways to regularize
 
-A penalty on weights is one form of regularization among many. Stopping gradient descent early, before it has fully fitted the training data, has a similar effect. Neural networks add their own methods, such as dropout, which have a chapter later in the book.
+A penalty on weights is one form of regularization among many. Stopping gradient descent early, before it has fully fitted the training data, has a similar effect. Neural networks add their own methods, such as dropout, which have <Ref to="keeping-networks-honest">a chapter</Ref> later in the book.
 
 </GoingFurther>
 
@@ -196,3 +283,9 @@ A penalty on weights is one form of regularization among many. Stopping gradient
 - H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 14, [nnfs.io](https://nnfs.io).
 
 </References>
+
+<NextUp>
+
+That completes the core of the book: fit a model, train it step by step, check it on unseen data, and restrain it when it overfits. Everything so far predicted a number. Part II turns to predicting a category, starting with the method that changes a line as little as possible to do it.
+
+</NextUp>

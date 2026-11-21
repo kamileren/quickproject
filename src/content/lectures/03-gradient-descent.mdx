@@ -16,7 +16,7 @@ import SlopeStep from '@/components/figures/ch03/SlopeStep';
 import Descent from '@/components/figures/ch03/Descent';
 import RateCurves from '@/components/figures/ch03/RateCurves';
 
-In the last chapter a formula handed us the best line for the twelve students. That was lucky. Most models in this book, and every neural network, have no such formula. What they do have is a way to measure how wrong they are.
+In <Ref to="linear-regression">the last chapter</Ref> a formula handed us the best line for the twelve students. That was lucky. Most models in this book, and every neural network, have no such formula. What they do have is a way to measure how wrong they are.
 
 This chapter shows how to turn "how wrong am I?" into "which way should I change?", and then to repeat that until the model is good. The method is called gradient descent, and it is how almost all of modern machine learning is trained.
 
@@ -181,6 +181,12 @@ The fix is to estimate the gradient from a small random handful of examples, cal
 
 With one student per step the path never quite settles. It reaches the neighbourhood of the lowest point and then jitters around it, because each single student pulls the line toward themselves. Smaller learning rates calm the jitter.
 
+<Pitfall title="Training without watching the loss">
+
+A run that has gone wrong rarely announces it. The code finishes, a model comes out, and it is bad. Always record the loss at every step and look at the curve. A loss that climbs or jumps about means the learning rate is too large. A loss that falls in a straight, shallow line and is still falling at the end means the learning rate is too small or the run too short. A loss that has gone flat has converged. The curve takes ten seconds to plot and answers most questions about a training run.
+
+</Pitfall>
+
 ## In code
 
 The whole algorithm is a short loop. This version uses only NumPy, so nothing is hidden.
@@ -217,6 +223,100 @@ The slope matches the formula from the last chapter. The bias is 67 rather than 
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Carry out a gradient descent update by hand.
+- Say what the gradient is and why the step goes against it.
+- Tell from a loss curve whether the learning rate is too small, too large or about right.
+- Explain what mini-batches save, and what they cost.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="by hand">
+
+The loss is $L(w) = (w - 3)^2$, whose steepness is $2(w - 3)$. Start at $w = 0$ with a learning rate of 0.1 and take three steps. How does the distance from the best value change with each step?
+
+<Solution>
+
+Each step is $w \leftarrow w - 0.1 \times 2(w - 3)$.
+
+- Step 1: steepness $-6$, so $w = 0 + 0.6 = 0.6$.
+- Step 2: steepness $-4.8$, so $w = 0.6 + 0.48 = 1.08$.
+- Step 3: steepness $-3.84$, so $w = 1.08 + 0.384 = 1.464$.
+
+The distance from 3 goes 3, 2.4, 1.92, 1.536. Each step multiplies it by 0.8. The steps get smaller on their own as the slope flattens, which is why a fixed learning rate can still settle.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+Same loss, same start, but a learning rate of 1.1. Take three steps. Then say which learning rate would reach the lowest point in a single step.
+
+<Solution>
+
+- Step 1: $w = 0 - 1.1 \times (-6) = 6.6$.
+- Step 2: steepness $7.2$, so $w = 6.6 - 7.92 = -1.32$.
+- Step 3: steepness $-8.64$, so $w = -1.32 + 9.504 = 8.184$.
+
+The distance from 3 goes 3, 3.6, 4.32, 5.184. Each step jumps over the lowest point and lands further away on the other side. The run diverges.
+
+In general each step multiplies the distance by $1 - 2\eta$. A learning rate of 0.5 makes that zero, landing on $w = 3$ at once. Any rate above 1 makes the multiplier larger than 1 in size, and the run diverges.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+A model $\hat{y} = wx + b$ starts at $w = 1$, $b = 0$. There is one example: $x = 2$, $y = 10$. The loss is $(\hat{y} - y)^2$. Take one gradient step with a learning rate of 0.01, and check that the loss went down.
+
+<Solution>
+
+The prediction is $1 \times 2 + 0 = 2$, so $\hat{y} - y = -8$ and the loss is 64.
+
+The steepness with respect to $w$ is $2(\hat{y} - y)x = 2 \times (-8) \times 2 = -32$. With respect to $b$ it is $2(\hat{y} - y) = -16$.
+
+Update both at once: $w = 1 + 0.01 \times 32 = 1.32$ and $b = 0 + 0.01 \times 16 = 0.16$.
+
+The new prediction is $1.32 \times 2 + 0.16 = 2.8$, and the new loss is $(2.8 - 10)^2 = 51.84$. It fell from 64.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="in code">
+
+Write gradient descent for a line through the three points (0, 1), (2, 2) and (4, 6), starting from $w = 0$, $b = 0$ with a learning rate of 0.05. Check that it arrives at the best line, $w = 1.25$ and $b = 0.5$. Then change the learning rate to 0.2 and run it again.
+
+<Solution>
+
+```python
+import numpy as np
+
+x = np.array([0, 2, 4.0])
+y = np.array([1, 2, 6.0])
+
+w, b, eta = 0.0, 0.0, 0.05
+for step in range(2000):
+    miss = w * x + b - y
+    w -= eta * 2 * np.mean(miss * x)   # steepness of the MSE with respect to w
+    b -= eta * 2 * np.mean(miss)       # and with respect to b
+
+print(round(w, 3), round(b, 3))        # 1.25 0.5
+```
+
+With a learning rate of 0.2 the numbers grow without limit and the program prints `nan`. For this data, anything above about 0.137 diverges.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Why we measured hours from the average
@@ -229,7 +329,7 @@ For a line with squared error, yes. The loss is <Term id="convex">convex</Term>,
 
 ### Smarter steps
 
-Plain gradient descent uses one fixed learning rate for every parameter. Methods such as momentum and Adam adapt the step as they go and are what most people use for neural networks. They have their own chapter later in the book.
+Plain gradient descent uses one fixed learning rate for every parameter. Methods such as momentum and Adam adapt the step as they go and are what most people use for neural networks. They have <Ref to="optimizers">their own chapter</Ref> later in the book.
 
 </GoingFurther>
 
@@ -240,3 +340,9 @@ Plain gradient descent uses one fixed learning rate for every parameter. Methods
 - A. Karpathy and others, *CS231n notes: Optimization*, [cs231n.github.io](https://cs231n.github.io/optimization-1/).
 
 </References>
+
+<NextUp>
+
+Gradient descent will fit whatever model you hand it as closely as it can. That raises a question that sounds too obvious to ask. Is the model that fits the data most closely the best one? The next chapter shows that it is not.
+
+</NextUp>

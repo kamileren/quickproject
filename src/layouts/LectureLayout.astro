@@ -25,6 +25,7 @@ if (lecture.data.dataset && !dataset) throw new Error(`${lecture.id}: unknown da
 const sharers = dataset
   ? (await getReadyLectures()).filter((l) => l.data.dataset === dataset.id && l.id !== lecture.id)
   : [];
+const hasExercises = (lecture.body ?? '').includes('<Exercises>');
 const sections = headings.filter((h) => h.depth === 2 && h.text !== 'Key Takeaways' && h.text !== 'References');
 
 const jsonLd = {
@@ -116,6 +117,13 @@ const jsonLd = {
                     </a>
                   </li>
                 ))}
+                {hasExercises && (
+                  <li>
+                    <a href="#exercises" class="-ml-px block border-l border-transparent pl-4 transition-colors hover:text-orange-600">
+                      Exercises
+                    </a>
+                  </li>
+                )}
               </ol>
             </div>
           </nav>

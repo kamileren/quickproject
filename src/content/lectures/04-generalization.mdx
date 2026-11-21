@@ -92,7 +92,7 @@ The fix is to split the data into three piles before doing anything else.
 
 The <Term id="validation-set">validation set</Term> is the one you are allowed to look at repeatedly. The test set is opened once, at the very end.
 
-A setting like the degree, which you choose rather than learn, is called a <Term id="hyperparameter">hyperparameter</Term>. The learning rate from the last chapter is another. Hyperparameters are tuned on the validation set.
+A setting like the degree, which you choose rather than learn, is called a <Term id="hyperparameter">hyperparameter</Term>. The learning rate from <Ref to="gradient-descent">the last chapter</Ref> is another. Hyperparameters are tuned on the validation set.
 
 One rule protects all of this. Nothing about the validation or test examples may influence training: not their labels, and not even their averages if you rescale features. When it does, the result is called <Term id="leakage">data leakage</Term>, and the model will look better on paper than it is.
 
@@ -142,6 +142,12 @@ Making a model more flexible lowers bias and raises variance. The skill is in fi
   ]}
 />
 
+<Pitfall title="Just one look at the test set">
+
+Nobody plans to tune on the test set. It happens one look at a time. You check the test score, change a setting, and check again, and each look seems harmless. After twenty looks you have picked the settings that happen to suit those particular test examples, and the score is no longer an honest estimate. Make every decision with the validation set or cross-validation. Open the test set once, at the very end.
+
+</Pitfall>
+
 ## In code
 
 scikit-learn does the splitting and the cross-validation. Here the degree is chosen by cross-validation on the training data, and the test set is used once at the end.
@@ -181,6 +187,110 @@ print(best, np.mean((final.predict(X_test) - y_test) ** 2))   # the one honest n
 
 </KeyTakeaways>
 
+<NowYouCan>
+
+- Recognise underfitting and overfitting from a pair of errors.
+- Split data into training, validation and test sets, and say what each is for.
+- Describe what happens in each round of cross-validation.
+- Explain bias and variance in plain words.
+
+</NowYouCan>
+
+<Exercises>
+
+<Exercise kind="think">
+
+Three models were trained on the same data. Their errors are:
+
+| Model | Training error | Validation error |
+|---|---|---|
+| A | 40 | 42 |
+| B | 15 | 18 |
+| C | 3 | 55 |
+
+Which model underfits, which overfits, and which would you choose?
+
+<Solution>
+
+**A underfits.** Both errors are high and close together. The model is too simple to follow the pattern, so it is equally poor on old and new data.
+
+**C overfits.** Its training error is tiny, and its validation error is the worst of the three. The large gap is the sign of a model that has fitted noise.
+
+**Choose B.** It has the lowest validation error, and that is the only column that matters for the choice. Its small gap between the two errors is a good sign too.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="by hand">
+
+You have 20 examples and run 5-fold cross-validation. In each round, how many examples are trained on and how many are held out? How many models are trained in total, and how many times is each example held out? What would the answers be if every fold held just one example?
+
+<Solution>
+
+Five folds of 4 examples each. Every round trains on 16 and holds out 4. Five models are trained, and each example is held out exactly once.
+
+With one example per fold there are 20 folds. Every round trains on 19 and holds out 1, and 20 models are trained. This is called leave-one-out cross-validation. It uses the data as fully as possible and costs the most computing.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="think">
+
+A friend trains 50 different models, measures each on the test set, and reports the best score, 91% accurate. What is wrong with that number, and what should they have done?
+
+<Solution>
+
+The test set was used to choose among 50 models, so it is no longer unseen data. Some of those models scored well partly by luck on those particular examples, and picking the best one picks the luckiest. On fresh data the chosen model will probably score below 91%.
+
+They should have compared the 50 models on a validation set, or by cross-validation, and then measured only the winner on the test set, once.
+
+</Solution>
+
+</Exercise>
+
+<Exercise kind="in code">
+
+Make 15 noisy training points from a sine curve, and 200 new points the same way. Fit curves of degree 1, 3 and 9 to the training points, and print the error of each on both sets.
+
+<Solution>
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+
+def sample(n):
+    x = rng.uniform(0, 6, n)
+    return x, np.sin(x) + rng.normal(0, 0.3, n)
+
+x_train, y_train = sample(15)
+x_new, y_new = sample(200)
+
+for degree in (1, 3, 9):
+    curve = np.polyfit(x_train, y_train, degree)
+    train = np.mean((np.polyval(curve, x_train) - y_train) ** 2)
+    new = np.mean((np.polyval(curve, x_new) - y_new) ** 2)
+    print(degree, round(train, 3), round(new, 3))
+```
+
+With this seed the output is:
+
+```
+1 0.154 0.422
+3 0.04 0.101
+9 0.023 1.853
+```
+
+Training error falls every time the degree goes up. Error on new points falls from degree 1 to 3 and then explodes at degree 9. The noise has a variance of $0.3^2 = 0.09$, so no model can do much better than 0.09 on new points, and degree 3 is already close.
+
+</Solution>
+
+</Exercise>
+
+</Exercises>
+
 <GoingFurther>
 
 ### Splitting data that has structure
@@ -200,3 +310,9 @@ Very large neural networks behave in a way this chapter does not predict: past t
 - MLU-Explain, [The Bias Variance Tradeoff](https://mlu-explain.github.io/bias-variance/) and [Cross-Validation](https://mlu-explain.github.io/cross-validation/).
 
 </References>
+
+<NextUp>
+
+Choosing a simpler model is one cure for overfitting. It is a blunt one, because simple models also miss real patterns. The next chapter keeps the flexible model and restrains it instead.
+
+</NextUp>
