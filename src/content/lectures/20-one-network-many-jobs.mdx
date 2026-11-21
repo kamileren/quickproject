@@ -4,5 +4,187 @@ number: "20"
 part: networks
 order: 22
 summary: "Swapping the output layer for different tasks."
-status: draft
+question: "The network so far picks one class out of three. How does it predict a number, or answer yes or no?"
+minutes: 14
+status: ready
+prerequisites: [keeping-networks-honest]
 ---
+
+import TaskHead from '@/components/figures/ch20/TaskHead';
+import OneNeuron from '@/components/figures/ch20/OneNeuron';
+
+Everything built so far has served one task: choosing a class out of several. Part I and Part II covered two other tasks, predicting a number and answering yes or no. This chapter shows that the network handles all three with one small change, and then closes a loop that has been open since chapter 2.
+
+## Body and head
+
+Think of a network in two parts.
+
+The **body** is the stack of hidden layers. Its job is to turn the raw inputs into something useful: bends, creases, combinations of features. Nothing in it depends on what kind of answer is wanted.
+
+The **head** is the <Term id="output-layer">output layer</Term> together with the loss. It turns the body's work into the answer and says how wrong that answer is. Changing the task means changing the head and leaving the body alone.
+
+| The answer is | Output neurons | Final activation | Loss |
+|---|---|---|---|
+| yes or no | 1 | Sigmoid | Binary cross-entropy |
+| one class out of $k$ | $k$ | Softmax | Cross-entropy |
+| a number | 1 | none | Mean squared error |
+
+Each row pairs an activation with the loss that suits it. The pairs are not arbitrary: in every one, the gradient at the very end of the network works out to the same clean "prediction minus truth".
+
+## A yes or no answer
+
+For two classes there is no need for two output neurons. One is enough: its output, squashed by a sigmoid, is the probability of "yes", and "no" is whatever remains.
+
+The loss is the log loss from the logistic regression chapter, which in this setting is called <Term id="binary-cross-entropy">binary cross-entropy</Term>:
+
+$$
+L = -\big[\,y \log p + (1 - y)\log(1 - p)\,\big]
+$$
+
+<Figure
+  title="One sigmoid output"
+  caption="A network of 2 inputs → 16 ReLU neurons → 1 sigmoid output, trained when this figure appeared. The shading is its output: the probability of the filled kind."
+  try="look at how sharp the change in shading is at the boundary, and how the boundary follows the two crescents."
+>
+  <TaskHead client:visible task="yesNo" />
+</Figure>
+
+This head has one more use. Give a network several sigmoid outputs, each trained with its own binary cross-entropy, and it can answer several independent yes/no questions at once: is there a cat in the picture, is there a dog, is it outdoors. Softmax could not do that, because it forces its outputs to compete for a total of 1.
+
+## One class out of several
+
+This is the head we have been using all along: one output neuron per class, softmax to turn the scores into probabilities, and cross-entropy on the probability of the correct class.
+
+<Figure
+  title="Three softmax outputs"
+  caption="A network of 2 inputs → 32 ReLU neurons → 3 softmax outputs, trained with Adam for 600 steps when this figure appeared."
+  try="compare this with the yes/no figure above. The hidden layers do the same kind of work; only the last layer differs."
+>
+  <TaskHead client:visible task="classes" />
+</Figure>
+
+The choice between this head and the previous one comes down to a question about the labels. If every example has exactly one correct class, use softmax. If an example can have several correct labels at once, or none, use one sigmoid per label.
+
+## A number
+
+To predict a number, remove the final activation altogether. The output neuron's weighted sum *is* the prediction, free to be any size, positive or negative. The loss is the mean squared error from the linear regression chapter.
+
+Here is the sleep data from the generalization chapter, where a straight line failed and we had to guess the right degree of polynomial.
+
+<Figure
+  title="No activation on the output"
+  caption="A network of 1 input → 16 ReLU neurons → 1 output with no activation, trained on the twelve students."
+  try="look closely at the curve: it is made of short straight pieces, one bend per hidden neuron, as in the chapter on activations."
+>
+  <TaskHead client:visible task="numbers" />
+</Figure>
+
+The network found the rise and fall on its own. Nobody told it to use a curve with one bend, or any particular shape. Its mean squared error on these students is 5.1, against 66.2 for the best straight line.
+
+That 5.1 deserves a second look. The noise in this data has a spread of about 5 points, so no model should do much better than a squared error of 25 on new students. A training error of 5.1 means the network has started to fit the noise in these twelve points. The lessons of the last chapter apply to this head exactly as they did to the other two.
+
+<Checkpoint
+  question="You want a network to predict tomorrow's temperature in degrees, which can be negative. Which output layer is right?"
+  options={[
+    { text: 'One neuron with a sigmoid', why: 'A sigmoid can only output values between 0 and 1. It cannot produce 25 degrees or −10 degrees.' },
+    { text: 'One neuron with no activation, trained with mean squared error', correct: true, why: 'A number that can be any size needs an output with nothing squashing it, and squared error is the matching loss.' },
+    { text: 'One softmax neuron per possible temperature', why: 'That treats 20 and 21 degrees as unrelated classes. Predicting the number directly uses the fact that they are close.' },
+  ]}
+/>
+
+## Old friends
+
+Now take the idea to its limit. Remove the body entirely. No hidden layers: just the inputs wired straight to one output neuron.
+
+With no activation and squared error, that network computes $w x + b$ and is trained to minimise squared error. With a sigmoid and cross-entropy, it computes $\sigma(w x + b)$ and is trained to minimise log loss. You have seen both before.
+
+<Figure
+  title="A network with one neuron"
+  caption="The network is trained by the same forward pass, backward pass and update as every network in this part. The dashed line is the answer found in Part I or Part II."
+  try="drag the training steps upward and watch the weight and bias approach their targets. Then switch the output layer and do it again."
+>
+  <OneNeuron client:visible />
+</Figure>
+
+On the exam data, the neuron with no activation settles at a weight of 5.31 and a bias of 42.44, with a loss of 6.13. Those are the numbers the least-squares formula gave in the linear regression chapter, to every digit shown.
+
+On the pass/fail data, the sigmoid neuron settles at 1.56 and −6.03 with a loss of 0.259: the logistic regression model of chapter 6.
+
+So linear regression and logistic regression were neural networks all along, the smallest possible ones. Everything since has been the same two ideas, a weighted sum and a loss to push down, with layers of bends added in between. That is a good thing to hold on to when networks start to look complicated.
+
+## Choosing a head
+
+In practice the decision takes a few seconds, because the task dictates it.
+
+<Checkpoint
+  question="A network should tag photos with any that apply of: 'beach', 'people', 'sunset', 'food'. A photo can have several tags or none. Which output layer fits?"
+  options={[
+    { text: 'Four softmax outputs', why: 'Softmax makes the four compete for a total of 1, so it cannot say that both "beach" and "sunset" are very likely.' },
+    { text: 'Four sigmoid outputs, each with binary cross-entropy', correct: true, why: 'Each tag is its own yes/no question. Independent sigmoids can all be high, all be low, or any mixture.' },
+    { text: 'One output with no activation', why: 'That predicts a single number. There are four separate questions to answer.' },
+  ]}
+/>
+
+## In code
+
+The two new heads are four small classes. The full file, `code/ch20_heads.py`, also trains the two one-neuron networks.
+
+```python
+class Activation_Sigmoid:
+    def forward(self, inputs):
+        self.output = 1 / (1 + np.exp(-inputs))
+
+    def backward(self, dvalues):
+        self.dinputs = dvalues * self.output * (1 - self.output)
+
+class Loss_BinaryCrossentropy:
+    def forward(self, y_pred, y_true):
+        clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
+        return np.mean(-(y_true * np.log(clipped) + (1 - y_true) * np.log(1 - clipped)))
+
+class Activation_Linear:                       # no activation: the output can be any number
+    def forward(self, inputs):
+        self.output = inputs
+
+    def backward(self, dvalues):
+        self.dinputs = dvalues.copy()
+
+class Loss_MeanSquaredError:
+    def forward(self, y_pred, y_true):
+        return np.mean((y_true - y_pred) ** 2)
+
+    def backward(self, y_pred, y_true):
+        self.dinputs = -2 * (y_true - y_pred) / y_true.size
+```
+
+Trained on the exam data, the one-neuron network prints `5.31 42.44 6.13`. On the pass/fail data it prints `1.56 -6.03 0.259`.
+
+<KeyTakeaways>
+
+- A network is a **body** of hidden layers plus a **head**: the output layer and its loss.
+- **Yes or no**: one sigmoid output with binary cross-entropy.
+- **One class out of several**: softmax with cross-entropy. Several labels at once: one sigmoid per label.
+- **A number**: one output with no activation, with mean squared error.
+- With no hidden layers, these heads **are** linear regression and logistic regression.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Scaling the target
+
+A regression network trains far more easily when its targets are of ordinary size, roughly between −2 and 2. Exam scores near 70 would start the loss in the thousands and make the first gradients enormous. The figure above subtracts a typical score and divides by a typical spread before training, and reverses that when reporting predictions. The same care applies to the inputs.
+
+### Several numbers at once
+
+A regression head can have more than one output neuron. A network that predicts the position of an object in a picture outputs four numbers, the corners of a box, each compared with its target by squared error. One body can also carry two different heads at the same time, such as "what is it" and "where is it".
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapters 16 and 17, [nnfs.io](https://nnfs.io).
+- A. Zhang, Z. C. Lipton, M. Li and A. J. Smola, *Dive into Deep Learning*, chapters 3 and 4. Free at [d2l.ai](https://d2l.ai).
+- S. J. D. Prince, *Understanding Deep Learning*, chapter 5 (loss functions). Free at [udlbook.github.io/udlbook](https://udlbook.github.io/udlbook/).
+
+</References>

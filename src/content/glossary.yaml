@@ -367,3 +367,9 @@
 - id: early-stopping
   term: Early stopping
   definition: Ending training when the loss on held-out data stops improving, and keeping the weights from that point.
+- id: output-layer
+  term: Output layer
+  definition: The last layer of a network. Its size and activation are chosen to match the kind of answer wanted, such as a probability, one class out of several, or a number.
+- id: binary-cross-entropy
+  term: Binary cross-entropy
+  definition: The cross-entropy loss for a yes/no answer. It is the log loss from logistic regression under another name.

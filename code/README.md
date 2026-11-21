@@ -11,6 +11,7 @@ chapter, so you can check the text against the code.
 | `ch17_backprop.py` | 17. Backpropagation | Backward methods, an SGD optimizer, and a full training loop on spiral data |
 | `ch18_optimizers.py` | 18. Optimizers | Learning-rate decay, momentum, AdaGrad, RMSProp and Adam, compared on the spiral |
 | `ch19_regularization.py` | 19. Keeping Networks Honest | A weight penalty in the dense layer, and a dropout layer |
+| `ch20_heads.py` | 20. One Network, Many Jobs | Sigmoid, linear and their losses; linear and logistic regression as one-neuron networks |
 
 Run any of them with Python 3 and NumPy installed:
 
