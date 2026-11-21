@@ -5,7 +5,7 @@
   title: A better phone view
   items:
     - A bar at the top of every page with search, text settings and a menu. On a phone it slides away while you read.
-    - The home page shows your progress in one place, with buttons to save it to a file or load it.
+    - The home page shows your progress in one place once you have finished a chapter.
     - The glossary can be filtered as you type.
 - id: 2026-11-21-reading
   date: "2026-11-21"

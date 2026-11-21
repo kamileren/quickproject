@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   chapterIdFromPath,
   clearProgress,
-  exportProgress,
-  importProgress,
   loadProgress,
   markRead,
   noteFirstTry,
@@ -80,18 +78,6 @@ describe('reading progress', () => {
     expect(Object.keys(loadProgress(store).missed)).toEqual(['knn|one']);
     resolveMissed('knn|one', store);
     expect(loadProgress(store).missed['knn|one'].resolved).toBe(true);
-  });
-
-  it('exports and imports, and refuses files that are not exports', () => {
-    const a = memoryStore();
-    markRead('knn', 5, a);
-    setExerciseDone('knn', 2, true, a);
-    const b = memoryStore();
-    expect(importProgress(exportProgress(a), b)).toBe(true);
-    expect(loadProgress(b)).toEqual(loadProgress(a));
-    expect(importProgress('{"something":"else"}', b)).toBe(false);
-    expect(importProgress('not json', b)).toBe(false);
-    expect(loadProgress(b).read).toEqual({ knn: 5 });
   });
 
   it('clears everything', () => {

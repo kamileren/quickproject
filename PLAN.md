@@ -257,7 +257,7 @@ Left out on purpose: running Python in the browser, accounts and comments, dark 
 - [x] 33q. Formulas: symbols explain themselves, and a formula can be copied as LaTeX.
 - [x] 33r. Study tools: exercises can be ticked off and have hints, a review page for missed checkpoints, a recap page, a prerequisite reminder.
 - [x] 33s. A map of how chapters depend on each other, a changelog page, a footer.
-- [x] 33t. Offline reading, an installable app manifest, export and import of progress.
+- [x] 33t. Offline reading and an installable app manifest. (Saving progress to a file was built and then removed at the owner's request.)
 - [x] 33u. Phone pass: figure headers, the confusion grid, the map, tap targets, spacing.
 
 ### Wave 4: remaining models

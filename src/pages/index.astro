@@ -37,7 +37,6 @@ const quickLinks = [
   { label: 'Glossary', href: '/glossary/' },
   { label: 'Map', href: '/map/' },
   { label: 'Recap', href: '/recap/' },
-  { label: 'Notation', href: '/notation/' },
 ];
 
 const description =
@@ -87,9 +86,9 @@ const jsonLd = {
                 </a>
               </div>
               <p class="mt-4 font-mono text-[10px] tracking-wider text-stone-400 uppercase">{stats.join(' · ')}</p>
-              <nav aria-label="Reference pages" class="mt-6 flex flex-wrap justify-center gap-2 font-sans text-[13px]">
+              <nav aria-label="Reference pages" class="mt-7 flex justify-center gap-x-6 font-sans text-sm text-stone-600">
                 {quickLinks.map((link) => (
-                  <a href={link.href} data-open={link.open} class="rounded-full border border-stone-200 px-3.5 py-1.5 text-stone-600 transition-colors hover:border-stone-900 hover:text-stone-900">
+                  <a href={link.href} data-open={link.open} class="py-1 underline decoration-orange-300 decoration-2 underline-offset-4 transition-colors hover:text-orange-700">
                     {link.label}
                   </a>
                 ))}
@@ -136,24 +135,19 @@ const jsonLd = {
           </p>
           </div>
 
-          <section id="progress-panel" data-empty aria-labelledby="progress-title" class="rounded border border-stone-200 p-4 font-sans max-md:order-1 md:mt-8">
+          <section id="progress-panel" hidden aria-labelledby="progress-title" class="rounded border border-stone-200 p-4 font-sans max-md:order-1 md:mt-8">
             <h2 id="progress-title" class="micro-label mb-2 text-stone-900">Your progress</h2>
             <div class="mb-3 h-1.5 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
               <div id="progress-bar" class="h-full w-0 rounded-full bg-orange-600 transition-[width] duration-500"></div>
             </div>
-            <p id="progress-count" class="text-[13px] leading-relaxed text-stone-600">Nothing read yet. Chapters you finish are ticked in the contents.</p>
+            <p id="progress-count" class="text-[13px] leading-relaxed text-stone-600"></p>
             <p class="mt-1 text-[13px]">
               <a id="review-link" hidden href="/review/" class="text-orange-700 underline decoration-orange-300 underline-offset-2 hover:text-orange-900"></a>
             </p>
-            <p class="mt-3 text-[11px] leading-relaxed text-stone-400">Kept in this browser only. Save it to a file to carry it to another device.</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button id="progress-export" type="button" class="btn btn-secondary btn-small">Save to a file</button>
-              <label class="btn btn-secondary btn-small">
-                Load a file
-                <input id="progress-import" type="file" accept="application/json,.json" class="sr-only" />
-              </label>
-              <button id="progress-clear" type="button" hidden class="btn btn-small cursor-pointer text-stone-500 hover:text-red-600">Clear</button>
-            </div>
+            <p class="mt-3 text-[11px] leading-relaxed text-stone-400">
+              Remembered by this browser, on this device.{' '}
+              <button id="progress-clear" type="button" class="cursor-pointer underline decoration-stone-300 underline-offset-2 hover:text-red-600">Clear it</button>
+            </p>
           </section>
           </div>
         </div>
@@ -245,7 +239,7 @@ const jsonLd = {
 </BaseLayout>
 
 <script>
-  import { clearProgress, exportProgress, importProgress, loadProgress } from '@/lib/progress';
+  import { clearProgress, loadProgress } from '@/lib/progress';
 
   // Show what this reader has finished, and offer to pick up where they stopped.
   const progress = loadProgress();
@@ -281,7 +275,8 @@ const jsonLd = {
   const exercisesDone = Object.values(progress.exercises).reduce((sum, list) => sum + list.length, 0);
   const count = document.getElementById('progress-count');
   const fill = document.getElementById('progress-bar');
-  if (done > 0 || exercisesDone > 0 || last) document.getElementById('progress-panel')?.removeAttribute('data-empty');
+  const panel = document.getElementById('progress-panel');
+  if (panel && (done > 0 || exercisesDone > 0)) panel.hidden = false;
   if ((done > 0 || exercisesDone > 0) && count) {
     count.textContent =
       `${done} of ${rows.length} chapters finished` + (exercisesDone > 0 ? `, ${exercisesDone} ${exercisesDone === 1 ? 'exercise' : 'exercises'} done.` : '.');
@@ -292,28 +287,13 @@ const jsonLd = {
   if (toReview > 0 && review) {
     review.textContent = `${toReview} checkpoint ${toReview === 1 ? 'question' : 'questions'} to review →`;
     review.hidden = false;
+    if (panel) panel.hidden = false;
   }
 
-  const clear = document.getElementById('progress-clear');
-  if (clear && (done > 0 || exercisesDone > 0 || last)) clear.hidden = false;
-  clear?.addEventListener('click', () => {
-    if (!confirm('Clear all reading progress saved in this browser?')) return;
+  document.getElementById('progress-clear')?.addEventListener('click', () => {
+    if (!confirm('Clear all reading progress remembered by this browser?')) return;
     clearProgress();
     location.reload();
-  });
-
-  document.getElementById('progress-export')?.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob([exportProgress()], { type: 'application/json' }));
-    link.download = 'book-of-ml-progress.json';
-    link.click();
-    URL.revokeObjectURL(link.href);
-  });
-  document.getElementById('progress-import')?.addEventListener('change', async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    if (importProgress(await file.text())) location.reload();
-    else alert('That file is not a progress file saved from this book.');
   });
 </script>
 
@@ -334,15 +314,6 @@ const jsonLd = {
   }
   .path-row::-webkit-scrollbar {
     display: none;
-  }
-  /* Before anything has been read, the progress panel on a phone is just the two file buttons. */
-  @media (max-width: 767px) {
-    #progress-panel[data-empty] > :is(div:first-of-type, p) {
-      display: none;
-    }
-    #progress-panel[data-empty] > p#progress-count {
-      display: block;
-    }
   }
   .toc-later > summary::before {
     color: var(--faint);

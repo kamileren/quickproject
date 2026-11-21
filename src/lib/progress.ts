@@ -47,7 +47,7 @@ function defaultStore(): Store | undefined {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** Turns whatever was stored (or imported) into a well-formed Progress. */
+/** Turns whatever was stored into a well-formed Progress. */
 function tidy(parsed: unknown): Progress {
   if (!isRecord(parsed)) return empty();
   const last = isRecord(parsed.last) && typeof parsed.last.id === 'string' ? (parsed.last as Progress['last']) : undefined;
@@ -148,23 +148,6 @@ export function clearProgress(store: Store | undefined = defaultStore()): void {
     store?.removeItem(KEY);
   } catch {
     // Nothing to clear.
-  }
-}
-
-/** Everything saved, as text the reader can keep in a file and load on another device. */
-export function exportProgress(store: Store | undefined = defaultStore()): string {
-  return JSON.stringify({ book: 'the-book-of-ml', version: 1, progress: loadProgress(store) }, null, 2);
-}
-
-/** Loads text made by exportProgress. Returns false, changing nothing, if it is not such a file. */
-export function importProgress(text: string, store: Store | undefined = defaultStore()): boolean {
-  try {
-    const parsed: unknown = JSON.parse(text);
-    if (!isRecord(parsed) || parsed.book !== 'the-book-of-ml' || !isRecord(parsed.progress)) return false;
-    save(tidy(parsed.progress), store);
-    return true;
-  } catch {
-    return false;
   }
 }
 
