@@ -34,12 +34,33 @@ Static site built with Astro, MDX and React islands. The full plan and progress 
 2. Add its terms to `glossary.yaml`.
 3. Put any new maths in `src/lib/` with tests, then build figures from `figures/core` and that maths.
 4. Write four to seven `##` sections. Each one: a question, an example, the idea, the maths, something to try.
-5. End with `<KeyTakeaways>`, an optional `<GoingFurther>`, and `<References>`.
-6. Set `status: ready` and run `npm run check`.
+5. Add one `<Pitfall title="...">` (a mistake people really make) before the "In code" section.
+6. End with, in this order: `<KeyTakeaways>`, `<NowYouCan>` (skills, each starting with a verb), `<Exercises>`
+   holding three to five `<Exercise kind="by hand | with the figure | in code | think">` blocks each ending in a
+   `<Solution>`, an optional `<GoingFurther>`, `<References>`, and a `<NextUp>` paragraph that leads into the
+   next chapter.
+7. Set `status: ready`, run `npm run og` to draw the chapter's share picture, then `npm run check`.
+
+Other blocks worth knowing:
+
+- `<Ref to="gradient-descent">the last chapter</Ref>` mentions another chapter with a pop-in recap and a link.
+  If that chapter is still a draft the words show as plain text, so it is safe to point forward.
+- `<Checkpoint predict ...>` placed just before a figure asks the reader to guess what the figure will show.
+- `<CodeFile file="ch17_backprop.py" />` links a companion file in `code/` to GitHub and Colab. After editing a
+  file in `code/`, run `npm run notebooks`.
+- `dataset:` in the frontmatter must name an entry in `src/content/datasets.yaml`; the chapter header shows it.
+- A term's pop-in finds the chapter that introduces it by itself. Add `seeAlso: [other-id]` in `glossary.yaml`
+  to link related terms.
+
+Every exercise answer with numbers in it must be checked by running the calculation, not by eye.
 
 The content check enforces the limits that keep chapters readable: per section at most one `<Figure>`, one
 `<Checkpoint>` and three new `<Term>`s; every figure has a `try` prompt; every term exists in the glossary and is
-introduced once.
+introduced once; every chapter has its pitfall, skills list, exercises with solutions, and closing bridge.
+
+The site also builds a glossary (`/glossary/`), a notation table (`/notation/`), a page per part (`/parts/<id>/`)
+and a search page (`/search/`, indexed by Pagefind during `npm run build`). Reading progress is stored only in
+the reader's browser (`src/lib/progress.ts`).
 
 Figures are React components and need `client:visible` in MDX:
 

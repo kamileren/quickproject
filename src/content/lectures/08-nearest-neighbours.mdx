@@ -76,6 +76,16 @@ The number of neighbours is a hyperparameter, and it sets how flexible the model
 
 With $k = 1$ every stored point rules its own little territory, including the odd ones that sit in the wrong crowd. The model gets every known point right and has learned their noise. With a very large $k$, the vote is taken over such a wide area that local detail is lost, and the model underfits.
 
+<Checkpoint
+  predict
+  question="With k = 1, how many mistakes will the model make on the sixty points it has stored?"
+  options={[
+    { text: 'None', correct: true, why: 'Each stored point is its own nearest neighbour, so it is always given its own label. That is memorising, and the figure shows what it costs on new points.' },
+    { text: 'About as many as on new points', why: 'A stored point is never judged by another point when k is 1. It only looks at itself.' },
+    { text: 'More than with a large k', why: 'On stored points a small k can only help. The trouble with k = 1 shows up on new points.' },
+  ]}
+/>
+
 <Figure
   title="Mistakes against k"
   caption="The dark line counts mistakes on the sixty stored points. The orange line counts mistakes on three hundred new ones."

@@ -20,6 +20,16 @@ With a good optimizer, a network can drive its training loss almost to zero. Tha
 
 Give a network far more capacity than its data needs. Here are just 45 points on three spiral arms, and a network with 64 hidden neurons: 387 learnable numbers for 45 examples.
 
+<Checkpoint
+  predict
+  question="A network with 387 weights is trained on only 45 points. Its training loss falls all the way through. What will the loss on new points from the same spirals do?"
+  options={[
+    { text: 'Fall together with the training loss', why: 'That happens when there is plenty of data for the size of the network. Here there are almost nine weights for every point.' },
+    { text: 'Fall for a while, then climb', correct: true, why: 'Early on the network learns the broad shape of the spirals, which helps everywhere. Then it starts fitting individual points, which helps only those points.' },
+    { text: 'Stay level from the start', why: 'The network does learn something real at first, so new points benefit for a while.' },
+  ]}
+/>
+
 <Figure
   title="Forty-five points, 387 weights"
   caption="Left: the training points and the regions the network assigns. Right: the loss on those points (dark) and on 450 new points from the same spirals (orange)."

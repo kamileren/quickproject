@@ -8,6 +8,8 @@
 //   - every <Term id> exists in the glossary, every <Symbol id> in the notation file
 //   - a term is introduced with <Term> only once
 //   - every figure has a `try` prompt
+//   - a <NowYouCan> block, one or two <Pitfall> blocks, a closing <NextUp>
+//   - an <Exercises> block with at least three exercises, each with a <Solution>
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -46,6 +48,14 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.mdx')).sort())
   for (const block of ['KeyTakeaways', 'References']) {
     if (!prose.includes(`<${block}>`)) fail(`missing <${block}>`);
   }
+
+  for (const block of ['NowYouCan', 'Exercises', 'NextUp']) {
+    if (!prose.includes(`<${block}>`)) fail(`missing <${block}>`);
+  }
+  const count = (tag) => (prose.match(new RegExp(`<${tag}[\\s>]`, 'g')) ?? []).length;
+  if (count('Pitfall') < 1 || count('Pitfall') > 2) fail(`has ${count('Pitfall')} <Pitfall> blocks; expected 1 or 2`);
+  if (count('Exercise') < 3) fail(`has ${count('Exercise')} exercises; expected at least 3`);
+  if (count('Exercise') !== count('Solution')) fail(`has ${count('Exercise')} exercises but ${count('Solution')} solutions`);
 
   const seen = new Set();
   for (const [, id] of prose.matchAll(/<Term\s+id="([^"]+)"/g)) {
