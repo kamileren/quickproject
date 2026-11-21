@@ -211,3 +211,24 @@
 - id: curse-of-dimensionality
   term: Curse of dimensionality
   definition: The way data becomes sparse as features are added. With many features every point is far from every other, and "nearest" stops meaning much.
+- id: bayes-rule
+  term: Bayes' rule
+  definition: The rule for updating a belief when evidence arrives. It combines how likely something was beforehand with how well the evidence fits it.
+- id: prior
+  term: Prior
+  definition: How likely something is before looking at the evidence. For spam, the share of all messages that are spam.
+- id: posterior
+  term: Posterior
+  definition: How likely something is after taking the evidence into account. It is what Bayes' rule computes.
+- id: likelihood
+  term: Likelihood
+  definition: How probable the evidence is if a given answer were true, such as how often the word "free" turns up in spam.
+- id: naive-bayes
+  term: Naive Bayes
+  definition: A classifier that applies Bayes' rule while pretending every feature is independent of the others. Simple, fast, and often good enough.
+- id: independence
+  term: Independence
+  definition: Two things are independent when knowing one tells you nothing about the other. Words in a message are not, which is why the assumption is called naive.
+- id: smoothing
+  term: Smoothing
+  definition: Adding a small amount to every count so that nothing is ever judged impossible just because it was not in the training data.

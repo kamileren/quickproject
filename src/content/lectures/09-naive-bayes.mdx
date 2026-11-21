@@ -4,5 +4,206 @@ number: "9"
 part: classification
 order: 11
 summary: "Turning Bayes' rule into a fast, simple classifier."
-status: draft
+question: "A message contains the word \"free\". How much more likely is it to be spam?"
+dataset: messages
+minutes: 17
+status: ready
+prerequisites: [measuring-classifiers]
 ---
+
+import BayesTree from '@/components/figures/ch09/BayesTree';
+import SpamScore from '@/components/figures/ch09/SpamScore';
+
+Logistic regression learns a boundary. Nearest neighbours compares with stored examples. This chapter's classifier works a third way: it reasons about evidence. It asks how well each possible answer would explain what it sees, and it does so with nothing more than counting.
+
+## Reasoning backwards
+
+Start with a question people reliably get wrong. A test for an illness catches 90% of the people who have it, and wrongly flags 9% of the people who do not. You test positive. How likely is it that you are ill?
+
+Most people say about 90%. The right answer depends on something the question left out: how common the illness is.
+
+<Figure
+  title="What a positive test means"
+  caption="A thousand people take the test. Dark boxes are ill people who test positive; orange boxes are healthy people who test positive."
+  try="with the illness at 10%, read the answer. Then drag the first slider down to 1% and watch what a positive result is worth."
+>
+  <BayesTree client:visible />
+</Figure>
+
+When 10% of people are ill, 90 ill people test positive and so do 81 healthy ones. A positive result means a 53% chance of illness, not 90%. When only 1% are ill, the healthy false alarms swamp the real cases and a positive result means about 9%.
+
+The 90% was the answer to a different question: *if I am ill, how likely is a positive test?* We wanted the reverse: *given a positive test, how likely am I ill?* Turning one into the other is the job of <Term id="bayes-rule">Bayes' rule</Term>, and the figure just did it by counting. It needs two ingredients:
+
+- The <Term id="prior">prior</Term>: how likely the answer was before any evidence. Here, how common the illness is.
+- How well the evidence fits each answer: how often ill people, and healthy people, test positive.
+
+The result, the updated belief, is called the <Term id="posterior">posterior</Term>.
+
+<Checkpoint
+  question="A smoke alarm sounds in 99% of real fires. It also sounds on 1 night in 100 with no fire, and real fires happen on 1 night in 10,000. The alarm goes off. What is the best conclusion?"
+  options={[
+    { text: 'There is almost certainly a fire, since the alarm is 99% reliable', why: 'That is the chance of an alarm given a fire. Fires are so rare that false alarms far outnumber real ones.' },
+    { text: 'A fire is still unlikely, about 1%', correct: true, why: 'Out of 10,000 nights there is about 1 real fire and about 100 false alarms. Roughly 1 alarm in 100 is real. Worth checking, though, since the cost of a miss is high.' },
+    { text: 'It is 50/50', why: 'The two explanations are not equally common. False alarms outnumber fires by about a hundred to one.' },
+  ]}
+/>
+
+## One word as evidence
+
+Now swap the illness for spam and the test for a word. Our data is a small inbox of 34 messages, 14 of them spam. So before reading a message, the chance that it is spam is $14/34$, about 41%. That is the prior.
+
+Take the word "free". Count the messages that contain it:
+
+| | Contains "free" | Out of | Share |
+|---|---|---|---|
+| Spam | 9 | 14 | 64% |
+| Normal | 1 | 20 | 5% |
+
+Each share is a <Term id="likelihood">likelihood</Term>: how probable the evidence is under one answer. "Free" is about thirteen times more common in spam, so seeing it should shift our belief strongly.
+
+<Example title="Bayes' rule with the counts">
+
+Imagine the 34 messages. Of the 14 spam, 9 contain "free". Of the 20 normal ones, 1 does. So 10 messages contain "free", and 9 of them are spam:
+
+$$
+P(\text{spam} \mid \text{free}) = \frac{9}{9 + 1} = 90\%
+$$
+
+One word moved the estimate from 41% to 90%.
+
+</Example>
+
+As a formula, Bayes' rule says the same thing:
+
+<Equation reads="chance of spam given the word = prior × how well spam explains the word, divided by the total chance of seeing the word">
+
+$$
+P(\text{spam} \mid \text{word}) = \frac{P(\text{spam}) \times P(\text{word} \mid \text{spam})}{P(\text{word})}
+$$
+
+</Equation>
+
+## Many words, one naive assumption
+
+A message has many words, and we want to use all of them. Doing that exactly would mean knowing how likely every *combination* of words is in spam, and there are far too many combinations to count.
+
+So we make a bold simplification: pretend that each word appears independently of the others, given the kind of message. Then the evidence from separate words can simply be multiplied together.
+
+$$
+P(\text{spam} \mid \text{message}) \;\propto\; P(\text{spam}) \times P(w_1 \mid \text{spam}) \times P(w_2 \mid \text{spam}) \times \dots
+$$
+
+This is the <Term id="naive-bayes">Naive Bayes</Term> classifier. The assumption of <Term id="independence">independence</Term> is plainly false. "Prize" is far more likely when "win" is already there. That is why the method is called naive. It turns out to work well anyway, for reasons we will come to.
+
+Multiplying many small numbers is awkward, so in practice we add their logarithms instead. Each word then contributes a *push*: positive toward spam, negative toward normal. The pushes add up to a score, and the score becomes a probability exactly as in logistic regression.
+
+<Figure
+  title="Every word gets a vote"
+  caption="The grey bar is the starting point from how common spam is. Each dark bar is one word's push, learned from the 34 messages."
+  try="type your own messages. See how 'free lunch tomorrow' ends up normal although it contains 'free', then try 'free prize'."
+>
+  <SpamScore client:visible />
+</Figure>
+
+The message "free lunch tomorrow" contains the spammiest common word in the inbox, yet scores as normal. "Free" pushes up by 1.99, but "lunch" and "tomorrow" push down by 1.18 and 1.59, and the starting point is already slightly negative because most messages are not spam. The model weighs all the evidence, not just the alarming part.
+
+<MarginNote>
+Words such as "today" barely move the score. They are about equally common in both kinds of message, so they carry almost no evidence.
+</MarginNote>
+
+## The word never seen
+
+There is a trap in multiplying. The word "meeting" appears in four normal messages and in no spam at all. Its count in spam is zero, so its likelihood under spam is zero, and anything multiplied by zero is zero. A single such word makes a message *impossible* to be spam, whatever else it says.
+
+That is far too strong a conclusion from 14 spam messages. Not having seen something is weak evidence that it never happens.
+
+The standard fix is <Term id="smoothing">smoothing</Term>: add 1 to every count before computing the shares. A word never seen in spam is then treated as rare in spam, not impossible.
+
+$$
+P(\text{word} \mid \text{spam}) = \frac{\text{count of the word in spam} + 1}{\text{total words in spam} + \text{number of different words}}
+$$
+
+For "meeting" this gives $(0 + 1) / (79 + 68) \approx 0.7\%$ instead of zero.
+
+<Figure
+  title="One unseen word, with and without smoothing"
+  caption="The message has three spammy words and one word that never appeared in spam."
+  try="read the verdict with smoothing on. Then switch smoothing off and watch one bar overrule all the others."
+>
+  <SpamScore client:visible smoothingToggle initialText="free now your meeting" examples={['free now your meeting', 'free prize', 'thanks for the report']} />
+</Figure>
+
+With smoothing the message is judged about 95% likely to be spam. Without it, "meeting" has an infinite push the other way and the answer is 0%.
+
+## Why something so naive works
+
+The independence assumption is wrong, so the probabilities Naive Bayes produces are wrong too. Related words get counted as separate pieces of evidence when they are really one, which makes the model overconfident: it says 99.9% where 90% would be honest.
+
+But classification needs only the right *side* of 50%, not the right number. Overcounting evidence usually pushes the score further in the direction it was already going. The ranking of messages stays sensible even when the probabilities are exaggerated.
+
+The simplicity also buys real advantages:
+
+- **Training is one pass of counting.** No gradient descent, no learning rate, nothing to tune except the smoothing.
+- **It needs little data.** Each word's counts are estimated separately, so a few dozen examples already give a usable model.
+- **It handles thousands of features** without trouble, where nearest neighbours would be lost.
+
+Its weakness is the one already named: when features are strongly related, or when you need trustworthy probabilities, logistic regression is usually the better choice.
+
+<Checkpoint
+  question="A Naive Bayes spam filter says a message is 99.99% likely to be spam. How should you read that number?"
+  options={[
+    { text: 'As a precise probability', why: 'The independence assumption makes Naive Bayes overconfident, so its probabilities are usually too extreme.' },
+    { text: 'As strong evidence of spam, but not a calibrated probability', correct: true, why: 'The direction and ranking are usually reliable. The exact figure is exaggerated because related words are counted as independent evidence.' },
+    { text: 'As meaningless', why: 'The score still ranks messages well. It is the precise value, not the verdict, that should not be trusted.' },
+  ]}
+/>
+
+## In code
+
+```python
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+
+# texts: a list of message strings.   is_spam: 1 for spam, 0 for normal.
+model = make_pipeline(
+    CountVectorizer(),            # turns each message into word counts
+    MultinomialNB(alpha=1.0),     # alpha is the smoothing: add 1 to every count
+)
+model.fit(texts, is_spam)
+
+print(model.predict(["free lunch tomorrow"]))          # [0]: normal
+print(model.predict_proba(["free prize"])[0, 1])       # 0.97: chance of spam
+```
+
+`CountVectorizer` builds the table of word counts and `MultinomialNB` applies Bayes' rule to it. Training on a million messages takes seconds.
+
+<KeyTakeaways>
+
+- **Bayes' rule** turns "how likely is this evidence if the answer is yes" into "how likely is yes given this evidence". It needs the **prior**.
+- Rare things stay unlikely even after strong evidence. Ignoring how rare they are is the classic mistake.
+- **Naive Bayes** treats every feature as independent evidence and multiplies, or adds logs.
+- **Smoothing** stops one unseen word from vetoing everything else.
+- It is fast, needs little data and ranks well, but its probabilities are **overconfident**.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### Numbers instead of words
+
+For numeric features, such as height or temperature, there is nothing to count. Gaussian Naive Bayes instead fits a bell curve to each feature within each class, and uses the height of the curve as the likelihood. Everything else is unchanged.
+
+### Models that describe the data
+
+Naive Bayes is a *generative* model: it learns what each class looks like, and classifies by asking which class best explains the input. Logistic regression is *discriminative*: it learns only the boundary between classes. Generative models can cope with missing features and tiny datasets; discriminative ones usually win when data is plentiful.
+
+</GoingFurther>
+
+<References>
+
+- T. Ma and A. Ng, *CS229 Lecture Notes*, chapter 4 (generative learning algorithms), [cs229.stanford.edu](https://cs229.stanford.edu/main_notes.pdf).
+- Seeing Theory, [Bayesian inference](https://seeing-theory.brown.edu/bayesian-inference/index.html), an interactive introduction.
+- scikit-learn user guide, [Naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html).
+
+</References>
