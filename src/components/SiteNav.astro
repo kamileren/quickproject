@@ -2,13 +2,14 @@
 /** The slim bar at the top of every page except the cover. */
 interface Props {
   /** Which link is the current page. */
-  current?: 'glossary' | 'notation';
+  current?: 'glossary' | 'notation' | 'search';
 }
 const { current } = Astro.props;
 const links = [
   { id: 'contents', label: 'Contents', href: '/#contents' },
   { id: 'glossary', label: 'Glossary', href: '/glossary/' },
   { id: 'notation', label: 'Notation', href: '/notation/' },
+  { id: 'search', label: 'Search', href: '/search/' },
 ];
 ---
 

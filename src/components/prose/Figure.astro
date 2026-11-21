@@ -14,7 +14,7 @@ const { title, caption, try: tryIt } = Astro.props;
     <div class="figure-number text-sm font-bold tracking-widest uppercase">Figure</div>
     <p class="text-xs text-stone-500 italic">{title}</p>
   </header>
-  <div class="not-prose text-base"><slot /></div>
+  <div class="not-prose text-base" data-pagefind-ignore><slot /></div>
   {
     (caption || tryIt) && (
       <figcaption class="mt-6 border-t border-stone-100 pt-4 text-[12px] leading-relaxed text-stone-500">

@@ -41,7 +41,7 @@ const jsonLd = {
             {chapterLabel(number)} // {part.data.title}
           </div>
         </div>
-        <h1 class="display mb-8 text-[clamp(2rem,9.5vw,3rem)] leading-[1.05] break-words hyphens-auto sm:text-6xl md:text-7xl">{title}{/[?!.]$/.test(title) ? '' : '.'}</h1>
+        <h1 data-pagefind-meta="title" class="display mb-8 text-[clamp(2rem,9.5vw,3rem)] leading-[1.05] break-words hyphens-auto sm:text-6xl md:text-7xl">{title}{/[?!.]$/.test(title) ? '' : '.'}</h1>
         <p class="max-w-2xl text-2xl leading-relaxed font-light text-stone-500 italic">{question ?? summary}</p>
 
         <dl class="mt-8 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] text-stone-500">
@@ -94,7 +94,7 @@ const jsonLd = {
         )
       }
 
-      <article class="book-prose" style={`--chapter: '${number}'`} data-chapter-id={lecture.id} data-chapter-title={title} data-chapter-label={chapterLabel(number)}>
+      <article data-pagefind-body data-pagefind-meta={`kind:${chapterLabel(number)}`} class="book-prose" style={`--chapter: '${number}'`} data-chapter-id={lecture.id} data-chapter-title={title} data-chapter-label={chapterLabel(number)}>
         <slot />
       </article>
 

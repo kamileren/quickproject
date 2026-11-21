@@ -1,0 +1,5 @@
+# Search index settings. Run as part of `npm run build`.
+site: dist
+# Formulas index as noise (each one appears three times in the page source).
+exclude_selectors:
+  - ".katex"
