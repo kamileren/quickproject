@@ -1,5 +1,10 @@
 # What changed in the book, newest first. Shown at /changelog/.
 # Add an entry whenever something a reader would notice is published.
+- id: 2026-11-21-touch
+  date: "2026-11-21"
+  title: Figures work with a finger
+  items:
+    - The handles in figures can now be dragged on a touch screen. Before this, touching one scrolled the page instead.
 - id: 2026-11-21-map
   date: "2026-11-21"
   title: A map you can read, and more to try on the cover
