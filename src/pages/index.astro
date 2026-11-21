@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import HeroFit from '@/components/figures/home/HeroFit';
+import HeroDemo from '@/components/figures/home/HeroDemo';
 import { chapterUrl, getLectures, getParts, SITE_NAME } from '@/lib/book';
 
 const lectures = await getLectures();
@@ -40,7 +40,13 @@ const quickLinks = [
   { label: 'Recap', href: '/recap/' },
 ];
 
-const regression = lectures.find((l) => l.id === 'linear-regression' && l.data.status === 'ready');
+// The small figures on the cover, each tied to the chapter it comes from. Unpublished chapters drop out.
+const urlOf = (id: string) => {
+  const found = ready.find((l) => l.id === id);
+  return found && chapterUrl(found);
+};
+const demoUrls = { fit: urlOf('linear-regression'), cutoff: urlOf('what-is-learning'), neighbours: urlOf('nearest-neighbours'), step: urlOf('gradient-descent') };
+const hasDemo = Object.values(demoUrls).some(Boolean);
 // One opening question is shown under the cover; the page script swaps in a different one on each visit.
 const questions = ready.filter((l) => l.data.question).map((l) => ({ text: l.data.question, url: chapterUrl(l), label: l.data.number.includes('.') ? `Toolkit ${l.data.number}` : `Chapter ${l.data.number}` }));
 
@@ -111,10 +117,9 @@ const jsonLd = {
         </div>
 
         {
-          regression && (
+          hasDemo && (
             <div class="mx-auto mt-10 max-w-xl rounded-sm border-2 border-stone-900 p-4 sm:mt-14 sm:p-6">
-              <div id="hero-figure-label" class="micro-label mb-3 text-left text-stone-900">Try it before you read anything</div>
-              <HeroFit client:idle chapterUrl={chapterUrl(regression)} />
+              <HeroDemo client:idle urls={demoUrls} />
             </div>
           )
         }
@@ -349,8 +354,6 @@ const jsonLd = {
       document.getElementById('welcome-detail')!.textContent =
         (last.sectionTitle ? `You were at “${last.sectionTitle}”` : 'You had just started') + (left > 0 ? `, about ${left} min left.` : '.');
       document.getElementById('welcome-bar')!.style.width = `${Math.round(100 * (last.fraction ?? 0))}%`;
-      const figureLabel = document.getElementById('hero-figure-label');
-      if (figureLabel) figureLabel.textContent = 'A figure from chapter 2';
       welcome.hidden = false;
       document.getElementById('pitch')?.setAttribute('hidden', '');
     }
