@@ -4,5 +4,227 @@ number: "18"
 part: networks
 order: 20
 summary: "Momentum, RMSProp, and Adam: smarter ways to step."
-status: draft
+question: "Backpropagation gives exact gradients. Why was training still so slow?"
+dataset: spiral
+minutes: 18
+status: ready
+prerequisites: [backpropagation]
 ---
+
+import RavineDescent from '@/components/figures/ch18/RavineDescent';
+import SpiralTraining from '@/components/figures/ch17/SpiralTraining';
+
+The last chapter ended with a network that learned, but slowly: 2,000 steps to get 62% of the spiral right. The gradients were exact. What was crude was how we used them: subtract the gradient, times one fixed number, every time. The rule that turns gradients into updates is called an <Term id="optimizer">optimizer</Term>, and this chapter builds better ones, each fixing a specific weakness of the one before.
+
+## What plain gradient descent gets wrong
+
+To see the weakness clearly we need a simple surface that shows it. Here is a long, narrow valley: gentle along its length, twenty times steeper across its width. Loss surfaces of real networks are full of shapes like this.
+
+<Figure
+  title="One learning rate for a lopsided valley"
+  caption="Each ring joins points of equal height. The path starts at the dark dot and takes 100 steps of plain gradient descent."
+  try="start at 0.10 and read the verdict. Raise the rate slowly to 0.90, then on to 0.98, then past 1.00."
+>
+  <RavineDescent client:visible mode="rate" />
+</Figure>
+
+The trouble is that a single learning rate has to serve both directions.
+
+- At **0.10** the steps across the valley are well behaved, but progress along it is a crawl. After 100 steps the path is still well short of the bottom.
+- At **0.90** it arrives in 24 steps. That is as good as it gets.
+- At **0.98** each step overshoots the steep direction, and the path wastes its effort bouncing from wall to wall.
+- Just past **1.00** every bounce is bigger than the last, and the run diverges.
+
+The steep direction sets a hard ceiling on the learning rate, and the gentle direction wants a rate far above that ceiling. The best single value sits on the edge of disaster, and you can only find it by trial and error. Real networks have millions of directions, each with its own steepness.
+
+## Start big, finish small
+
+A first, easy improvement: do not keep the learning rate fixed. Large steps are useful early on, when the weights are far from anywhere good. Small steps are needed late, to settle instead of bouncing. <Term id="learning-rate-decay">Learning-rate decay</Term> shrinks the rate as training goes on.
+
+<Equation reads="current rate = starting rate ÷ (1 + decay × number of steps so far)">
+
+$$
+\eta_t = \frac{\eta_0}{1 + \text{decay} \times t}
+$$
+
+</Equation>
+
+<Figure
+  title="Letting the bouncing die away"
+  caption="The starting rate is 0.98, slightly too large for the steep direction."
+  try="with decay at zero, watch the path bounce. Raise the decay a little, to about 0.02. Then raise it a lot and see the opposite problem."
+>
+  <RavineDescent client:visible mode="decay" />
+</Figure>
+
+With no decay the path takes 64 steps to settle. A decay of 0.02 cuts that to 27, because the bounces shrink as the rate does. But decay is one more setting that can be wrong: at 0.2 the rate collapses so quickly that the path runs out of energy before it arrives.
+
+## Momentum
+
+The bouncing has a pattern worth exploiting. Across the valley, successive gradients point in *opposite* directions: left, right, left. Along the valley they all point the *same* way. If each step remembered the previous ones, the back-and-forth would cancel and the consistent direction would add up.
+
+That is <Term id="momentum">momentum</Term>. Keep a running velocity. At each step, keep a fraction of the old velocity and add the new gradient step to it.
+
+<Equation reads="velocity = momentum × old velocity − learning rate × gradient; then move by the velocity">
+
+$$
+v \leftarrow \beta\,v - \eta\,\nabla L \qquad\qquad w \leftarrow w + v
+$$
+
+</Equation>
+
+The picture is a heavy ball rolling downhill. It does not turn on the spot when the slope changes; it carries on, and picks up speed where the slope keeps pointing the same way.
+
+<Figure
+  title="A ball that remembers"
+  caption="The learning rate is fixed at the cautious 0.10 that was too slow on its own."
+  try="raise the momentum from 0 toward 0.90 and watch the path stretch out along the valley. Then push it to 0.98."
+>
+  <RavineDescent client:visible mode="momentum" />
+</Figure>
+
+With momentum at 0.9, the cautious learning rate that never arrived now gets there in 24 steps, as fast as the best hand-tuned rate, and without sitting next to the cliff. The usual value is 0.9. Too much, and the ball has so much inertia that it sails past the bottom and has to come back.
+
+<Checkpoint
+  question="During training the gradient for one weight keeps flipping sign: +3, −3, +3, −3. What does momentum do to that weight's updates?"
+  options={[
+    { text: 'Makes them larger each time', why: 'Momentum builds up only when gradients keep the same sign. Alternating gradients work against each other.' },
+    { text: 'Makes them smaller, because the opposing gradients partly cancel', correct: true, why: 'Each new gradient is added to a velocity that points the other way. The weight stops being thrown back and forth.' },
+    { text: 'Nothing, since the average gradient is zero', why: 'The updates do change: plain gradient descent would swing fully each time, while momentum damps the swings.' },
+  ]}
+/>
+
+## A step size for every weight
+
+Momentum smooths the direction. A different idea attacks the original problem head on: why should every weight share one learning rate at all?
+
+An <Term id="adaptive-rate">adaptive learning rate</Term> gives each weight its own step size, set from that weight's own history. A weight whose gradients have been large gets a smaller step. A weight whose gradients have been tiny gets a larger one. In the valley, that means short steps across and long steps along, automatically.
+
+The mechanism is simple: keep a running total of each weight's squared gradients, and divide its step by the square root of that total.
+
+| Method | What it remembers | Consequence |
+|---|---|---|
+| AdaGrad | The sum of *all* squared gradients so far | Steps only ever shrink. Training can stall before it is finished. |
+| RMSProp | A *fading* average of recent squared gradients | Steps adapt to the current terrain and do not shrink for ever. |
+
+<Example title="Two weights, one update">
+
+Suppose two weights have recently seen gradients of typical size 10 and 0.1.
+
+- Plain gradient descent with rate 0.01 moves them by 0.1 and 0.001. The second weight is barely moving.
+- RMSProp divides each step by the typical gradient size: both move by about 0.01.
+
+Every weight makes progress at a similar pace, whatever the scale of its gradients.
+
+</Example>
+
+## Adam, and a race
+
+The last step is to use both ideas together. <Term id="adam">Adam</Term> keeps a momentum-style running average of the gradient *and* an RMSProp-style running average of its square, and divides one by the other.
+
+It adds one small correction. Both averages start at zero, so for the first few steps they are too small. Adam divides each by a factor that undoes this, and the effect is that its very first step has a sensible size.
+
+Here are four optimizers on the same valley, each with ordinary default-style settings and no tuning to this surface.
+
+<Figure
+  title="Four ways down the same valley"
+  caption="All four start from the same point. Plain gradient descent uses the cautious rate, since its fast rate was on the edge of diverging."
+  try="press Race and watch the order in which they arrive. Reset and use Step to follow the first ten moves one at a time."
+>
+  <RavineDescent client:visible mode="race" />
+</Figure>
+
+Momentum, RMSProp and Adam all reach the bottom in 20 to 30 steps. Plain gradient descent is still on its way after 100.
+
+To be fair to it: we saw that plain gradient descent *can* match them here, at a rate of 0.9. The difference is that it needed exactly the right rate, found by search, right next to the value at which it blows up. The others got there with settings chosen before looking at the surface. That robustness, more than raw speed, is why Adam became the default.
+
+## On a real network
+
+Now the test that matters. This is the spiral network from the last chapter, unchanged: same data, same 195 weights, same starting point. Only the optimizer differs.
+
+<Figure
+  title="The same network, five optimizers"
+  caption="Each run starts from identical weights. Choosing an optimizer resets the network."
+  try="train with plain SGD for a few hundred steps to remember how slow it was. Then choose Adam and train again."
+>
+  <SpiralTraining client:visible optimizers={['sgd', 'momentum', 'adagrad', 'rmsprop', 'adam']} />
+</Figure>
+
+After 2,000 steps each:
+
+| Optimizer | Loss | Right on the training points | Right on new points |
+|---|---|---|---|
+| Plain SGD | 0.788 | 62% | 58% |
+| AdaGrad | 0.751 | 63% | 60% |
+| RMSProp | 0.238 | 92% | 85% |
+| SGD with momentum and decay | 0.031 | 99% | 96% |
+| Adam | 0.015 | 99% | 95% |
+
+Adam passes 96% within the first 300 steps. Nothing about the network or the data changed. The gradients were always good enough; they only needed to be used well.
+
+<Checkpoint
+  question="You are starting a new project and have to pick an optimizer before knowing anything about the loss surface. What is the sensible default?"
+  options={[
+    { text: 'Plain SGD with a learning rate of 1', why: 'It can work, but only if that rate happens to suit the surface. It is the most sensitive choice.' },
+    { text: 'Adam with its default settings', correct: true, why: 'Adam adapts the step for each weight and adds momentum, so it works acceptably on a wide range of problems with little tuning.' },
+    { text: 'AdaGrad, because its steps only shrink', why: 'Steps that only shrink are its weakness: on long runs it can stall before training is done.' },
+  ]}
+/>
+
+## In code
+
+All the optimizers share one small base class that handles the decay. Here are the two most used. The full file, `code/ch18_optimizers.py`, has all five and runs the comparison.
+
+```python
+class Optimizer_SGD(Optimizer):
+    def update_params(self, layer):
+        # Keep part of the last step, add the new gradient step.
+        layer.weight_momentums = self.momentum * layer.weight_momentums - self.current_learning_rate * layer.dweights
+        layer.weights += layer.weight_momentums
+        # ...and the same two lines for the biases
+
+class Optimizer_Adam(Optimizer):
+    def update_params(self, layer):
+        # Momentum: a running average of the gradients.
+        layer.weight_momentums = self.beta_1 * layer.weight_momentums + (1 - self.beta_1) * layer.dweights
+        # Cache: a running average of the squared gradients.
+        layer.weight_cache = self.beta_2 * layer.weight_cache + (1 - self.beta_2) * layer.dweights ** 2
+        # Both start at zero, so early on they are too small. Dividing corrects that.
+        step = self.iterations + 1
+        weight_momentums = layer.weight_momentums / (1 - self.beta_1 ** step)
+        weight_cache = layer.weight_cache / (1 - self.beta_2 ** step)
+
+        layer.weights -= self.current_learning_rate * weight_momentums / (np.sqrt(weight_cache) + self.epsilon)
+```
+
+In the training loop, the single line that updated the weights is the only thing that changes. The Python version, run for 2,000 epochs, gives 53% with plain SGD and 99% with either momentum or Adam.
+
+<KeyTakeaways>
+
+- Plain gradient descent uses **one learning rate for every direction**, and the steepest direction limits it.
+- **Decay** starts with large steps and ends with small ones.
+- **Momentum** carries speed from step to step: consistent directions build up, back-and-forth cancels.
+- **RMSProp** gives each weight its own step size, based on its recent gradients.
+- **Adam** combines momentum and per-weight step sizes, and is the usual default.
+
+</KeyTakeaways>
+
+<GoingFurther>
+
+### The learning rate still matters
+
+Adaptive optimizers are forgiving, not magic. Adam's rate still needs to be roughly right, and it is usually the first thing to adjust when training misbehaves: try values a factor of three or ten apart. Schedules that warm the rate up from zero and then lower it are standard for large models.
+
+### When plain SGD is preferred
+
+For some problems, especially image models trained for a long time, SGD with momentum and a careful schedule ends at solutions that generalize slightly better than Adam's. It costs more tuning. Adam, and its variant AdamW with a corrected weight penalty, remain the place to start.
+
+</GoingFurther>
+
+<References>
+
+- H. Kinsley and D. Kukieła, *Neural Networks from Scratch in Python*, chapter 10, [nnfs.io](https://nnfs.io).
+- G. Goh, [Why momentum really works](https://distill.pub/2017/momentum/), Distill, 2017.
+- D. P. Kingma and J. Ba, [Adam: a method for stochastic optimization](https://arxiv.org/abs/1412.6980), 2014.
+
+</References>

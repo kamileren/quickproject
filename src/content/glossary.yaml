@@ -343,3 +343,18 @@
 - id: training-loop
   term: Training loop
   definition: The cycle that trains a network. Forward pass, measure the loss, backward pass, update the weights, and repeat.
+- id: optimizer
+  term: Optimizer
+  definition: The rule that turns gradients into weight updates. Plain gradient descent is the simplest; Adam is the most widely used.
+- id: learning-rate-decay
+  term: Learning-rate decay
+  definition: Gradually shrinking the learning rate during training, so that early steps are large and late steps are careful.
+- id: momentum
+  term: Momentum
+  definition: Carrying part of the previous update into the next one. It builds up speed in directions that stay consistent and damps back-and-forth motion.
+- id: adaptive-rate
+  term: Adaptive learning rate
+  definition: A separate step size for every weight, set automatically from the size of that weight's recent gradients.
+- id: adam
+  term: Adam
+  definition: An optimizer that combines momentum with a per-weight adaptive step size. It is the usual default for training neural networks.
