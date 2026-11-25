@@ -35,6 +35,8 @@ const parts = defineCollection({
     order: z.number(),
     /** One or two sentences on what the part is for. */
     intro: z.string(),
+    /** Search-result description, when the intro is too long to use (keep it under 160 characters). */
+    description: z.string().optional(),
     /** What a reader should already have read. */
     needs: z.string().optional(),
   }),

@@ -21,7 +21,7 @@ const minutes = ready.reduce((sum, l) => sum + (l.data.minutes ?? 0), 0);
 const titleOf = (id: string) => all.find((l) => l.id === id)?.data.title ?? id;
 ---
 
-<BaseLayout title={`${part.data.label}: ${part.data.title} — ${SITE_NAME}`} description={part.data.intro.length > 155 ? part.data.intro.split('. ').slice(0, 2).join('. ').replace(/\.?$/, '.') : part.data.intro}>
+<BaseLayout title={`${part.data.label}: ${part.data.title} — ${SITE_NAME}`} description={part.data.description ?? part.data.intro}>
   <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
       <header class="mb-14">

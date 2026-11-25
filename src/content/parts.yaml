@@ -3,17 +3,20 @@
   title: Toolkit
   order: 0
   intro: The three pieces of mathematics the rest of the book leans on. Each chapter covers only what later chapters use, with pictures before formulas. Read them first, or come back when a chapter sends you here.
+  description: "The three pieces of mathematics the rest of the book leans on. Each chapter covers only what later chapters use, with pictures before formulas."
 - id: learning
   label: Part I
   title: Learning from Data
   order: 1
   intro: What it means for a machine to learn, shown on the simplest model there is, a straight line. By the end you will have fitted a model, trained it step by step, and learned how to tell whether it will work on data it has not seen.
+  description: "What it means for a machine to learn, shown on a straight line: fit a model, train it step by step, and tell whether it will work on data it has not seen."
   needs: School algebra. The toolkit chapters help from chapter 3 onward.
 - id: classification
   label: Part II
   title: Classification
   order: 2
   intro: Predicting a category instead of a number. Five different ways to draw the line between yes and no, and how to measure a classifier honestly when one answer is rare.
+  description: "Predicting a category instead of a number: five ways to draw the line between yes and no, and how to score a classifier honestly when one answer is rare."
   needs: Part I, especially gradient descent and generalization.
 - id: trees
   label: Part III
@@ -26,6 +29,7 @@
   title: Neural Networks
   order: 4
   intro: A neural network built from nothing, one piece per chapter, until it recognises pictures of clothing. Every chapter comes with a short Python file that runs on its own.
+  description: "A neural network built from nothing, one piece per chapter, until it recognises pictures of clothing. Each chapter has a short Python file to run."
   needs: Chapters 1 to 4 and 6, and the toolkit chapters on vectors and derivatives.
 - id: structure
   label: Part V
@@ -38,4 +42,5 @@
   title: Doing It for Real
   order: 6
   intro: The work around the model, which is most of the work. Getting data ready, running a project from the first question to the final check, and where to go after this book.
+  description: "The work around the model: getting data ready, running a project from the first question to the final check, and where to go after this book."
   needs: Parts I and II.

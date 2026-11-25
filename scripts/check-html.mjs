@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const problems = [];
+const descProblems = [];
 let pages = 0;
 
 function walk(dir) {
@@ -15,6 +16,12 @@ function walk(dir) {
       if (!['_astro', 'pagefind'].includes(entry.name)) walk(full);
     } else if (entry.name.endsWith('.html')) {
       pages++;
+      // Search results cut descriptions off past about 160 characters, and very short ones say little.
+      const raw = fs.readFileSync(full, 'utf8');
+      if (!raw.includes('name="robots" content="noindex')) {
+        const desc = raw.match(/<meta name="description" content="([^"]*)"/)?.[1]?.replace(/&[a-z]+;|&#\d+;/g, 'x') ?? '';
+        if (desc.length < 70 || desc.length > 160) descProblems.push(`${path.relative('dist', full)}: ${desc.length} characters`);
+      }
       // Code, scripts and drawings are full of tags hard against text on purpose.
       const html = fs
         .readFileSync(full, 'utf8')
@@ -37,6 +44,10 @@ if (!fs.existsSync('dist')) {
   process.exit(1);
 }
 walk('dist');
+if (descProblems.length > 0) {
+  console.error(`Meta descriptions outside 70–160 characters:\n  ${descProblems.join('\n  ')}`);
+  process.exit(1);
+}
 if (problems.length > 0) {
   console.error(`Text running into a link or button (add {' '} or a space):\n  ${[...new Set(problems)].slice(0, 30).join('\n  ')}`);
   process.exit(1);

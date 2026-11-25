@@ -8,7 +8,7 @@ const entries = (await getCollection('changelog')).sort((a, b) => b.data.date.lo
 const iso = (date: string) => date.slice(0, 10);
 ---
 
-<BaseLayout title={`What changed — ${SITE_NAME}`} description="New chapters and features in the book, newest first.">
+<BaseLayout title={`What changed — ${SITE_NAME}`} description="Every new chapter, figure and feature added to The Book of Machine Learning, listed newest first, so returning readers can see what is new.">
   <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="mx-auto max-w-3xl">
       <header class="mb-12">

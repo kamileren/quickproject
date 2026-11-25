@@ -60,7 +60,7 @@ const demoByChapter = Object.fromEntries(ready.map((l) => [l.id, demoFor(l)]));
 const questions = ready.filter((l) => l.data.question).map((l) => ({ text: l.data.question, url: chapterUrl(l), label: l.data.number.includes('.') ? `Toolkit ${l.data.number}` : `Chapter ${l.data.number}` }));
 
 const description =
-  'A free, interactive online textbook that teaches machine learning from first principles: regression, classification, trees, neural networks and more, one idea at a time.';
+  'A free, interactive textbook that teaches machine learning from first principles: regression, classification, trees and neural networks, one idea at a time.';
 
 const jsonLd = {
   '@context': 'https://schema.org',
