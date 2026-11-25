@@ -1,0 +1,33 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import Descent from '@/components/figures/ch03/Descent';
+import RateCurves from '@/components/figures/ch03/RateCurves';
+import RavineDescent from '@/components/figures/ch18/RavineDescent';
+---
+
+<PlaygroundLayout slug="gradient-descent">
+  <Figure
+    title="Gradient descent, seen two ways"
+    caption="Left: the line moving through the data. Right: the same run as a path on the map of the error. Each step can use all twelve students, or only a few, to estimate the downhill direction."
+    try="run it with all 12, then with 4, then with 1. Compare how straight the path is, and where it ends up."
+  >
+    <Descent client:visible allowBatch initialRate={0.03} />
+  </Figure>
+
+  <Figure
+    title="Three learning rates"
+    caption="Each curve shows the error after every step, starting from the same flat line."
+    try="slide the learning rate slowly upward from 0.005. Find roughly where the run is fastest, then keep going until it breaks."
+  >
+    <RateCurves client:visible />
+  </Figure>
+
+  <Figure
+    title="Four ways down the same valley"
+    caption="Four optimizers start from the same point in a long, narrow valley, where plain gradient descent has to use a small, cautious learning rate."
+    try="press Race and watch the order in which they arrive. Reset and use Step to follow the first ten moves one at a time."
+  >
+    <RavineDescent client:visible mode="race" />
+  </Figure>
+</PlaygroundLayout>

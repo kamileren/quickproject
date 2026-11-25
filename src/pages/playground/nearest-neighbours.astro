@@ -1,0 +1,24 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import NeighbourVote from '@/components/figures/ch08/NeighbourVote';
+import KnnRegions from '@/components/figures/ch08/KnnRegions';
+---
+
+<PlaygroundLayout slug="nearest-neighbours">
+  <Figure
+    title="A vote among the closest points"
+    caption="Sixty known points of two kinds. The orange point is new, and the lines join it to the neighbours that get a vote."
+    try="drag the orange point through the gap between the two groups and watch the vote change. Then set k to 1, and to 15."
+  >
+    <NeighbourVote client:visible />
+  </Figure>
+
+  <Figure
+    title="What k-NN would say everywhere"
+    caption="Shaded areas would be called filled, unshaded areas hollow."
+    try="start with k = 1 and look for small islands around single points. Raise k and watch them dissolve. Then click to add a few points of the wrong kind inside a region."
+  >
+    <KnnRegions client:visible />
+  </Figure>
+</PlaygroundLayout>

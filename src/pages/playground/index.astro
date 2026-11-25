@@ -1,0 +1,37 @@
+---
+/** Every playground, one card each. */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE_NAME } from '@/lib/book';
+import { PLAYGROUNDS, playgroundUrl } from '@/data/playgrounds';
+
+const description = 'Interactive machine learning demos that run in your browser: linear regression, gradient descent, overfitting, SVMs, k-NN and neural networks.';
+---
+
+<BaseLayout title={`Interactive Machine Learning Playground — ${SITE_NAME}`} description={description}>
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
+    <div class="mx-auto max-w-3xl">
+      <header class="mb-12">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Playground</div>
+        </div>
+        <h1 class="display mb-6 text-5xl leading-[1.05] sm:text-6xl">Playground.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          The book's interactive figures, gathered by topic. Drag, slide and train each one in your browser, then follow the link to the chapter that explains it.
+        </p>
+      </header>
+      <ul class="grid gap-5 sm:grid-cols-2">
+        {
+          PLAYGROUNDS.map((p) => (
+            <li>
+              <a href={playgroundUrl(p.slug)} class="group block h-full rounded border border-stone-200 p-5 transition-colors hover:border-stone-900">
+                <h2 class="display mb-2 text-xl group-hover:text-orange-700">{p.name}</h2>
+                <p class="text-[15px] leading-relaxed text-stone-600">{p.description}</p>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+</BaseLayout>

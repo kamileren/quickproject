@@ -1,0 +1,33 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import MoonsNet from '@/components/figures/ch15/MoonsNet';
+import ActivationGallery from '@/components/figures/ch15/ActivationGallery';
+import SpiralTraining from '@/components/figures/ch17/SpiralTraining';
+---
+
+<PlaygroundLayout slug="neural-networks">
+  <Figure
+    title="Enough neurons to separate the crescents"
+    caption="Shaded areas are classified as the filled kind. The network is 2 inputs → hidden neurons → 2 outputs."
+    try="with ReLU on, raise the hidden neurons from 1 to 3 and watch the boundary fold. Then switch the activation off and move the slider again."
+  >
+    <MoonsNet client:visible />
+  </Figure>
+
+  <Figure
+    title="Four activation functions"
+    caption="The solid line is the function. The dashed line is its slope, which is what training uses."
+    try="switch between the four and compare their slopes far from zero. Then look at the step function's slope."
+  >
+    <ActivationGallery client:visible />
+  </Figure>
+
+  <Figure
+    title="The same network, five optimizers"
+    caption="A small network learns to tell three spiral arms apart. Each run starts from identical weights. Choosing an optimizer resets the network."
+    try="train with plain SGD for a few hundred steps and note how slowly the loss falls. Then choose Adam and train again."
+  >
+    <SpiralTraining client:visible optimizers={['sgd', 'momentum', 'adagrad', 'rmsprop', 'adam']} />
+  </Figure>
+</PlaygroundLayout>

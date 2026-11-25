@@ -1,0 +1,104 @@
+---
+/**
+ * A playground page: a short introduction, the figures (the slot), and links
+ * to the chapters that explain them and to the other playgrounds.
+ */
+import BaseLayout from './BaseLayout.astro';
+import { chapterLabel, chapterName, chapterUrl, getReadyLectures, SITE_NAME } from '@/lib/book';
+import { PLAYGROUNDS, playgroundUrl } from '@/data/playgrounds';
+
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+const playground = PLAYGROUNDS.find((p) => p.slug === slug);
+if (!playground) throw new Error(`No playground called "${slug}" in src/data/playgrounds.ts`);
+
+const lectures = await getReadyLectures();
+const chapters = playground.chapters.map((id) => {
+  const lecture = lectures.find((l) => l.id === id);
+  if (!lecture) throw new Error(`Playground "${slug}" links to "${id}", which is not a published chapter.`);
+  return lecture;
+});
+const others = PLAYGROUNDS.filter((p) => p.slug !== slug);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LearningResource',
+  name: playground.title,
+  description: playground.description,
+  learningResourceType: 'Interactive simulation',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  url: new URL(playgroundUrl(slug), Astro.site).href,
+  isPartOf: { '@type': 'Book', name: SITE_NAME, url: Astro.site?.href },
+};
+---
+
+<BaseLayout title={`${playground.title} — ${SITE_NAME}`} description={playground.description} jsonLd={jsonLd}>
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
+    <div class="mx-auto max-w-3xl">
+      <header class="mb-10">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <a href="/playground/" class="micro-label text-[11px] tracking-[0.4em] text-stone-900 hover:text-orange-700">Playground</a>
+        </div>
+        <h1 class="display mb-6 text-4xl leading-[1.05] sm:text-5xl">{playground.name}.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">{playground.intro}</p>
+        <p class="mt-5 font-sans text-sm text-stone-600">
+          {'From '}
+          {
+            chapters.map((l, i) => (
+              <>
+                {i > 0 && (i === chapters.length - 1 ? ' and ' : ', ')}
+                <a href={chapterUrl(l)} class="text-orange-700 hover:underline">{chapterName(l)}</a>
+              </>
+            ))
+          }
+          {chapters.length > 1 ? ', which explain these figures step by step.' : ', which explains these figures step by step.'}
+        </p>
+      </header>
+
+      <div class="playground-figures">
+        <slot />
+      </div>
+
+      <section class="mt-16 border-t-2 border-stone-900 pt-8">
+        <h2 class="micro-label mb-5 text-sm text-orange-600">Learn the ideas behind it</h2>
+        <ul class="space-y-4">
+          {
+            chapters.map((l) => (
+              <li>
+                <a href={chapterUrl(l)} class="group block rounded border border-stone-200 p-4 transition-colors hover:border-stone-900">
+                  <div class="micro-label mb-1 text-stone-500">{chapterLabel(l.data.number)}</div>
+                  <div class="display text-lg group-hover:text-orange-700">{l.data.title}</div>
+                  {l.data.question && <p class="mt-1 text-base text-stone-500 italic">{l.data.question}</p>}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <h2 class="micro-label mt-12 mb-4 text-sm text-orange-600">More playgrounds</h2>
+        <ul class="flex flex-wrap gap-x-5 gap-y-2 font-sans text-sm">
+          {
+            others.map((p) => (
+              <li>
+                <a href={playgroundUrl(p.slug)} class="text-stone-700 underline decoration-orange-300 underline-offset-4 hover:text-orange-700">
+                  {p.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  /* Figures here are not numbered within a chapter, so they are just "Figure". */
+  .playground-figures .figure-number::after {
+    content: none;
+  }
+</style>

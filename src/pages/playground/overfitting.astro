@@ -1,0 +1,24 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import DegreeFit from '@/components/figures/ch04/DegreeFit';
+import ErrorCurves from '@/components/figures/ch04/ErrorCurves';
+---
+
+<PlaygroundLayout slug="overfitting">
+  <Figure
+    title="How flexible should the curve be?"
+    caption="The dark dots are the twelve students used for fitting."
+    try="raise the degree one step at a time and watch the error on the fitted students. At degree 9, press the button to show twenty new students."
+  >
+    <DegreeFit client:visible />
+  </Figure>
+
+  <Figure
+    title="Two errors, two stories"
+    caption="The dark line is the error on the twelve fitted students. The orange line is the error on twenty new ones."
+    try="move the slider from 1 to 9 and read the verdict at each step. Find where the two lines are closest."
+  >
+    <ErrorCurves client:visible />
+  </Figure>
+</PlaygroundLayout>

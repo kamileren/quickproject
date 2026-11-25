@@ -1,0 +1,33 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import WidestStreet from '@/components/figures/ch10/WidestStreet';
+import SoftMargin from '@/components/figures/ch10/SoftMargin';
+import KernelRegions from '@/components/figures/ch10/KernelRegions';
+---
+
+<PlaygroundLayout slug="support-vector-machines">
+  <Figure
+    title="Build the widest street you can"
+    caption="The solid line is your boundary. The dashed lines are the edges of the widest empty street centred on it."
+    try="drag the two handles to make your street as wide as possible. Then reveal the best possible street and compare."
+  >
+    <WidestStreet client:visible />
+  </Figure>
+
+  <Figure
+    title="How much to mind the awkward points"
+    caption="The two groups overlap, so some points must end up inside the street or on the wrong side."
+    try="slide C from 100 down to 0.001. Watch the street widen and the number of ringed points grow."
+  >
+    <SoftMargin client:visible />
+  </Figure>
+
+  <Figure
+    title="A boundary that closes into a loop"
+    caption="Shaded areas would be classified as the filled kind."
+    try="with the straight boundary, read the accuracy. Switch to RBF, then move γ to its smallest and largest values and count the support vectors."
+  >
+    <KernelRegions client:visible />
+  </Figure>
+</PlaygroundLayout>

@@ -1,0 +1,24 @@
+---
+import PlaygroundLayout from '@/layouts/PlaygroundLayout.astro';
+import Figure from '@/components/prose/Figure.astro';
+import DragLine from '@/components/figures/ch02/DragLine';
+import OutlierPull from '@/components/figures/ch02/OutlierPull';
+---
+
+<PlaygroundLayout slug="linear-regression">
+  <Figure
+    title="Every miss, and their average"
+    caption="The red dashed lines are the residuals. The error is the mean of their squares over all twelve students."
+    try="get your error below 7. Then reveal the best line and see how close you came."
+  >
+    <DragLine client:visible />
+  </Figure>
+
+  <Figure
+    title="Squared error chases outliers"
+    caption="Both lines are refitted every time the point moves. The solid line minimises squared error; the dashed line minimises absolute error."
+    try="drag the dark dot to the bottom right corner and watch which line follows it."
+  >
+    <OutlierPull client:visible />
+  </Figure>
+</PlaygroundLayout>
