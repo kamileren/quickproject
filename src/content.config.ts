@@ -18,6 +18,8 @@ const lectures = defineCollection({
     order: z.number(),
     summary: z.string(),
     status: z.enum(['draft', 'ready']).default('draft'),
+    /** The page title, worded the way people search for the topic. Under about 45 characters. */
+    seoTitle: z.string().optional(),
     /** The question the chapter opens with. */
     question: z.string().optional(),
     dataset: z.string().optional(),

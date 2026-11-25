@@ -35,6 +35,7 @@ const stats = [`${ready.length} chapters`, `${countIn('Figure')} interactive fig
 
 const quickLinks = [
   { label: 'Search', href: '/search/', open: 'search-window' },
+  { label: 'Start here', href: '/learn-machine-learning/' },
   { label: 'Glossary', href: '/glossary/' },
   { label: 'Map', href: '/map/' },
   { label: 'Recap', href: '/recap/' },
@@ -74,11 +75,15 @@ const jsonLd = {
   url: Astro.site?.href,
   isAccessibleForFree: true,
   bookEdition: 'First Edition, Volume I',
-  about: ['Machine Learning', 'Statistics', 'Neural Networks'].map((name) => ({ '@type': 'Thing', name })),
+  about: ['Machine Learning', 'Statistics', 'Neural Networks', 'Deep Learning'].map((name) => ({ '@type': 'Thing', name })),
+  learningResourceType: 'Textbook',
+  educationalLevel: 'Beginner',
+  keywords: 'machine learning, learn machine learning, deep learning, neural networks, linear regression, gradient descent, classification, interactive textbook',
+  hasPart: ready.map((l) => ({ '@type': 'Chapter', name: l.data.title, position: l.data.number, url: new URL(chapterUrl(l), Astro.site).href })),
 };
 ---
 
-<BaseLayout title={`${SITE_NAME}: A Free Interactive Textbook`} description={description} jsonLd={jsonLd} bar={false}>
+<BaseLayout title={`Learn Machine Learning: A Free Interactive Textbook — ${SITE_NAME}`} description={description} jsonLd={jsonLd} bar={false}>
   <main class="relative px-5 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-32">
     <div class="absolute top-2 right-2 flex font-sans text-stone-500 sm:top-4 sm:right-4" data-print-hide>
       <button type="button" data-open="settings-window" aria-label="Text size and colours" title="Text size and colours (t)" class="grid h-10 w-10 cursor-pointer place-items-center rounded font-serif text-base leading-none hover:bg-stone-100 hover:text-stone-900">

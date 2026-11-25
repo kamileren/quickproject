@@ -28,9 +28,11 @@ interface Props {
   /** Chapters before and after, for the arrows in the bar. */
   prevUrl?: string;
   nextUrl?: string;
+  /** A plain Markdown copy of this page, for AI assistants and other tools. */
+  markdownUrl?: string;
 }
 
-const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true, bar = true, current, barTitle, sections = false, prevUrl, nextUrl } = Astro.props;
+const { title, description, noindex = false, jsonLd, shareImage = 'home', searchWindow = true, bar = true, current, barTitle, sections = false, prevUrl, nextUrl, markdownUrl } = Astro.props;
 const image = new URL(`/og/${shareImage}.png`, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
@@ -57,6 +59,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     </script>
     <title>{title}</title>
     <meta name="description" content={description} />
+    {markdownUrl && <link rel="alternate" type="text/markdown" href={markdownUrl} />}
     <meta name="author" content={SITE_NAME} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="sitemap" href="/sitemap-index.xml" />

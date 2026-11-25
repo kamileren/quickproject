@@ -1,0 +1,157 @@
+---
+/**
+ * A reading guide for someone who has decided to learn machine learning and
+ * wants to know where to start. Built from the parts and chapters, so it
+ * stays true as chapters are published.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { chapterLabel, chapterUrl, getLectures, getParts, SITE_NAME } from '@/lib/book';
+
+const parts = await getParts();
+const lectures = await getLectures();
+const ready = lectures.filter((l) => l.data.status === 'ready');
+const minutesOf = (ids: typeof lectures) => ids.reduce((sum, l) => sum + (l.data.minutes ?? 0), 0);
+const totalHours = Math.round(minutesOf(ready) / 60);
+const coming = lectures.filter((l) => l.data.status !== 'ready');
+const isReady = (id: string) => ready.some((l) => l.id === id);
+
+const faq = [
+  {
+    q: 'How much mathematics do I need to learn machine learning?',
+    a: `School algebra is enough to start. The book's three toolkit chapters teach the vectors, derivatives and probability the later chapters use, with pictures before formulas, and each chapter says which of them it needs.`,
+  },
+  {
+    q: 'Do I need to know how to code?',
+    a: 'No, not to follow the ideas: every idea is shown with a figure you can use in the browser. To build things yourself, some Python helps. The neural network chapters each come with a short NumPy file that runs on its own.',
+  },
+  {
+    q: 'How long does it take?',
+    a: `The ${ready.length} published chapters take about ${totalHours} hours to read, plus time for the exercises. A chapter takes 12 to 20 minutes, so one a day gets you through in about a month.`,
+  },
+  {
+    q: 'Where does deep learning fit in?',
+    a: 'Deep learning means neural networks with many layers. Part IV builds a neural network from nothing, one piece per chapter: neurons, activations, loss, backpropagation, optimizers and regularization, until it recognises photographs of clothing. Read Part I first, because training a network is the same idea as fitting a line, at a larger scale.',
+  },
+  {
+    q: 'Is it really free?',
+    a: 'Yes. Every chapter, figure and exercise is free to read with no sign-up, and your progress stays in your own browser.',
+  },
+];
+
+const description = `How to learn machine learning from scratch: what to read first, how much maths you need, and a free path from linear regression to neural networks.`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+};
+---
+
+<BaseLayout title={`How to Learn Machine Learning from Scratch — ${SITE_NAME}`} description={description} jsonLd={jsonLd}>
+  <main class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
+    <div class="mx-auto max-w-3xl">
+      <header class="mb-12">
+        <div class="mb-8 flex items-center gap-4">
+          <div class="h-[2px] w-12 bg-stone-900"></div>
+          <div class="micro-label text-[11px] tracking-[0.4em] text-stone-900">Start here</div>
+        </div>
+        <h1 class="display mb-6 text-4xl leading-[1.05] sm:text-5xl">How to learn machine learning.</h1>
+        <p class="max-w-2xl text-xl leading-relaxed font-light text-stone-500 italic">
+          Machine learning is a small number of ideas, used over and over. Learn them in the right order and each one makes
+          the next easy. This is that order, with a free chapter for each step.
+        </p>
+      </header>
+
+      <section class="mb-14">
+        <h2 class="display mb-4 text-2xl">The short version</h2>
+        <ol class="guide-list space-y-3 text-[17px] leading-relaxed text-stone-800">
+          <li>
+            <strong>Learn what "learning" means</strong> on the simplest model there is, a straight line: fitting it, training it step by step
+            with gradient descent, and checking that it works on data it has not seen. Everything else builds on this.
+          </li>
+          <li>
+            <strong>Learn to predict categories.</strong> Logistic regression, nearest neighbours, naive Bayes and support vector machines are
+            four different answers to the same question, and how to score a classifier honestly matters as much as any of them.
+          </li>
+          <li>
+            <strong>Build a neural network yourself,</strong> one piece at a time, so that deep learning is something you understand rather
+            than a library you call.
+          </li>
+          <li>
+            <strong>Pick up the mathematics as you need it.</strong> Vectors, derivatives and probability, only as much as the next chapter
+            uses.
+          </li>
+        </ol>
+      </section>
+
+      <section class="mb-14">
+        <h2 class="display mb-6 text-2xl">The path, chapter by chapter</h2>
+        {
+          parts.map((part) => {
+            const own = lectures.filter((l) => l.data.part === part.id);
+            if (own.length === 0) return null;
+            const readyHere = own.filter((l) => isReady(l.id));
+            return (
+              <div class="mb-10">
+                <h3 class="micro-label mb-2 text-sm text-orange-600">
+                  {part.data.label}: {part.data.title}
+                  {readyHere.length > 0 && <span class="ml-2 font-normal text-stone-500">about {Math.max(1, Math.round(minutesOf(readyHere) / 60))} h</span>}
+                </h3>
+                <p class="mb-2 text-base leading-relaxed text-stone-700">{part.data.intro}</p>
+                {part.data.needs && <p class="mb-3 text-sm text-stone-500 italic">You need: {part.data.needs}</p>}
+                <ul class="space-y-1.5 text-[15px]">
+                  {own.map((l) =>
+                    isReady(l.id) ? (
+                      <li>
+                        <a href={chapterUrl(l)} class="text-stone-900 underline decoration-orange-300 underline-offset-4 hover:text-orange-700">
+                          {chapterLabel(l.data.number)}: {l.data.title}
+                        </a>
+                        <span class="text-stone-500"> — {l.data.summary}</span>
+                      </li>
+                    ) : (
+                      <li class="text-stone-400">
+                        {chapterLabel(l.data.number)}: {l.data.title} <span class="italic">(being written)</span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            );
+          })
+        }
+        {coming.length > 0 && <p class="text-sm text-stone-500 italic">Chapters marked "being written" are not published yet. The changelog lists each one as it arrives.</p>}
+      </section>
+
+      <section class="mb-14">
+        <h2 class="display mb-6 text-2xl">Common questions</h2>
+        <dl class="space-y-6">
+          {
+            faq.map(({ q, a }) => (
+              <div>
+                <dt class="mb-1 text-lg font-semibold text-stone-900">{q}</dt>
+                <dd class="text-base leading-relaxed text-stone-700">{a}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <section class="border-t-2 border-stone-900 pt-8">
+        <h2 class="micro-label mb-4 text-sm text-orange-600">Ways in</h2>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2 font-sans text-sm">
+          <li><a href="/what-is-learning/" class="text-orange-700 hover:underline">Start with chapter 1</a></li>
+          <li><a href="/playground/" class="text-orange-700 hover:underline">Try the figures first</a></li>
+          <li><a href="/map/" class="text-orange-700 hover:underline">See what depends on what</a></li>
+          <li><a href="/exercises/" class="text-orange-700 hover:underline">Test yourself</a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .guide-list {
+    list-style: decimal;
+    padding-left: 1.5rem;
+  }
+</style>

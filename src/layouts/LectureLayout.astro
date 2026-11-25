@@ -59,18 +59,44 @@ const core = [question, summary].filter(Boolean).join(' ');
 const tail = ` ${chapterLabel(number)} of a free interactive textbook.`;
 const metaDescription = core.length + tail.length <= 158 ? core + tail : core;
 
+const pageUrl = new URL(chapterUrl(lecture), Astro.site).href;
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'Chapter',
-  name: title,
-  description: summary,
-  isPartOf: { '@type': 'Book', name: SITE_NAME, url: Astro.site?.href },
-  url: new URL(chapterUrl(lecture), Astro.site).href,
-  isAccessibleForFree: true,
+  '@graph': [
+    {
+      '@type': ['Chapter', 'LearningResource'],
+      name: title,
+      headline: lecture.data.seoTitle ?? title,
+      description: summary,
+      position: number,
+      isPartOf: { '@type': 'Book', name: SITE_NAME, url: Astro.site?.href },
+      url: pageUrl,
+      inLanguage: 'en',
+      isAccessibleForFree: true,
+      learningResourceType: 'Textbook chapter',
+      educationalLevel: 'Beginner',
+      ...(minutes && { timeRequired: `PT${minutes}M` }),
+      ...(updated && { dateModified: updated }),
+      // The terms this chapter is the first to explain: what it teaches.
+      ...(ownTerms.length > 0 && {
+        teaches: ownTerms.map((t) => t.term),
+        about: ownTerms.map((t) => ({ '@type': 'DefinedTerm', name: t.term, url: new URL(`/glossary/#${t.id}`, Astro.site).href })),
+      }),
+      encoding: { '@type': 'MediaObject', encodingFormat: 'text/markdown', contentUrl: new URL(`/${lecture.id}.md`, Astro.site).href },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: SITE_NAME, item: Astro.site?.href },
+        { '@type': 'ListItem', position: 2, name: `${part.data.label}: ${part.data.title}`, item: new URL(`/parts/${part.id}/`, Astro.site).href },
+        { '@type': 'ListItem', position: 3, name: title, item: pageUrl },
+      ],
+    },
+  ],
 };
 ---
 
-<BaseLayout title={`${title} — ${SITE_NAME}`} description={metaDescription} jsonLd={jsonLd} shareImage={lecture.id} barTitle={`${number.includes('.') ? 'Toolkit' : 'Ch.'} ${number} · ${title}`} sections prevUrl={prev && chapterUrl(prev)} nextUrl={next && chapterUrl(next)}>
+<BaseLayout title={lecture.data.seoTitle ? `${lecture.data.seoTitle} — The Book of ML` : `${title} — ${SITE_NAME}`} markdownUrl={`/${lecture.id}.md`} description={metaDescription} jsonLd={jsonLd} shareImage={lecture.id} barTitle={`${number.includes('.') ? 'Toolkit' : 'Ch.'} ${number} · ${title}`} sections prevUrl={prev && chapterUrl(prev)} nextUrl={next && chapterUrl(next)}>
   <div id="reading-bar" aria-hidden="true" class="fixed top-0 left-0 z-40 h-[3px] w-full origin-left scale-x-0 bg-orange-600" data-print-hide></div>
   <main id="top" class="px-5 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
     <div class="relative mx-auto max-w-3xl">

@@ -6,6 +6,7 @@ import { chapterLabel, chapterUrl, getReadyLectures, SITE_NAME } from '@/lib/boo
 // Everything a mistyped address could have meant.
 const places = [
   ...(await getReadyLectures()).map((l) => ({ url: chapterUrl(l), title: l.data.title, label: chapterLabel(l.data.number) })),
+  { url: '/learn-machine-learning/', title: 'How to learn machine learning', label: 'Guide' },
   { url: '/glossary/', title: 'Glossary', label: 'Reference' },
   { url: '/notation/', title: 'Notation', label: 'Reference' },
   { url: '/map/', title: 'Map', label: 'Reference' },

@@ -6,6 +6,8 @@
   items:
     - The new exercises page lists all the book's exercises, chapter by chapter. Tick a kind to show only the ones done by hand, with a figure, in code, or by thinking.
     - The playground gathers the interactive figures by topic, from fitting a line to training a network, with links to the chapters that explain them.
+    - A new start-here page sets out the order to learn machine learning in, and answers the usual first questions.
+    - Every chapter is also available as plain Markdown, for reading with an AI assistant or other tools. The list is at /llms.txt.
 - id: 2026-11-21-touch
   date: "2026-11-21"
   title: Figures work with a finger
