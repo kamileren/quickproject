@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { block, linkTerms } from './recap';
+import { block, exercises, linkTerms } from './recap';
 
 const terms = [
   { id: 'mse', term: 'Mean squared error', definition: 'The average of the squared misses.' },
@@ -7,6 +7,15 @@ const terms = [
 ];
 
 describe('recap helpers', () => {
+  it('lists exercises without their hints and solutions', () => {
+    const source = 'x <Exercise kind="by hand">\n\nAdd $1 + 1$.\n\n<Hint>\nCount.\n</Hint>\n\n<Solution>\n2\n</Solution>\n\n</Exercise> <Exercise>\nWhy?\n</Exercise>';
+    expect(exercises(source)).toEqual([
+      { kind: 'by hand', question: 'Add $1 + 1$.' },
+      { kind: 'think', question: 'Why?' },
+    ]);
+    expect(exercises('<Exercises></Exercises>')).toEqual([]);
+  });
+
   it('pulls a block out of a chapter', () => {
     expect(block('before <KeyTakeaways>\n- one\n</KeyTakeaways> after', 'KeyTakeaways')).toBe('- one');
     expect(block('nothing here', 'KeyTakeaways')).toBeUndefined();

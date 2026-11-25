@@ -43,3 +43,20 @@ export function linkTerms(html: string, terms: readonly GlossaryTerm[]): string 
     return found ? `<a class="recap-term" href="/glossary/#${found.id}" title="${escapeAttribute(found.definition)}">${whole}</a>` : whole;
   });
 }
+
+export interface ExerciseSource {
+  kind: string;
+  /** The question in markdown, without its hint and solution. */
+  question: string;
+}
+
+/** Every <Exercise> in a chapter's source, in order, with the hint and solution left out. */
+export function exercises(source: string): ExerciseSource[] {
+  return [...source.matchAll(/<Exercise\b([^>]*)>([\s\S]*?)<\/Exercise>/g)].map(([, attributes, inner]) => ({
+    kind: attributes.match(/kind="([^"]+)"/)?.[1] ?? 'think',
+    question: inner
+      .replace(/<Hint>[\s\S]*?<\/Hint>/g, '')
+      .replace(/<Solution>[\s\S]*?<\/Solution>/g, '')
+      .trim(),
+  }));
+}
