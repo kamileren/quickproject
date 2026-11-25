@@ -1,6 +1,22 @@
 # The Book of Machine Learning
 
-A free, interactive machine learning textbook, published at [thebookofml.com](https://thebookofml.com).
+**A free, interactive machine learning textbook that teaches the mathematics, the intuition and the algorithms from first principles.**
+Read it at **[thebookofml.com](https://thebookofml.com)**. No sign-up, no paywall, and it works offline once loaded.
+
+- **21 chapters** so far, from what learning means to training a neural network on real images: linear and logistic
+  regression, gradient descent, generalization, regularization, k-nearest neighbours, naive Bayes, support vector machines,
+  and a neural network built one piece per chapter.
+- **79 interactive figures.** Drag the line, change the learning rate, add neurons, and watch what happens.
+  The [playground](https://thebookofml.com/playground/) gathers them by topic.
+- **105 exercises** with hints and worked solutions, all listed on the [exercises page](https://thebookofml.com/exercises/).
+- **Runnable Python** for the neural-network chapters, one short NumPy file each, in [`code/`](code/), with Colab notebooks.
+- A [glossary](https://thebookofml.com/glossary/), a [notation table](https://thebookofml.com/notation/),
+  a [recap](https://thebookofml.com/recap/) of every chapter and a [map](https://thebookofml.com/map/) of what to read first.
+
+Found a mistake or something unclear? [Open an issue](https://github.com/kamileren/quickproject/issues).
+
+## Working on the book
+
 Static site built with Astro, MDX and React islands. The full plan and progress are in [PLAN.md](PLAN.md).
 
 ## Commands
@@ -66,7 +82,8 @@ Reader-facing extras live in a few places: `src/scripts/site.ts` (windows, short
 stored in the browser), `public/sw.js` (offline cache) and `public/search.js` (search). When something readers
 would notice is published, add an entry to `src/content/changelog.yaml`.
 
-The site also builds a glossary (`/glossary/`), a notation table (`/notation/`), a page per part (`/parts/<id>/`)
+The site also builds a glossary (`/glossary/`), a notation table (`/notation/`), a page per part (`/parts/<id>/`),
+an exercise list (`/exercises/`), playgrounds (`/playground/<slug>/`, listed in `src/data/playgrounds.ts`)
 and a search page (`/search/`, indexed by Pagefind during `npm run build`). Reading progress is stored only in
 the reader's browser (`src/lib/progress.ts`).
 

@@ -1,5 +1,11 @@
 # What changed in the book, newest first. Shown at /changelog/.
 # Add an entry whenever something a reader would notice is published.
+- id: 2026-11-24-practice
+  date: "2026-11-24"
+  title: Every exercise in one place, and a playground
+  items:
+    - The new exercises page lists all the book's exercises, chapter by chapter. Tick a kind to show only the ones done by hand, with a figure, in code, or by thinking.
+    - The playground gathers the interactive figures by topic, from fitting a line to training a network, with links to the chapters that explain them.
 - id: 2026-11-21-touch
   date: "2026-11-21"
   title: Figures work with a finger
